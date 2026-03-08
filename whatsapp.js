@@ -117,9 +117,54 @@ function waitForAck(client, message, timeoutMs = 10000) {
   });
 }
 
+function detectChromeExecutablePath() {
+  const explicit = String(process.env.PUPPETEER_EXECUTABLE_PATH || "").trim();
+  if (explicit && fs.existsSync(explicit)) {
+    return explicit;
+  }
+
+  const directCandidates = [
+    path.resolve(".cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome"),
+    "/opt/render/project/src/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome",
+    "/opt/render/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome"
+  ];
+
+  for (const candidate of directCandidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  const roots = [
+    path.resolve(".cache/puppeteer/chrome"),
+    "/opt/render/project/src/.cache/puppeteer/chrome",
+    "/opt/render/.cache/puppeteer/chrome"
+  ];
+
+  for (const root of roots) {
+    if (!fs.existsSync(root)) continue;
+    let dirs = [];
+    try {
+      dirs = fs.readdirSync(root, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+    } catch {
+      dirs = [];
+    }
+    dirs.sort().reverse();
+    for (const dir of dirs) {
+      const candidate = path.join(root, dir, "chrome-linux64", "chrome");
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  return "";
+}
+
 function createClient() {
   const sessionDir = getSessionDir();
   const savedSession = hasSavedSession();
+  const executablePath = detectChromeExecutablePath();
 
   console.log(`🔄 Inicializando WhatsApp Web (sessão: ${getSessionName()})`);
   console.log(`🖥️ Navegador interno em modo ${isHeadlessMode() ? "oculto" : "visível"}.`);
@@ -128,6 +173,9 @@ function createClient() {
       ? `💾 Sessão local encontrada em ${sessionDir}. Vou tentar conectar sem QR.`
       : "📭 Nenhuma sessão local encontrada. Será necessário escanear o QR Code."
   );
+  if (executablePath) {
+    console.log(`🌐 Chrome detectado em: ${executablePath}`);
+  }
 
   const client = new Client({
     authStrategy: new LocalAuth({
@@ -135,6 +183,7 @@ function createClient() {
     }),
     puppeteer: {
       headless: isHeadlessMode(),
+      ...(executablePath ? { executablePath } : {}),
       args: ["--no-sandbox", "--disable-setuid-sandbox"]
     }
   });

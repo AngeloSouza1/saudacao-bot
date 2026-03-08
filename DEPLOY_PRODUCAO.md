@@ -34,6 +34,7 @@ DASHBOARD_PORT=3001
 WHATSAPP_HEADLESS=true
 DASHBOARD_AUTH_USER=admin
 DASHBOARD_AUTH_PASSWORD=troque-por-uma-senha-forte
+NODE_VERSION=20
 ```
 
 Se já usa outras variáveis (token, phone, etc), mantenha no `.env`.
@@ -165,6 +166,9 @@ Observações:
 1. Abra a URL pública do Render (`https://...onrender.com`).
 2. Faça login (Basic Auth).
 3. Escaneie o QR do WhatsApp.
+
+Se já tentou deploy antes sem Chrome:
+- Execute **Manual Deploy -> Clear build cache & deploy**.
 
 ## 5) Limitação importante no plano gratuito
 
