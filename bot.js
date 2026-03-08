@@ -162,7 +162,7 @@ function createCycleSnapshotFromCurrentState(reason = "bootstrap", customName = 
 
 function getCycleCapacity(config) {
   const alunosCount = Array.isArray(config?.alunos) ? config.alunos.length : 0;
-  const aulasCount = getAgendaEntries(config || {}).length;
+  const aulasCount = getAgendaEntriesByConfig(config || {}).length;
   return Math.max(0, Math.min(alunosCount, aulasCount));
 }
 
@@ -267,9 +267,9 @@ function assertConfig() {
     throw new Error("config.json precisa ter pelo menos um aluno em \"alunos\".");
   }
 
-  const entries = getAgendaEntries(config);
+  const entries = getAgendaEntriesByConfig(config);
   if (entries.length === 0) {
-    throw new Error("config.json precisa ter ao menos uma aula em agendaSemanal.");
+    throw new Error("config.json precisa ter ao menos uma aula válida para os dias permitidos.");
   }
 
   return { config, settings };
@@ -288,13 +288,31 @@ function isDiaUtil(d) {
   return d >= 1 && d <= 5;
 }
 
+function asBoolean(value, fallback = false) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["true", "1", "sim", "yes"].includes(normalized)) return true;
+    if (["false", "0", "nao", "não", "no"].includes(normalized)) return false;
+  }
+  return fallback;
+}
+
 function isDiaPermitido(config, d) {
   // "Dias úteis apenas = Sim" => segunda a sexta.
   // "Dias úteis apenas = Não" => segunda a sábado (exclui domingo).
-  if (config?.diasUteisApenas) {
+  if (asBoolean(config?.diasUteisApenas, false)) {
     return isDiaUtil(d);
   }
   return d >= 1 && d <= 6;
+}
+
+function getAgendaEntriesByConfig(config) {
+  return getAgendaEntries(config).filter(({ dia }) => {
+    const day = Number(dia);
+    return Number.isInteger(day) && isDiaPermitido(config, day);
+  });
 }
 
 function parseHora(hora) {
@@ -524,9 +542,9 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
 
 function getScheduleSummaryForPreview(config) {
   if (Array.isArray(scheduleSummary) && scheduleSummary.length) {
-    return scheduleSummary;
+    return scheduleSummary.filter((item) => isDiaPermitido(config || {}, Number(item?.dia)));
   }
-  return getAgendaEntries(config || {})
+  return getAgendaEntriesByConfig(config || {})
     .map(({ dia, aula }) => ({
       dia: String(dia),
       horario: String(aula?.hora || ""),
@@ -828,7 +846,7 @@ async function sendBotMessage(text, cardData = null) {
 }
 
 function getOrderedLessonsForManualSend(config) {
-  const entries = getAgendaEntries(config).map(({ dia, aula }) => ({
+  const entries = getAgendaEntriesByConfig(config).map(({ dia, aula }) => ({
     dia: String(dia),
     materia: aula.materia,
     professor: aula.professor,
@@ -1018,7 +1036,7 @@ export function startScheduler() {
   const { config } = assertConfig();
   scheduleSummary = [];
 
-  for (const { dia, aula } of getAgendaEntries(config)) {
+  for (const { dia, aula } of getAgendaEntriesByConfig(config)) {
     const { cronHour, cronMinute } = buildCronForAula(aula.hora, config.antecedenciaMin || 0);
     const expression = `${cronMinute} ${cronHour} * * ${dia}`;
     const label = `${String(cronHour).padStart(2, "0")}:${String(cronMinute).padStart(2, "0")}`;
@@ -1273,7 +1291,10 @@ export function updateConfig(partial) {
     turma: partial.turma ?? current.turma,
     instituicao: partial.instituicao ?? current.instituicao,
     antecedenciaMin: Number(partial.antecedenciaMin ?? current.antecedenciaMin),
-    diasUteisApenas: partial.diasUteisApenas ?? current.diasUteisApenas
+    diasUteisApenas: asBoolean(
+      partial?.diasUteisApenas,
+      asBoolean(current?.diasUteisApenas, false)
+    )
   };
 
   if (partial && Object.prototype.hasOwnProperty.call(partial, "lockTimeoutMin")) {
