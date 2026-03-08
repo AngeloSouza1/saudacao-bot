@@ -142,7 +142,7 @@ git push -u origin main
 2. Conecte seu repositório GitHub.
 3. Configure:
    - Runtime: **Node**
-   - Build command: `npm install`
+   - Build command: `npm run render-build`
    - Start command: `npm start`
 
 ## 3) Variáveis de ambiente (Render)
