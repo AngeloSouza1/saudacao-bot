@@ -1,0 +1,50 @@
+{
+  "idxAluno": 1,
+  "idxAula": 0,
+  "dataInicio": "2026-03-09",
+  "updatedAt": "2026-03-08T18:53:48.338Z",
+  "reposicaoAlunos": [],
+  "ordemProximosAlunos": [
+    "Bruna Alves",
+    "Clara Helena",
+    "Daniel Lucas",
+    "Enzo Duarte",
+    "Felipe Moreira",
+    "Jaynni Nascimento",
+    "Juan Ferreira",
+    "Kaio Vieira Nunes",
+    "Luana Costa",
+    "Matheus Leonardo",
+    "Matheus Marques",
+    "Rai Colares",
+    "Rallenson Silva",
+    "Thalita Nascimento",
+    "Wanuta Santos",
+    "João Marcos Basilio Sales",
+    "João Vitor Gomes Oliveira Rodrigues Resende",
+    "Angelo Souza"
+  ],
+  "confirmacaoEnvio": {
+    "confirmado": false,
+    "aluno": "",
+    "confirmadoEm": ""
+  },
+  "revertidosEfetivados": [],
+  "efetivacoesManuais": [
+    {
+      "itemKey": "cycle_1772978291641_gw7kvo|2026-03-10T02:00:00.000Z|Redes e Internet|dfsd|23:00",
+      "aluno": "Clara Helena"
+    }
+  ],
+  "ordemVinculadaCiclo": [
+    "Bruna Alves",
+    "Daniel Lucas",
+    "Enzo Duarte",
+    "Felipe Moreira",
+    "Jaynni Nascimento",
+    "Angelo Souza"
+  ],
+  "efetivadosCiclo": [
+    "Clara Helena"
+  ]
+}

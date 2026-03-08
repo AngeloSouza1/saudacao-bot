@@ -1,0 +1,91 @@
+{
+  "turma": "RiseCode",
+  "instituicao": "AlphaTech",
+  "agendaSemanal": {
+    "0": [
+      {
+        "titulo": "",
+        "materia": "Redes e Internet",
+        "professor": "dfsd",
+        "hora": "23:00"
+      }
+    ],
+    "1": [
+      {
+        "titulo": "teste",
+        "materia": "Matéria 1",
+        "professor": "Professor 1",
+        "hora": "20:00"
+      }
+    ],
+    "2": [
+      {
+        "titulo": "",
+        "materia": "Materia 2",
+        "professor": "Professor 2",
+        "hora": "20:00"
+      }
+    ],
+    "3": [
+      {
+        "titulo": "",
+        "materia": "Materia 3",
+        "professor": "Professor 3",
+        "hora": "20:00"
+      }
+    ],
+    "4": [
+      {
+        "titulo": "",
+        "materia": "Materia 4",
+        "professor": "Professor 4",
+        "hora": "20:00"
+      }
+    ],
+    "5": [
+      {
+        "titulo": "",
+        "materia": "Materia 5",
+        "professor": "Professor 5",
+        "hora": "20:00"
+      }
+    ],
+    "6": [
+      {
+        "titulo": "teste",
+        "materia": "Materia",
+        "professor": "Prof. Carlos",
+        "hora": "00:00"
+      }
+    ]
+  },
+  "alunos": [
+    "Angelo Souza",
+    "Bruna Alves",
+    "Clara Helena",
+    "Daniel Lucas",
+    "Enzo Duarte",
+    "Felipe Moreira",
+    "Jaynni Nascimento",
+    "Juan Ferreira",
+    "Kaio Vieira Nunes",
+    "Luana Costa",
+    "Matheus Leonardo",
+    "Matheus Marques",
+    "Rai Colares",
+    "Rallenson Silva",
+    "Thalita Nascimento",
+    "Wanuta Santos",
+    "João Marcos Basilio Sales",
+    "João Vitor Gomes Oliveira Rodrigues Resende"
+  ],
+  "antecedenciaMin": 200,
+  "diasUteisApenas": false,
+  "imagePath": "risecode.png",
+  "mediaAsDocument": false,
+  "mediaFileName": "Saudacao-RiseCode.png",
+  "imageStyle": "banner",
+  "updatedAt": "2026-03-04T15:00:00.000Z",
+  "lockTimeoutMin": 1,
+  "lockPassword": "1234"
+}

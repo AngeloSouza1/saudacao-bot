@@ -1,0 +1,18 @@
+{
+  "name": "saudacao-bot",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dashboard": "node index.js",
+    "now": "node index.js --now",
+    "test": "node index.js --test"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "node-cron": "^4.2.1",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0",
+    "sharp": "^0.34.5",
+    "whatsapp-web.js": "^1.27.0"
+  }
+}

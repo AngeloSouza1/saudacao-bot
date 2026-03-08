@@ -1,0 +1,1029 @@
+{
+  "activeCycleId": "cycle_1772978291641_gw7kvo",
+  "cycles": [
+    {
+      "id": "cycle_1772822439144_fdl8wi",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-06T18:40:39.144Z",
+      "completedAt": "2026-03-06T19:13:38.747Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 1,
+        "dataInicio": "2026-03-06"
+      },
+      "sentCount": 0,
+      "totalAlunos": 18,
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772824419748_69kqbk",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-06T19:13:39.748Z",
+      "completedAt": "2026-03-06T23:37:07.186Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 1,
+        "dataInicio": "2026-03-06"
+      },
+      "sentCount": 17,
+      "totalAlunos": 18,
+      "lastMessageAt": "2026-03-06T23:35:38.841Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772840276196_14r8ct",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-06T23:37:56.196Z",
+      "completedAt": "2026-03-07T19:51:20.140Z",
+      "start": {
+        "idxAluno": 11,
+        "idxAula": 2,
+        "dataInicio": "2026-03-06"
+      },
+      "sentCount": 11,
+      "totalAlunos": 19,
+      "lastMessageAt": "2026-03-07T17:59:41.178Z",
+      "updatedAt": "2026-03-07T19:32:24.193Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772917165705_v716du",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T20:59:25.705Z",
+      "completedAt": "2026-03-07T21:31:29.840Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-06"
+      },
+      "sentCount": 0,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T20:59:25.706Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772919095751_29b8bp",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T21:31:35.751Z",
+      "completedAt": "2026-03-07T21:34:14.336Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-06"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T21:31:35.752Z",
+      "lastMessageAt": "2026-03-07T21:33:17.822Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772919287088_xiu777",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T21:34:47.088Z",
+      "completedAt": "2026-03-07T21:39:46.686Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T21:34:47.089Z",
+      "lastMessageAt": "2026-03-07T21:34:58.939Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772919591301_89mfah",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T21:39:51.301Z",
+      "completedAt": "2026-03-07T21:44:46.057Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T21:39:51.302Z",
+      "lastMessageAt": "2026-03-07T21:40:00.733Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772919889130_d8a74j",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T21:44:49.130Z",
+      "completedAt": "2026-03-07T21:44:57.921Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 0,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T21:44:49.131Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772919910994_794fbg",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T21:45:10.994Z",
+      "completedAt": "2026-03-07T21:46:21.508Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T21:45:10.994Z",
+      "lastMessageAt": "2026-03-07T21:45:21.992Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772920161607_76dz5l",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T21:49:21.607Z",
+      "completedAt": "2026-03-07T21:50:11.574Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 2,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T21:49:21.608Z",
+      "lastMessageAt": "2026-03-07T21:49:52.799Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772920223830_x2wujt",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T21:50:23.830Z",
+      "completedAt": "2026-03-07T22:23:06.862Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 2,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 2,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T21:50:23.831Z",
+      "lastMessageAt": "2026-03-07T22:00:41.718Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772922531616_n06645",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T22:28:51.616Z",
+      "completedAt": "2026-03-07T22:34:37.242Z",
+      "start": {
+        "idxAluno": 2,
+        "idxAula": 4,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 0,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T22:28:51.616Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772922999100_swodww",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T22:36:39.100Z",
+      "completedAt": "2026-03-07T22:38:12.685Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T22:36:39.100Z",
+      "lastMessageAt": "2026-03-07T22:37:00.816Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772923113982_0k662t",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T22:38:33.982Z",
+      "completedAt": "2026-03-07T22:38:37.221Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 0,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T22:38:33.983Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772923121054_cwxenl",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T22:38:41.054Z",
+      "completedAt": "2026-03-07T22:42:33.913Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T22:38:41.055Z",
+      "lastMessageAt": "2026-03-07T22:39:32.967Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772923372616_oqd92i",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T22:42:52.616Z",
+      "completedAt": "2026-03-07T22:57:56.990Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T22:45:44.205Z",
+      "lastMessageAt": "2026-03-07T22:43:20.235Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772924303344_jkqckv",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T22:58:23.344Z",
+      "completedAt": "2026-03-07T23:04:55.228Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T22:58:50.591Z",
+      "lastMessageAt": "2026-03-07T22:59:03.917Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772924697957_f3509w",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:04:57.957Z",
+      "completedAt": "2026-03-07T23:06:05.222Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:04:57.958Z",
+      "lastMessageAt": "2026-03-07T23:05:08.283Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772925117723_vsjgzi",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:11:57.723Z",
+      "completedAt": "2026-03-07T23:22:07.595Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:11:57.724Z",
+      "lastMessageAt": "2026-03-07T23:12:11.777Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772925730925_ecoxib",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:22:10.925Z",
+      "completedAt": "2026-03-07T23:25:16.855Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:22:10.926Z",
+      "lastMessageAt": "2026-03-07T23:24:16.105Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772925919639_xwzy9x",
+      "name": "Novo ciclo 07/03/2026, 20:25",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:25:19.650Z",
+      "completedAt": "2026-03-07T23:26:01.447Z",
+      "start": {
+        "idxAluno": 2,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:25:19.652Z",
+      "lastMessageAt": "2026-03-07T23:25:41.158Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772925964624_i8urre",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:26:04.624Z",
+      "completedAt": "2026-03-07T23:27:13.753Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:26:04.625Z",
+      "lastMessageAt": "2026-03-07T23:26:50.727Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772926035434_tjqwu4",
+      "name": "Novo ciclo 07/03/2026, 20:27",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:27:15.434Z",
+      "completedAt": "2026-03-07T23:28:42.226Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:27:15.437Z",
+      "lastMessageAt": "2026-03-07T23:27:52.451Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772926149610_9q39r6",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:29:09.610Z",
+      "completedAt": "2026-03-07T23:35:17.089Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:29:09.611Z",
+      "lastMessageAt": "2026-03-07T23:29:30.297Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772926520242_s24r38",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:35:20.242Z",
+      "completedAt": "2026-03-07T23:41:36.998Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 5,
+      "updatedAt": "2026-03-07T23:35:37.653Z",
+      "lastMessageAt": "2026-03-07T23:35:59.552Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772926911887_vq03ld",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-07T23:41:51.887Z",
+      "completedAt": "2026-03-07T23:44:09.855Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-07T23:43:49.847Z",
+      "lastMessageAt": "2026-03-07T23:41:58.203Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772928236826_x9zi3r",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:03:56.826Z",
+      "completedAt": "2026-03-08T00:15:32.253Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:03:56.829Z",
+      "lastMessageAt": "2026-03-08T00:04:33.112Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772928964054_48chjb",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:16:04.054Z",
+      "completedAt": "2026-03-08T00:16:17.101Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:16:04.055Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772928986174_l7rl68",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:16:26.174Z",
+      "completedAt": "2026-03-08T00:19:59.217Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:16:34.649Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772929201762_5tos4u",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:20:01.762Z",
+      "completedAt": "2026-03-08T00:28:23.219Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:20:41.604Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772929707938_6k3650",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:28:27.938Z",
+      "completedAt": "2026-03-08T00:29:17.514Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:28:27.939Z",
+      "lastMessageAt": "2026-03-08T00:28:38.135Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772929759562_zkcdw1",
+      "name": "Novo ciclo 07/03/2026, 21:29",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:29:19.576Z",
+      "completedAt": "2026-03-08T00:30:08.050Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:29:19.579Z",
+      "lastMessageAt": "2026-03-08T00:29:47.633Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772929877355_9lpt27",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:31:17.355Z",
+      "completedAt": "2026-03-08T00:32:42.954Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:31:17.356Z",
+      "lastMessageAt": "2026-03-08T00:32:39.905Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772930267341_23attq",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:37:47.341Z",
+      "completedAt": "2026-03-08T00:55:51.892Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 5,
+        "dataInicio": "2026-03-14"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:49:13.950Z",
+      "lastMessageAt": "2026-03-08T00:49:32.399Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772931354787_8bid9u",
+      "name": "ciclo teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:55:54.787Z",
+      "completedAt": "2026-03-08T00:59:18.743Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 0,
+        "dataInicio": "2026-03-07"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T00:55:54.788Z",
+      "lastMessageAt": "2026-03-08T00:57:33.795Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772931584158_xhau7k",
+      "name": "Novo ciclo 07/03/2026, 21:59",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T00:59:44.159Z",
+      "completedAt": "2026-03-08T01:16:09.613Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 5,
+        "dataInicio": "2026-03-07"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T01:15:57.253Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772932573693_koy6vn",
+      "name": "Novo ciclo 07/03/2026, 22:16",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T01:16:13.694Z",
+      "completedAt": "2026-03-08T01:17:30.213Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 5,
+        "dataInicio": "2026-03-07"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T01:17:16.349Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772932658990_x86nvg",
+      "name": "te",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T01:17:38.990Z",
+      "completedAt": "2026-03-08T10:46:13.317Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 5,
+        "dataInicio": "2026-03-07"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T10:46:09.165Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772966801782_ux1her",
+      "name": "te",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T10:46:41.782Z",
+      "completedAt": "2026-03-08T10:59:00.969Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 5,
+        "dataInicio": "2026-03-07"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T10:57:05.901Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772967546154_vfpwey",
+      "name": "te",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T10:59:06.154Z",
+      "completedAt": "2026-03-08T11:00:46.882Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 5,
+        "dataInicio": "2026-03-07"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T10:59:09.774Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772967681499_g3j8og",
+      "name": "te",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T11:01:21.499Z",
+      "completedAt": "2026-03-08T11:02:33.597Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T11:02:00.620Z",
+      "lastMessageAt": "2026-03-08T11:02:02.203Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772968035636_9a2x98",
+      "name": "te",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T11:07:15.636Z",
+      "completedAt": "2026-03-08T11:10:50.652Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 0,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T11:08:04.097Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772968254512_t7kipr",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T11:10:54.512Z",
+      "completedAt": "2026-03-08T11:26:35.532Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T11:10:54.513Z",
+      "lastMessageAt": "2026-03-08T11:13:45.762Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772969217369_pbryov",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T11:26:57.369Z",
+      "completedAt": "2026-03-08T11:30:12.144Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 6,
+      "updatedAt": "2026-03-08T11:26:57.370Z",
+      "lastMessageAt": "2026-03-08T11:29:33.579Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772969431501_6tmek3",
+      "name": "Novo ciclo 08/03/2026, 08:30",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T11:30:31.502Z",
+      "completedAt": "2026-03-08T11:53:43.774Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T11:47:00.457Z",
+      "lastMessageAt": "2026-03-08T11:52:21.113Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772971045478_guify8",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T11:57:25.478Z",
+      "completedAt": "2026-03-08T11:59:00.257Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T11:57:25.479Z",
+      "lastMessageAt": "2026-03-08T11:57:57.960Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772971155823_c5qleh",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T11:59:15.823Z",
+      "completedAt": "2026-03-08T12:12:40.140Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T11:59:15.824Z",
+      "lastMessageAt": "2026-03-08T11:59:53.995Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772971969170_p2g25f",
+      "name": "te",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T12:12:49.170Z",
+      "completedAt": "2026-03-08T12:14:52.359Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T12:12:49.171Z",
+      "lastMessageAt": "2026-03-08T12:13:06.113Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772972859116_w9dl00",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T12:27:39.116Z",
+      "completedAt": "2026-03-08T12:36:10.922Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T12:27:39.117Z",
+      "lastMessageAt": "2026-03-08T12:27:48.037Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772973373792_m1fcem",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T12:36:13.792Z",
+      "completedAt": "2026-03-08T12:45:39.758Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T12:36:18.020Z",
+      "lastMessageAt": "2026-03-08T12:36:30.361Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772974194493_wcnvfc",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T12:49:54.493Z",
+      "completedAt": "2026-03-08T12:51:31.539Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T12:49:54.494Z",
+      "lastMessageAt": "2026-03-08T12:50:36.866Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772974302247_hiocqt",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T12:51:42.247Z",
+      "completedAt": "2026-03-08T13:04:07.637Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T12:51:42.247Z",
+      "lastMessageAt": "2026-03-08T12:52:01.300Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772975050591_8kf6z3",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T13:04:10.591Z",
+      "completedAt": "2026-03-08T13:26:14.400Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T13:04:13.084Z",
+      "lastMessageAt": "2026-03-08T13:04:28.335Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772976382823_mk8zaz",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-08T13:26:22.823Z",
+      "completedAt": "2026-03-08T13:57:27.401Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 0,
+        "dataInicio": "2026-03-08"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T13:26:22.824Z",
+      "lastMessageAt": "2026-03-08T13:26:30.413Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1772978291641_gw7kvo",
+      "name": "Módulo - Semana 2",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-08T13:58:11.641Z",
+      "completedAt": null,
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 1,
+        "dataInicio": "2026-03-09"
+      },
+      "sentCount": 1,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-08T13:58:11.642Z",
+      "lastMessageAt": "2026-03-08T18:53:30.385Z"
+    }
+  ]
+}
