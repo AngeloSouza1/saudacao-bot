@@ -381,7 +381,7 @@ function validateAgendaSemanal(agendaSemanal) {
 
 function normalizeAgendaSemanal(agendaSemanal) {
   const normalized = {};
-  const days = Object.keys(agendaSemanal || {}).sort((a, b) => Number(a) - Number(b));
+  const days = Object.keys(agendaSemanal || {});
 
   for (const day of days) {
     const aulasRaw = Array.isArray(agendaSemanal[day]) ? agendaSemanal[day] : [agendaSemanal[day]];
@@ -395,7 +395,6 @@ function normalizeAgendaSemanal(agendaSemanal) {
       return { titulo, materia, professor, hora };
     });
 
-    aulasNormalized.sort((a, b) => a.hora.localeCompare(b.hora));
     normalized[String(day)] = aulasNormalized;
   }
 
@@ -558,6 +557,43 @@ function getScheduleSummaryForPreview(config) {
     });
 }
 
+function getPreviewReferenceDate(state) {
+  const parsedStart = parseDateOnly(String(state?.dataInicio || "").trim());
+  if (parsedStart instanceof Date && !Number.isNaN(parsedStart.getTime())) {
+    return parsedStart;
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
+function sortPreviewSummaryLikeLessonsModal(summary, state) {
+  const list = Array.isArray(summary) ? summary : [];
+  if (!list.length) return [];
+
+  const referenceDate = getPreviewReferenceDate(state);
+  const weekdayOccurrenceMap = new Map();
+  const rows = list.map((item, index) => {
+    const nextDate = computeNextScheduledDate(item?.dia, item?.horario, referenceDate);
+    const dayKey = String(item?.dia || "");
+    const occurrenceIndex = Number(weekdayOccurrenceMap.get(dayKey) || 0);
+    if (nextDate instanceof Date && occurrenceIndex > 0) {
+      nextDate.setDate(nextDate.getDate() + (occurrenceIndex * 7));
+    }
+    weekdayOccurrenceMap.set(dayKey, occurrenceIndex + 1);
+    return { item, index, nextDate };
+  });
+
+  rows.sort((a, b) => {
+    const left = a.nextDate instanceof Date ? a.nextDate.getTime() : Number.POSITIVE_INFINITY;
+    const right = b.nextDate instanceof Date ? b.nextDate.getTime() : Number.POSITIVE_INFINITY;
+    if (left !== right) return left - right;
+    return a.index - b.index;
+  });
+
+  return rows.map((row) => row.item);
+}
+
 function buildAgendaItemKey(item) {
   const cycleId = String(item?.cycleId || "no-cycle");
   return [
@@ -606,10 +642,14 @@ function isAgendaItemDone(item, index, doneCount, now, revertedSet) {
 
 function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly = false) {
   const cycleId = String(activeCycle?.id || "no-cycle");
+  const sortedSummary = sortPreviewSummaryLikeLessonsModal(
+    getScheduleSummaryForPreview(config),
+    state
+  );
   const preview = buildSchedulePreview(
     config,
     state,
-    getScheduleSummaryForPreview(config),
+    sortedSummary,
     activeCycle ? Number(activeCycle.totalAlunos || 0) : null,
     cycleId,
     activeCycle ? Number(activeCycle.sentCount || 0) : 0
@@ -1145,10 +1185,14 @@ export function getDashboardState() {
     state.updatedAt = new Date().toISOString();
     saveState(state);
   }
+  const sortedSummary = sortPreviewSummaryLikeLessonsModal(
+    getScheduleSummaryForPreview(config),
+    state
+  );
   const schedulePreview = buildSchedulePreview(
     config,
     state,
-    scheduleSummary,
+    sortedSummary,
     activeCycle ? Number(activeCycle.totalAlunos || 0) : null,
     String(activeCycle?.id || "no-cycle"),
     activeCycle ? Number(activeCycle.sentCount || 0) : 0
