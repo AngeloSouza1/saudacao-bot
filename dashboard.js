@@ -3024,18 +3024,24 @@ function pageHtml() {
 
     function renderModalLessons() {
       if (!modalEls.lessons) return;
-      const fallbackToday = new Date();
-      fallbackToday.setHours(0, 0, 0, 0);
-      const stateStartDate = parseDateOnly(String(latestStatusData?.state?.dataInicio || "").trim());
-      const inputStartDate = parseDateOnly(String(els.startDate?.value || "").trim());
-      const futureStartDate = [stateStartDate, inputStartDate]
-        .filter((date) => date instanceof Date && !Number.isNaN(date.getTime()))
-        .find((date) => date.getTime() > fallbackToday.getTime());
-      const referenceDate =
-        futureStartDate || fallbackToday;
+      // Base principal: data de início do ciclo/configuração.
+      // Fallback: hoje (00:00) apenas se não houver data de início válida.
+      const startDateRaw = String(latestStatusData?.state?.dataInicio || "").trim();
+      const parsedStartDate = parseDateOnly(startDateRaw);
+      const referenceDate = parsedStartDate || new Date();
+      if (!parsedStartDate) {
+        referenceDate.setHours(0, 0, 0, 0);
+      }
+      const weekdayOccurrenceMap = new Map();
 
       const sourceRows = (Array.isArray(modalData?.lessons) ? modalData.lessons : []).map((lesson, index) => {
         const nextDate = computeNextScheduledDate(lesson.dia, lesson.hora, referenceDate);
+        const dayKey = String(lesson?.dia || "");
+        const occurrenceIndex = Number(weekdayOccurrenceMap.get(dayKey) || 0);
+        if (nextDate instanceof Date && occurrenceIndex > 0) {
+          nextDate.setDate(nextDate.getDate() + (occurrenceIndex * 7));
+        }
+        weekdayOccurrenceMap.set(dayKey, occurrenceIndex + 1);
         return {
           lesson,
           index,
