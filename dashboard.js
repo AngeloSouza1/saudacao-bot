@@ -367,6 +367,11 @@ function pageHtml() {
       border: 1px solid var(--line);
       box-shadow: none;
     }
+    button.secondary.active {
+      background: #e7f2e7;
+      border-color: #7ea98a;
+      font-weight: 700;
+    }
     button.icon-btn {
       width: 44px;
       min-width: 44px;
@@ -2982,7 +2987,6 @@ function pageHtml() {
           });
         });
       });
-      lessons.sort((a, b) => (Number(a.dia) - Number(b.dia)) || String(a.hora).localeCompare(String(b.hora)));
       modalData = { alunos: [...alunos], lessons };
     }
 
@@ -3020,10 +3024,33 @@ function pageHtml() {
 
     function renderModalLessons() {
       if (!modalEls.lessons) return;
-      const rows = (Array.isArray(modalData?.lessons) ? modalData.lessons : []).map((lesson, index) =>
+      const referenceDate =
+        parseDateOnly(String(els.startDate?.value || "").trim()) ||
+        parseDateOnly(String(latestStatusData?.state?.dataInicio || "").trim()) ||
+        new Date();
+
+      const sourceRows = (Array.isArray(modalData?.lessons) ? modalData.lessons : []).map((lesson, index) => {
+        const nextDate = computeNextScheduledDate(lesson.dia, lesson.hora, referenceDate);
+        return {
+          lesson,
+          index,
+          nextDate,
+          nextDateLabel: nextDate ? formatDatePtBr(nextDate) : "-"
+        };
+      });
+
+      const rowsToRender = [...sourceRows].sort((a, b) => {
+        const left = a.nextDate instanceof Date ? a.nextDate.getTime() : Number.POSITIVE_INFINITY;
+        const right = b.nextDate instanceof Date ? b.nextDate.getTime() : Number.POSITIVE_INFINITY;
+        if (left !== right) return left - right;
+        return a.index - b.index;
+      });
+
+      const rows = rowsToRender.map(({ lesson, index, nextDateLabel }) =>
         "<tr>" +
           "<td>" + dayLabel(lesson.dia) + "</td>" +
           "<td>" + String(lesson.hora || "") + "</td>" +
+          "<td>" + nextDateLabel + "</td>" +
           "<td>" + escapeHtml(String(lesson.titulo || "")) + "</td>" +
           "<td>" + String(lesson.materia || "") + "</td>" +
           "<td>" + String(lesson.professor || "") + "</td>" +
@@ -3032,8 +3059,8 @@ function pageHtml() {
         "</tr>"
       );
       modalEls.lessons.innerHTML =
-        '<table class="table"><thead><tr><th>Dia</th><th>Hora</th><th>Título</th><th>Matéria</th><th>Professor</th><th></th><th></th></tr></thead><tbody>' +
-        (rows.join("") || '<tr><td colspan="7" class="muted">Sem aulas cadastradas.</td></tr>') +
+        '<table class="table"><thead><tr><th>Dia</th><th>Hora</th><th>Próxima data</th><th>Título</th><th>Matéria</th><th>Professor</th><th></th><th></th></tr></thead><tbody>' +
+        (rows.join("") || '<tr><td colspan="8" class="muted">Sem aulas cadastradas.</td></tr>') +
         "</tbody></table>";
     }
 
@@ -3525,7 +3552,6 @@ function pageHtml() {
           });
         });
       });
-      rows.sort((a, b) => (a.dia !== b.dia ? Number(a.dia) - Number(b.dia) : a.hora.localeCompare(b.hora)));
       return rows;
     }
 
@@ -3974,7 +4000,6 @@ function pageHtml() {
       const lesson = validateLessonFormAndMark();
       if (!lesson) return;
       modalData.lessons.push(lesson);
-      modalData.lessons.sort((a, b) => (Number(a.dia) - Number(b.dia)) || String(a.hora).localeCompare(String(b.hora)));
       try {
         await persistAgendaFromModal("Aula adicionada.");
         clearLessonInputs();
@@ -3990,7 +4015,6 @@ function pageHtml() {
       const lesson = validateLessonFormAndMark();
       if (!lesson) return;
       modalData.lessons[editingLessonIndex] = lesson;
-      modalData.lessons.sort((a, b) => (Number(a.dia) - Number(b.dia)) || String(a.hora).localeCompare(String(b.hora)));
       try {
         await persistAgendaFromModal("Aula atualizada.");
         editingLessonIndex = -1;
@@ -4491,7 +4515,6 @@ function pageHtml() {
       }
 
       easyAgendaRows.push(row);
-      easyAgendaRows.sort((a, b) => (a.dia !== b.dia ? Number(a.dia) - Number(b.dia) : a.hora.localeCompare(b.hora)));
       renderEasyAgendaTable();
       els.easyHora.value = "";
       els.easyMateria.value = "";
