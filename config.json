@@ -80,7 +80,7 @@
     "João Vitor Gomes Oliveira Rodrigues Resende"
   ],
   "antecedenciaMin": 200,
-  "diasUteisApenas": false,
+  "diasUteisApenas": true,
   "imagePath": "risecode.png",
   "mediaAsDocument": false,
   "mediaFileName": "Saudacao-RiseCode.png",

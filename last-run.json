@@ -1,8 +1,6 @@
 {
-  "type": "scheduled",
+  "type": "test",
   "skipped": false,
-  "aluno": "Angelo Souza",
-  "materia": "Redes e Internet",
-  "messageId": "true_120363423174718536@g.us_3EB014BC723DB139B64E36_138469896626257@lid",
-  "sentAt": "2026-03-08T18:53:30.385Z"
+  "messageId": "true_120363423174718536@g.us_3EB0E6299B597A7171E7C3_138469896626257@lid",
+  "sentAt": "2026-03-09T14:31:07.560Z"
 }
