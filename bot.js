@@ -471,11 +471,9 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
   const scheduleItems = Array.isArray(summary) ? summary : [];
   if (!scheduleItems.length) return [];
 
-  const idxAulaBase = Number(state?.idxAula || 0);
-
-  const orderedScheduleItems = scheduleItems.map((_, index) =>
-    scheduleItems[((idxAulaBase + index) % scheduleItems.length + scheduleItems.length) % scheduleItems.length]
-  );
+  // A prévia deve seguir a mesma ordem visual do editor de aulas (Adicionar Aula).
+  // O avanço de idxAula continua valendo apenas para o envio em runtime.
+  const orderedScheduleItems = scheduleItems;
 
   const startDate = parseDateOnly(state?.dataInicio);
   const timelineStart = startDate || new Date();

@@ -2266,7 +2266,7 @@ function pageHtml() {
         tituloPart +
         " | " + item.materia +
         " | " + item.professor +
-        " | Próximo aluno: aluno: " + item.alunoPrevisto
+        " | Próximo aluno: " + item.alunoPrevisto
       );
     }
 
