@@ -239,8 +239,9 @@ function markCycleMessageSent(alunoEfetivado = "", agendaItemKey = "") {
     const state = getStateNormalized();
     const alunos = Array.isArray(config?.alunos) ? config.alunos : [];
     if (alunos.includes(aluno)) {
-      state.ordemVinculadaCiclo = getCycleLinkedOrder(config, state, Number(active.totalAlunos || 0))
-        .filter((name) => name !== aluno);
+      // Regra de negócio:
+      // ao enviar, NÃO reordena/troca alunos automaticamente.
+      // Apenas registra qual linha foi efetivada.
       const efetivados = Array.isArray(state.efetivadosCiclo) ? [...state.efetivadosCiclo] : [];
       efetivados.push(aluno);
       state.efetivadosCiclo = efetivados;
@@ -507,10 +508,6 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
       .map((item) => [String(item?.itemKey || ""), String(item?.aluno || "").trim()])
       .filter(([key, aluno]) => key && aluno)
   );
-  const efetivadosCiclo = Array.isArray(state?.efetivadosCiclo)
-    ? state.efetivadosCiclo.map((item) => String(item || "").trim()).filter(Boolean)
-    : [];
-
   for (let index = 0; index < totalLinhas; index += 1) {
     const item = orderedScheduleItems[index % Math.max(orderedScheduleItems.length, 1)];
     if (!item) break;
@@ -553,9 +550,23 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
     const dateTs = new Date(row.scheduledDateISO).getTime();
     return Number.isFinite(dateTs) && dateTs <= nowTs;
   });
-  const dateDoneCount = dateDoneFlags.filter(Boolean).length;
-  let remainingCountDone = Math.max(0, doneCountBase - dateDoneCount);
-  const sentQueue = [...efetivadosCiclo];
+  const reservedManualNames = new Set(
+    Array.from(manualEffectiveMap.values())
+      .map((item) => String(item || "").trim())
+      .filter(Boolean)
+  );
+  const usedNames = new Set();
+  const pullNextUnique = (queue, options = {}) => {
+    const allowReserved = Boolean(options.allowReserved);
+    while (queue.length) {
+      const candidate = String(queue.shift() || "").trim();
+      if (!candidate) continue;
+      if (usedNames.has(candidate)) continue;
+       if (!allowReserved && reservedManualNames.has(candidate)) continue;
+      return candidate;
+    }
+    return "";
+  };
 
   for (const row of baseRows) {
     const idx = Number(row.index || 0);
@@ -563,31 +574,25 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
     const alunoManual = manualEffectiveMap.get(key);
     const manualEfetivado = Boolean(alunoManual && !revertedSet.has(key));
     const doneByDate = dateDoneFlags[idx];
-    const doneByCount = !manualEfetivado && !doneByDate && remainingCountDone > 0;
-    if (doneByCount) {
-      remainingCountDone -= 1;
-    }
-    const done = manualEfetivado || doneByCount || doneByDate;
+    const done = manualEfetivado || doneByDate;
 
     let alunoPrevisto = "";
     if (manualEfetivado) {
-      alunoPrevisto = alunoManual;
+      alunoPrevisto = !usedNames.has(alunoManual) ? alunoManual : "";
       const queueIndex = pendingQueue.indexOf(alunoPrevisto);
       if (queueIndex >= 0) {
         pendingQueue.splice(queueIndex, 1);
       }
-      const sentIndex = sentQueue.indexOf(alunoPrevisto);
-      if (sentIndex >= 0) {
-        sentQueue.splice(sentIndex, 1);
-      }
-    } else if (done) {
-      alunoPrevisto = sentQueue.shift() || pendingQueue.shift() || "efetivado";
-      const queueIndex = pendingQueue.indexOf(alunoPrevisto);
-      if (queueIndex >= 0) {
-        pendingQueue.splice(queueIndex, 1);
-      }
+    } else if (doneByDate) {
+      // Regra importante:
+      // "efetivado por data" não deve deslocar a fila pendente nem trocar alunos futuros.
+      // Só marca visualmente como efetivado.
+      alunoPrevisto = "efetivado";
     } else {
-      alunoPrevisto = pendingQueue.shift() || "não definido";
+      alunoPrevisto = pullNextUnique(pendingQueue) || "não definido";
+    }
+    if (alunoPrevisto && alunoPrevisto !== "efetivado" && alunoPrevisto !== "não definido") {
+      usedNames.add(alunoPrevisto);
     }
 
     preview.push({
@@ -1081,7 +1086,22 @@ export async function runNowForced() {
     state.idxAula = (idxAulaBase + 1) % aulas.length;
     saveState(state);
 
-    const aluno = pickAluno();
+    let aluno = "";
+    let itemKeyFromCycle = "";
+    const cycles = completeActiveCycleIfNeeded(loadCycles());
+    const active = getActiveCycle(cycles);
+    if (active) {
+      const picked = pickAlunoFromActiveCyclePreview(config, state, active);
+      aluno = String(picked?.aluno || "").trim();
+      itemKeyFromCycle = String(picked?.itemKey || "").trim();
+      if (aluno) {
+        consumeAlunoFromGlobalQueue(state, config.alunos || [], aluno);
+        saveState(state);
+      }
+    }
+    if (!aluno) {
+      aluno = pickAluno();
+    }
     const text = buildMessage(aula, aluno);
     const cardData = {
       turma: String(config.turma || ""),
@@ -1092,7 +1112,7 @@ export async function runNowForced() {
       horario: String(aula.hora || "")
     };
     const message = await sendBotMessage(text, cardData);
-    markCycleMessageSent(aluno);
+    markCycleMessageSent(aluno, itemKeyFromCycle);
 
     saveLastRun({
       type: "forced",
@@ -1669,7 +1689,10 @@ export function revertEffectiveItem(aluno, itemKey) {
   linkedPending.push(normalizedAluno);
   state.ordemVinculadaCiclo = linkedPending;
   if (Array.isArray(state.efetivadosCiclo) && state.efetivadosCiclo.length) {
-    state.efetivadosCiclo = state.efetivadosCiclo.slice(0, -1);
+    const idxEfetivado = state.efetivadosCiclo.lastIndexOf(normalizedAluno);
+    if (idxEfetivado >= 0) {
+      state.efetivadosCiclo.splice(idxEfetivado, 1);
+    }
   }
 
   const normalizedKey = normalizeAgendaItemKey(itemKey);
@@ -1762,7 +1785,10 @@ export function replaceEffectiveAluno(alunoPrevisto, itemKey, alunoEfetivado) {
   state.ordemProximosAlunos = merged;
   state.ordemVinculadaCiclo = linkedPending;
   if (Array.isArray(state.efetivadosCiclo) && state.efetivadosCiclo.length) {
-    state.efetivadosCiclo[state.efetivadosCiclo.length - 1] = performer;
+    const idxOriginal = state.efetivadosCiclo.lastIndexOf(original);
+    if (idxOriginal >= 0) {
+      state.efetivadosCiclo[idxOriginal] = performer;
+    }
   }
   state.updatedAt = new Date().toISOString();
   saveState(state);
