@@ -4040,7 +4040,7 @@ function pageHtml() {
           const confirmed = await openConfirmModal({
             title: "Excluir aula",
             message: lessonLabel
-              ? 'Deseja realmente excluir esta aula?\n' + lessonLabel
+              ? 'Deseja realmente excluir esta aula?\\n' + lessonLabel
               : "Deseja realmente excluir esta aula?",
             confirmLabel: "Excluir aula"
           });
