@@ -2,60 +2,76 @@
   "turma": "RiseCode",
   "instituicao": "AlphaTech",
   "agendaSemanal": {
-    "0": [
-      {
-        "titulo": "",
-        "materia": "Redes e Internet",
-        "professor": "dfsd",
-        "hora": "23:00"
-      }
-    ],
     "1": [
       {
-        "titulo": "teste",
-        "materia": "Matéria 1",
-        "professor": "Professor 1",
+        "titulo": "Protocolos de Comunicação em Redes",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
         "hora": "20:00"
-      }
-    ],
-    "2": [
+      },
       {
-        "titulo": "",
-        "materia": "Materia 2",
-        "professor": "Professor 2",
+        "titulo": "DNS (Domain Name System)",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
+        "hora": "20:00"
+      },
+      {
+        "titulo": "Segurança de Redes",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
         "hora": "20:00"
       }
     ],
     "3": [
       {
-        "titulo": "",
-        "materia": "Materia 3",
-        "professor": "Professor 3",
+        "titulo": "Aula de Apresentação",
+        "materia": "Introdução às Redes e à Internet",
+        "professor": "Prof. Kenji",
         "hora": "20:00"
-      }
-    ],
-    "4": [
+      },
       {
-        "titulo": "",
-        "materia": "Materia 4",
-        "professor": "Professor 4",
+        "titulo": "Endereçamento de IP, Sub-redes",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
+        "hora": "20:00"
+      },
+      {
+        "titulo": "Arquitetura da Internet",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
+        "hora": "20:00"
+      },
+      {
+        "titulo": "Segurança na Web",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
         "hora": "20:00"
       }
     ],
     "5": [
       {
-        "titulo": "",
-        "materia": "Materia 5",
-        "professor": "Professor 5",
+        "titulo": "Conceitos fundamentais de redes de computadores",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
         "hora": "20:00"
-      }
-    ],
-    "6": [
+      },
       {
-        "titulo": "teste",
-        "materia": "Materia",
-        "professor": "Prof. Carlos",
-        "hora": "00:00"
+        "titulo": "Serviços e Aplicações na Internet",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
+        "hora": "20:00"
+      },
+      {
+        "titulo": "Rede de Computadores",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
+        "hora": "20:00"
+      },
+      {
+        "titulo": "Tendências e Desafios nas Redes Modernas",
+        "materia": "Redes e Internet",
+        "professor": "Prof. Kenji",
+        "hora": "20:00"
       }
     ]
   },
@@ -79,7 +95,7 @@
     "João Marcos Basilio Sales",
     "João Vitor Gomes Oliveira Rodrigues Resende"
   ],
-  "antecedenciaMin": 200,
+  "antecedenciaMin": 360,
   "diasUteisApenas": true,
   "imagePath": "risecode.png",
   "mediaAsDocument": false,

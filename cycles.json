@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "",
+  "activeCycleId": "cycle_1773072488709_m7kb0t",
   "cycles": [
     {
       "id": "cycle_1772822439144_fdl8wi",
@@ -1045,6 +1045,76 @@
       "lastMessageAt": "2026-03-09T14:17:01.888Z",
       "canceled": true,
       "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773070279787_nlgdrm",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T15:31:19.787Z",
+      "completedAt": "2026-03-09T16:03:21.083Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 7,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 0,
+      "totalAlunos": 4,
+      "updatedAt": "2026-03-09T16:03:19.083Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773072203211_qxtjyt",
+      "name": "Novo ciclo 09/03/2026, 13:03",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T16:03:23.221Z",
+      "completedAt": "2026-03-09T16:07:55.695Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 1,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 0,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T16:07:46.509Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773072477706_97ghjh",
+      "name": "Novo ciclo 09/03/2026, 13:07",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T16:07:57.706Z",
+      "completedAt": "2026-03-09T16:08:02.423Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 0,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T16:07:57.707Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773072488709_m7kb0t",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-09T16:08:08.709Z",
+      "completedAt": null,
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 0,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T16:08:08.709Z"
     }
   ]
 }
