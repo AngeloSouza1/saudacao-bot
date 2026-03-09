@@ -1915,6 +1915,7 @@ function pageHtml() {
     const lockFeedbackEl = document.getElementById("lock-feedback");
     const btnUnlock = document.getElementById("btn-unlock");
     const MIN_APP_LOADING_MS = 3000;
+    const MAX_APP_LOADING_MS = 20000;
     let appLoadingStartedAt = Date.now();
     let appLoadingHideTimer = null;
     let initialStatusLoaded = false;
@@ -3698,6 +3699,16 @@ function pageHtml() {
       loadingEl.classList.add("hidden");
     }
 
+    function forceHideAppLoading() {
+      if (!loadingEl) return;
+      if (appLoadingHideTimer) {
+        clearTimeout(appLoadingHideTimer);
+        appLoadingHideTimer = null;
+      }
+      appReadyShown = true;
+      loadingEl.classList.add("hidden");
+    }
+
     function showAppLoading(title, text) {
       if (!loadingEl) return;
       if (appLoadingHideTimer) {
@@ -3785,6 +3796,16 @@ function pageHtml() {
     function updateAppReadinessGate(data) {
       if (appReadyShown) return;
       const cardsHydrated = areMainCardsHydrated();
+      const phase = String(data?.whatsapp?.phase || "");
+      const needsQrLogin = shouldShowWhatsAppLogin(phase);
+
+      if (needsQrLogin) {
+        renderLoadingChecklist(data, []);
+        showAppLoading("Aguardando login do WhatsApp", "Escaneie o QR Code para continuar.");
+        hideAppLoading();
+        return;
+      }
+
       if (cardsHydrated) {
         renderLoadingChecklist(data, []);
         showAppLoading("Finalizando carregamento", "Quase pronto...");
@@ -3807,7 +3828,6 @@ function pageHtml() {
         showAppLoading("Carregando aplicação", "Aguardando dados iniciais do painel.");
         return;
       }
-      const phase = String(data?.whatsapp?.phase || "");
       const whatsappReady = phase === "ready" || phase === "authenticated";
       const pending = getPendingRequiredItems(data);
       renderLoadingChecklist(data, pending);
@@ -4813,6 +4833,12 @@ function pageHtml() {
     // Exibe feedback de carregamento imediatamente, mesmo em boots rápidos.
     renderLoadingChecklist(null, []);
     showAppLoading("Carregando aplicação", "Iniciando serviços do painel...");
+    setTimeout(() => {
+      if (!appReadyShown && loadingEl && !loadingEl.classList.contains("hidden")) {
+        setLog("Inicialização demorou além do esperado. Liberando painel automaticamente.", true);
+        forceHideAppLoading();
+      }
+    }, MAX_APP_LOADING_MS);
 
     bindCardAccessModals();
 
