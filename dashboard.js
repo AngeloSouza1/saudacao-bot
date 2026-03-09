@@ -3024,10 +3024,15 @@ function pageHtml() {
 
     function renderModalLessons() {
       if (!modalEls.lessons) return;
+      const fallbackToday = new Date();
+      fallbackToday.setHours(0, 0, 0, 0);
+      const stateStartDate = parseDateOnly(String(latestStatusData?.state?.dataInicio || "").trim());
+      const inputStartDate = parseDateOnly(String(els.startDate?.value || "").trim());
+      const futureStartDate = [stateStartDate, inputStartDate]
+        .filter((date) => date instanceof Date && !Number.isNaN(date.getTime()))
+        .find((date) => date.getTime() > fallbackToday.getTime());
       const referenceDate =
-        parseDateOnly(String(els.startDate?.value || "").trim()) ||
-        parseDateOnly(String(latestStatusData?.state?.dataInicio || "").trim()) ||
-        new Date();
+        futureStartDate || fallbackToday;
 
       const sourceRows = (Array.isArray(modalData?.lessons) ? modalData.lessons : []).map((lesson, index) => {
         const nextDate = computeNextScheduledDate(lesson.dia, lesson.hora, referenceDate);
