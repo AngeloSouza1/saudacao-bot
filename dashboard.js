@@ -3927,7 +3927,12 @@ function pageHtml() {
           const idx = Number(removeIdx);
           if (!Number.isInteger(idx) || idx < 0 || idx >= modalData.alunos.length) return;
           const removed = String(modalData.alunos[idx] || "");
-          if (!confirm('Deseja excluir o aluno "' + removed + '"?')) return;
+          const confirmed = await openConfirmModal({
+            title: "Excluir aluno",
+            message: 'Deseja realmente excluir o aluno "' + removed + '" da lista?',
+            confirmLabel: "Excluir aluno"
+          });
+          if (!confirmed) return;
           modalData.alunos.splice(idx, 1);
           try {
             await persistAgendaFromModal("Aluno removido.");
@@ -3993,7 +3998,33 @@ function pageHtml() {
         if (removeIdx !== undefined) {
           const idx = Number(removeIdx);
           if (!Number.isInteger(idx) || idx < 0 || idx >= modalData.lessons.length) return;
-          if (!confirm("Deseja excluir esta aula?")) return;
+          const lesson = modalData.lessons[idx] || {};
+          const dayNames = {
+            "0": "Domingo",
+            "1": "Segunda",
+            "2": "Terça",
+            "3": "Quarta",
+            "4": "Quinta",
+            "5": "Sexta",
+            "6": "Sábado"
+          };
+          const dayLabel = dayNames[String(lesson?.dia ?? "")] || "Dia";
+          const lessonLabel = [
+            dayLabel,
+            String(lesson?.hora || "").trim(),
+            String(lesson?.titulo || "").trim(),
+            String(lesson?.materia || "").trim()
+          ]
+            .filter(Boolean)
+            .join(" | ");
+          const confirmed = await openConfirmModal({
+            title: "Excluir aula",
+            message: lessonLabel
+              ? 'Deseja realmente excluir esta aula?\n' + lessonLabel
+              : "Deseja realmente excluir esta aula?",
+            confirmLabel: "Excluir aula"
+          });
+          if (!confirmed) return;
           modalData.lessons.splice(idx, 1);
           try {
             await persistAgendaFromModal("Aula removida.");
