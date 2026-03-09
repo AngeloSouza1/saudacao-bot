@@ -2363,23 +2363,13 @@ function pageHtml() {
       );
       let pendingIndex = 0;
       agendaPendingRowsCache = [];
-      const doneRows = [];
-      const pendingRows = [];
-      const revertedPendingRows = [];
-      const doneStudents = new Set();
+      const orderedRows = [];
 
       agendaItemsCache.forEach((item, index) => {
         const alunoNome = String(item?.alunoPrevisto || "").trim();
         const itemKey = buildAgendaItemKey(item);
-        const wasReverted = Boolean(itemKey && revertedSet.has(itemKey));
         const done = isAgendaItemDone(item, index, doneCount, now, revertedSet);
         if (!done && linkedSet.size && alunoNome && !linkedSet.has(alunoNome)) {
-          return;
-        }
-        if (done && alunoNome) {
-          doneStudents.add(alunoNome);
-        }
-        if (!done && alunoNome && doneStudents.has(alunoNome)) {
           return;
         }
         const icon = done ? "☑" : "•";
@@ -2415,15 +2405,12 @@ function pageHtml() {
             actions +
           "</div>" +
         "</li>";
-        if (done) {
-          doneRows.push(row);
-        } else if (wasReverted) {
-          revertedPendingRows.push(row);
-        } else {
-          pendingRows.push(row);
-        }
+        // Mantém a ordem original da agenda:
+        // cada linha mostra apenas seu status (efetivado/pendente),
+        // sem mover "efetivados" para um bloco separado.
+        orderedRows.push(row);
       });
-      const content = doneRows.concat(pendingRows, revertedPendingRows).join("");
+      const content = orderedRows.join("");
       agendaViewEls.list.innerHTML = content
         ? "<ul>" + content + "</ul>"
         : '<div class="muted-small">Sem agenda carregada.</div>';

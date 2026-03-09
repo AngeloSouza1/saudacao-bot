@@ -24,12 +24,6 @@
     ],
     "3": [
       {
-        "titulo": "Aula de Apresentação",
-        "materia": "Introdução às Redes e à Internet",
-        "professor": "Prof. Kenji",
-        "hora": "20:00"
-      },
-      {
         "titulo": "Endereçamento de IP, Sub-redes",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
@@ -49,12 +43,6 @@
       }
     ],
     "5": [
-      {
-        "titulo": "Conceitos fundamentais de redes de computadores",
-        "materia": "Redes e Internet",
-        "professor": "Prof. Kenji",
-        "hora": "20:00"
-      },
       {
         "titulo": "Serviços e Aplicações na Internet",
         "materia": "Redes e Internet",
@@ -95,7 +83,7 @@
     "João Marcos Basilio Sales",
     "João Vitor Gomes Oliveira Rodrigues Resende"
   ],
-  "antecedenciaMin": 198,
+  "antecedenciaMin": 264,
   "diasUteisApenas": true,
   "imagePath": "risecode.png",
   "mediaAsDocument": false,
