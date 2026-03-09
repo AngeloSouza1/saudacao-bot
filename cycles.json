@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "cycle_1773072488709_m7kb0t",
+  "activeCycleId": "cycle_1773084716294_671l2n",
   "cycles": [
     {
       "id": "cycle_1772822439144_fdl8wi",
@@ -1103,10 +1103,29 @@
     {
       "id": "cycle_1773072488709_m7kb0t",
       "name": "Introdução e conceitos básicos sobre web",
-      "status": "active",
+      "status": "completed",
       "reason": "manual",
       "createdAt": "2026-03-09T16:08:08.709Z",
-      "completedAt": null,
+      "completedAt": "2026-03-09T18:17:52.627Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 3,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T16:08:08.709Z",
+      "lastMessageAt": "2026-03-09T17:00:00.926Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773080295795_8j1fim",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:18:15.795Z",
+      "completedAt": "2026-03-09T18:22:56.534Z",
       "start": {
         "idxAluno": 0,
         "idxAula": 3,
@@ -1114,7 +1133,271 @@
       },
       "sentCount": 0,
       "totalAlunos": 11,
-      "updatedAt": "2026-03-09T16:08:08.709Z"
+      "updatedAt": "2026-03-09T18:18:15.796Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773080585221_6adfh7",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:23:05.221Z",
+      "completedAt": "2026-03-09T18:24:13.576Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 0,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:23:05.221Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773080662134_z8yhus",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:24:22.134Z",
+      "completedAt": "2026-03-09T18:31:29.749Z",
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 2,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 2,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:30:58.750Z",
+      "lastMessageAt": "2026-03-09T18:30:45.881Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773081093284_cy2cr6",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:31:33.284Z",
+      "completedAt": "2026-03-09T18:31:59.783Z",
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 1,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:31:33.285Z",
+      "lastMessageAt": "2026-03-09T18:31:37.483Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773081186825_qshblp",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:33:06.825Z",
+      "completedAt": "2026-03-09T18:33:21.409Z",
+      "start": {
+        "idxAluno": 6,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 0,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:33:06.827Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773081212024_510aja",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:33:32.024Z",
+      "completedAt": "2026-03-09T18:34:33.624Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 2,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:33:32.025Z",
+      "lastMessageAt": "2026-03-09T18:34:21.676Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773081301158_suf7yd",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:35:01.158Z",
+      "completedAt": "2026-03-09T18:42:35.568Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 1,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:36:50.667Z",
+      "lastMessageAt": "2026-03-09T18:40:01.388Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773082294153_nvjhfj",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:51:34.153Z",
+      "completedAt": "2026-03-09T18:58:40.872Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 1,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:51:38.001Z",
+      "lastMessageAt": "2026-03-09T18:55:01.046Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773082730846_zqjh14",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T18:58:50.846Z",
+      "completedAt": "2026-03-09T19:00:49.337Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 1,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T18:59:47.056Z",
+      "lastMessageAt": "2026-03-09T19:00:01.862Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773082886637_hmirvz",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T19:01:26.638Z",
+      "completedAt": "2026-03-09T19:04:08.215Z",
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 2,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 2,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T19:03:40.286Z",
+      "lastMessageAt": "2026-03-09T19:02:30.530Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773083064367_8zcn75",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T19:04:24.367Z",
+      "completedAt": "2026-03-09T19:12:50.644Z",
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 1,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 1,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T19:12:27.278Z",
+      "lastMessageAt": "2026-03-09T19:06:00.980Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773083593316_nmmhqx",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T19:13:13.316Z",
+      "completedAt": "2026-03-09T19:26:03.518Z",
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 1,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 2,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T19:14:49.377Z",
+      "lastMessageAt": "2026-03-09T19:16:01.067Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773084410517_8nibr9",
+      "name": "teste",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T19:26:50.517Z",
+      "completedAt": "2026-03-09T19:27:32.444Z",
+      "start": {
+        "idxAluno": 1,
+        "idxAula": 4,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 1,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T19:27:29.379Z",
+      "lastMessageAt": "2026-03-09T19:27:09.499Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773084463801_qailsh",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-09T19:27:43.801Z",
+      "completedAt": "2026-03-09T19:31:51.370Z",
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 4,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 1,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T19:29:21.261Z",
+      "lastMessageAt": "2026-03-09T19:30:00.382Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773084716294_671l2n",
+      "name": "Introdução e conceitos básicos sobre web",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-09T19:31:56.294Z",
+      "completedAt": null,
+      "start": {
+        "idxAluno": 0,
+        "idxAula": 3,
+        "dataInicio": "2026-03-04"
+      },
+      "sentCount": 2,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-09T19:41:19.994Z",
+      "lastMessageAt": "2026-03-09T19:42:01.660Z"
     }
   ]
 }

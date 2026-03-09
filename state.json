@@ -1,13 +1,11 @@
 {
-  "idxAluno": 0,
-  "idxAula": 3,
+  "idxAluno": 3,
+  "idxAula": 2,
   "dataInicio": "2026-03-04",
-  "updatedAt": "2026-03-09T16:08:08.709Z",
+  "updatedAt": "2026-03-09T19:42:01.660Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
-    "Angelo Souza",
     "Bruna Alves",
-    "Clara Helena",
     "Daniel Lucas",
     "Enzo Duarte",
     "Felipe Moreira",
@@ -22,7 +20,8 @@
     "Thalita Nascimento",
     "Wanuta Santos",
     "João Marcos Basilio Sales",
-    "João Vitor Gomes Oliveira Rodrigues Resende"
+    "João Vitor Gomes Oliveira Rodrigues Resende",
+    "Angelo Souza"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,
@@ -30,11 +29,14 @@
     "confirmadoEm": ""
   },
   "revertidosEfetivados": [],
-  "efetivacoesManuais": [],
+  "efetivacoesManuais": [
+    {
+      "itemKey": "cycle_1773084716294_671l2n|2026-03-09T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
+      "aluno": "Clara Helena"
+    }
+  ],
   "ordemVinculadaCiclo": [
-    "Angelo Souza",
     "Bruna Alves",
-    "Clara Helena",
     "Daniel Lucas",
     "Enzo Duarte",
     "Felipe Moreira",
@@ -44,5 +46,8 @@
     "Luana Costa",
     "Matheus Leonardo"
   ],
-  "efetivadosCiclo": []
+  "efetivadosCiclo": [
+    "Angelo Souza",
+    "Clara Helena"
+  ]
 }
