@@ -529,6 +529,7 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
     preview.push({
       dia: item.dia,
       horario: item.horario,
+      titulo: String(item.titulo || ""),
       materia: item.materia,
       professor: item.professor,
       alunoPrevisto: alunoManual || alunoEfetivado || alunoPendente,
@@ -547,6 +548,7 @@ function getScheduleSummaryForPreview(config) {
     .map(({ dia, aula }) => ({
       dia: String(dia),
       horario: String(aula?.hora || ""),
+      titulo: String(aula?.titulo || ""),
       materia: String(aula?.materia || ""),
       professor: String(aula?.professor || "")
     }))

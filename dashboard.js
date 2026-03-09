@@ -2257,10 +2257,13 @@ function pageHtml() {
         nextDate = computeNextScheduledDate(item.dia, item.horario);
       }
       const nextDateLabel = formatDatePtBr(nextDate);
+      const titulo = String(item.titulo || "").trim();
+      const tituloPart = titulo ? " | Título: " + titulo : "";
       return (
         diaNominal +
         (nextDateLabel ? " (" + nextDateLabel + ")" : "") +
         " às " + item.horario +
+        tituloPart +
         " | " + item.materia +
         " | " + item.professor +
         " | Próximo aluno: aluno: " + item.alunoPrevisto
