@@ -228,10 +228,12 @@ function completeActiveCycleIfNeeded(cyclesPayload) {
   return payload;
 }
 
-function markCycleMessageSent(alunoEfetivado = "") {
+function markCycleMessageSent(alunoEfetivado = "", agendaItemKey = "") {
   const payload = loadCycles();
   const active = getActiveCycle(payload);
   const aluno = String(alunoEfetivado || "").trim();
+  const itemKeyRaw = String(agendaItemKey || "").trim();
+  const itemKey = normalizeAgendaItemKey(itemKeyRaw);
   if (active && aluno) {
     const config = loadConfig();
     const state = getStateNormalized();
@@ -242,6 +244,19 @@ function markCycleMessageSent(alunoEfetivado = "") {
       const efetivados = Array.isArray(state.efetivadosCiclo) ? [...state.efetivadosCiclo] : [];
       efetivados.push(aluno);
       state.efetivadosCiclo = efetivados;
+      if (itemKey) {
+        const manual = Array.isArray(state.efetivacoesManuais) ? [...state.efetivacoesManuais] : [];
+        const existingIndex = manual.findIndex((item) => normalizeAgendaItemKey(item?.itemKey) === itemKey);
+        if (existingIndex >= 0) {
+          manual[existingIndex] = { itemKey, aluno };
+        } else {
+          manual.push({ itemKey, aluno });
+        }
+        state.efetivacoesManuais = manual;
+        const reverted = new Set(Array.isArray(state.revertidosEfetivados) ? state.revertidosEfetivados : []);
+        reverted.delete(itemKey);
+        state.revertidosEfetivados = [...reverted];
+      }
       state.updatedAt = new Date().toISOString();
       saveState(state);
     }
@@ -485,7 +500,7 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
   if (!ordemPendentes.length) return [];
   const doneCountBase = Math.max(0, Math.min(Number(sentCount || 0), totalPassos));
   const totalLinhas = Math.min(totalPassos, doneCountBase + ordemPendentes.length);
-  const preview = [];
+  const baseRows = [];
   let cursor = new Date(timelineStart);
   const manualEffectiveMap = new Map(
     (Array.isArray(state?.efetivacoesManuais) ? state.efetivacoesManuais : [])
@@ -496,8 +511,6 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
     ? state.efetivadosCiclo.map((item) => String(item || "").trim()).filter(Boolean)
     : [];
 
-  const doneCount = Math.max(0, Math.min(doneCountBase, totalLinhas));
-
   for (let index = 0; index < totalLinhas; index += 1) {
     const item = orderedScheduleItems[index % Math.max(orderedScheduleItems.length, 1)];
     if (!item) break;
@@ -506,14 +519,6 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
       ? applyTimeOnDate(startDate, item.horario)
       : computeNextScheduledDate(item.dia, item.horario, cursor);
     cursor = new Date(scheduledDate.getTime() + 60 * 1000);
-
-    const pendingOffset = index - doneCount;
-    const alunoEfetivado = index < doneCount
-      ? (efetivadosCiclo[index] || "efetivado")
-      : "";
-    const alunoPendente = pendingOffset >= 0
-      ? (ordemPendentes[pendingOffset] || ordemPendentes[ordemPendentes.length - 1] || "não definido")
-      : "";
     const scheduledDateISO = scheduledDate.toISOString();
     const itemKey = buildAgendaItemKey({
       cycleId,
@@ -522,16 +527,79 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
       professor: item.professor,
       horario: item.horario
     });
-    const alunoManual = manualEffectiveMap.get(itemKey);
-
-    preview.push({
+    baseRows.push({
+      index,
       dia: item.dia,
       horario: item.horario,
       titulo: String(item.titulo || ""),
       materia: item.materia,
       professor: item.professor,
-      alunoPrevisto: alunoManual || alunoEfetivado || alunoPendente,
-      scheduledDateISO
+      scheduledDateISO,
+      itemKey
+    });
+  }
+
+  const preview = [];
+  const pendingQueue = [...ordemPendentes];
+  const revertedSet = new Set(
+    Array.isArray(state?.revertidosEfetivados)
+      ? state.revertidosEfetivados.map((item) => String(item || ""))
+      : []
+  );
+  const nowTs = Date.now();
+  const dateDoneFlags = baseRows.map((row) => {
+    const key = row.itemKey;
+    if (revertedSet.has(key)) return false;
+    const dateTs = new Date(row.scheduledDateISO).getTime();
+    return Number.isFinite(dateTs) && dateTs <= nowTs;
+  });
+  const dateDoneCount = dateDoneFlags.filter(Boolean).length;
+  let remainingCountDone = Math.max(0, doneCountBase - dateDoneCount);
+  const sentQueue = [...efetivadosCiclo];
+
+  for (const row of baseRows) {
+    const idx = Number(row.index || 0);
+    const key = row.itemKey;
+    const alunoManual = manualEffectiveMap.get(key);
+    const manualEfetivado = Boolean(alunoManual && !revertedSet.has(key));
+    const doneByDate = dateDoneFlags[idx];
+    const doneByCount = !manualEfetivado && !doneByDate && remainingCountDone > 0;
+    if (doneByCount) {
+      remainingCountDone -= 1;
+    }
+    const done = manualEfetivado || doneByCount || doneByDate;
+
+    let alunoPrevisto = "";
+    if (manualEfetivado) {
+      alunoPrevisto = alunoManual;
+      const queueIndex = pendingQueue.indexOf(alunoPrevisto);
+      if (queueIndex >= 0) {
+        pendingQueue.splice(queueIndex, 1);
+      }
+      const sentIndex = sentQueue.indexOf(alunoPrevisto);
+      if (sentIndex >= 0) {
+        sentQueue.splice(sentIndex, 1);
+      }
+    } else if (done) {
+      alunoPrevisto = sentQueue.shift() || pendingQueue.shift() || "efetivado";
+      const queueIndex = pendingQueue.indexOf(alunoPrevisto);
+      if (queueIndex >= 0) {
+        pendingQueue.splice(queueIndex, 1);
+      }
+    } else {
+      alunoPrevisto = pendingQueue.shift() || "não definido";
+    }
+
+    preview.push({
+      dia: row.dia,
+      horario: row.horario,
+      titulo: row.titulo,
+      materia: row.materia,
+      professor: row.professor,
+      alunoPrevisto,
+      scheduledDateISO: row.scheduledDateISO,
+      itemKey: row.itemKey,
+      manualEfetivado
     });
   }
 
@@ -635,6 +703,7 @@ function resolveAgendaItemDate(item) {
 function isAgendaItemDone(item, index, doneCount, now, revertedSet) {
   const key = buildAgendaItemKey(item);
   if (revertedSet.has(key)) return false;
+  if (Boolean(item?.manualEfetivado)) return true;
   const itemDate = resolveAgendaItemDate(item);
   const doneByDate = itemDate ? itemDate.getTime() <= now : false;
   return index < doneCount || doneByDate;
@@ -803,6 +872,50 @@ function pickAluno() {
   return aluno;
 }
 
+function consumeAlunoFromGlobalQueue(state, alunos, aluno) {
+  const nome = String(aluno || "").trim();
+  if (!nome) return;
+  const pending = normalizePendingOrder(state, alunos).filter((name) => name !== nome);
+  state.ordemProximosAlunos = pending;
+  const idxSelecionado = alunos.indexOf(nome);
+  if (idxSelecionado >= 0) {
+    state.idxAluno = (idxSelecionado + 1) % alunos.length;
+  }
+}
+
+function pickAlunoFromActiveCyclePreview(config, state, activeCycle) {
+  if (!activeCycle) return "";
+  const cycleId = String(activeCycle?.id || "no-cycle");
+  const sortedSummary = sortPreviewSummaryLikeLessonsModal(
+    getScheduleSummaryForPreview(config),
+    state
+  );
+  const preview = buildSchedulePreview(
+    config,
+    state,
+    sortedSummary,
+    Number(activeCycle.totalAlunos || 0),
+    cycleId,
+    Number(activeCycle.sentCount || 0)
+  );
+  if (!preview.length) return "";
+
+  const sentCount = Math.max(0, Number(activeCycle.sentCount || 0));
+  const doneCount = Math.min(sentCount, preview.length);
+  const now = Date.now();
+  const revertedSet = new Set(
+    Array.isArray(state?.revertidosEfetivados)
+      ? state.revertidosEfetivados.map((item) => String(item || ""))
+      : []
+  );
+  const pending = preview.find((item, index) => !isAgendaItemDone(item, index, doneCount, now, revertedSet));
+  if (!pending) return "";
+  return {
+    aluno: String(pending?.alunoPrevisto || "").trim(),
+    itemKey: String(pending?.itemKey || "").trim()
+  };
+}
+
 function buildMessage(aula, aluno) {
   const config = loadConfig();
   const alunoNome = String(aluno || "").trim();
@@ -950,59 +1063,7 @@ async function withManualSendLock(task, type = "manual") {
 export async function runNow() {
   return await withManualSendLock(async () => {
     const { config } = assertConfig();
-    const state = getStateNormalized();
-    const d = diaSemanaNumero();
-    if (!isDiaPermitido(config, d)) {
-      saveLastRun({
-        type: "scheduled",
-        skipped: true,
-        reason: "dia_nao_permitido",
-        sentAt: new Date().toISOString()
-      });
-      return null;
-    }
-
-    const aulasDoDia = getAgendaEntries(config)
-      .filter((item) => item.dia === String(d))
-      .map((item) => item.aula);
-
-    if (aulasDoDia.length === 0) {
-      saveLastRun({
-        type: "scheduled",
-        skipped: true,
-        reason: "sem_aula_no_dia",
-        sentAt: new Date().toISOString()
-      });
-      return null;
-    }
-
-    const idxAulaBase = ((state.idxAula % aulasDoDia.length) + aulasDoDia.length) % aulasDoDia.length;
-    const aula = aulasDoDia[idxAulaBase];
-    state.idxAula = (idxAulaBase + 1) % aulasDoDia.length;
-    saveState(state);
-    const aluno = pickAluno();
-    const text = buildMessage(aula, aluno);
-    const cardData = {
-      turma: String(config.turma || ""),
-      instituicao: String(config.instituicao || ""),
-      materia: String(aula.materia || ""),
-      professor: String(aula.professor || ""),
-      aluno: String(aluno || ""),
-      horario: String(aula.hora || "")
-    };
-    const message = await sendBotMessage(text, cardData);
-    markCycleMessageSent(aluno);
-
-    saveLastRun({
-      type: "scheduled",
-      skipped: false,
-      aluno,
-      materia: aula.materia,
-      messageId: message.id?._serialized || "sem-id",
-      sentAt: new Date().toISOString()
-    });
-
-    return message;
+    return await runScheduledDispatch(config);
   }, "now");
 }
 
@@ -1075,51 +1136,27 @@ export function reloadScheduler() {
 export function startScheduler() {
   const { config } = assertConfig();
   scheduleSummary = [];
+  const scheduledSlots = new Set();
 
   for (const { dia, aula } of getAgendaEntriesByConfig(config)) {
     const { cronHour, cronMinute } = buildCronForAula(aula.hora, config.antecedenciaMin || 0);
     const expression = `${cronMinute} ${cronHour} * * ${dia}`;
     const label = `${String(cronHour).padStart(2, "0")}:${String(cronMinute).padStart(2, "0")}`;
+    const slotKey = `${dia}|${cronHour}|${cronMinute}`;
 
-    const job = cron.schedule(expression, async () => {
-      try {
-        const d = diaSemanaNumero();
-        if (!isDiaPermitido(config, d)) {
-          saveLastRun({
-            type: "scheduled",
-            skipped: true,
-            reason: "dia_nao_permitido",
-            sentAt: new Date().toISOString()
-          });
-          return;
+    // Evita disparo duplicado no mesmo dia/horário quando há várias aulas no mesmo slot.
+    if (!scheduledSlots.has(slotKey)) {
+      const job = cron.schedule(expression, async () => {
+        try {
+          await runScheduledDispatch(config);
+        } catch (error) {
+          console.error(error);
         }
+      }, { timezone: TZ });
+      scheduledJobs.push(job);
+      scheduledSlots.add(slotKey);
+    }
 
-        const aluno = pickAluno();
-        const text = buildMessage(aula, aluno);
-        const cardData = {
-          turma: String(config.turma || ""),
-          instituicao: String(config.instituicao || ""),
-          materia: String(aula.materia || ""),
-          professor: String(aula.professor || ""),
-          aluno: String(aluno || ""),
-          horario: String(aula.hora || "")
-        };
-        const message = await sendBotMessage(text, cardData);
-        markCycleMessageSent(aluno);
-
-        saveLastRun({
-          type: "scheduled",
-          skipped: false,
-          aluno,
-          materia: aula.materia,
-          messageId: message.id?._serialized || "sem-id",
-          sentAt: new Date().toISOString()
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    }, { timezone: TZ });
-    scheduledJobs.push(job);
     scheduleSummary.push({
       dia,
       horario: aula.hora,
@@ -1132,6 +1169,75 @@ export function startScheduler() {
   }
 
   schedulerStarted = true;
+}
+
+async function runScheduledDispatch(config) {
+  const state = getStateNormalized();
+  const cyclesPayload = completeActiveCycleIfNeeded(loadCycles());
+  saveCycles(cyclesPayload);
+  const activeCycle = getActiveCycle(cyclesPayload);
+  const d = diaSemanaNumero();
+  if (!isDiaPermitido(config, d)) {
+    saveLastRun({
+      type: "scheduled",
+      skipped: true,
+      reason: "dia_nao_permitido",
+      sentAt: new Date().toISOString()
+    });
+    return null;
+  }
+
+  const aulasDoDia = getAgendaEntries(config)
+    .filter((item) => item.dia === String(d))
+    .map((item) => item.aula);
+
+  if (aulasDoDia.length === 0) {
+    saveLastRun({
+      type: "scheduled",
+      skipped: true,
+      reason: "sem_aula_no_dia",
+      sentAt: new Date().toISOString()
+    });
+    return null;
+  }
+
+  const idxAulaBase = ((state.idxAula % aulasDoDia.length) + aulasDoDia.length) % aulasDoDia.length;
+  const aula = aulasDoDia[idxAulaBase];
+  state.idxAula = (idxAulaBase + 1) % aulasDoDia.length;
+  const alunos = Array.isArray(config.alunos) ? config.alunos : [];
+  const pendingFromCycle = pickAlunoFromActiveCyclePreview(config, state, activeCycle);
+  const alunoFromCycle = typeof pendingFromCycle === "object" ? pendingFromCycle.aluno : "";
+  const itemKeyFromCycle = typeof pendingFromCycle === "object" ? pendingFromCycle.itemKey : "";
+  const aluno = alunoFromCycle || (alunos.length ? normalizePendingOrder(state, alunos)[0] : "");
+  if (!aluno) {
+    throw new Error("Não foi possível selecionar o próximo aluno pendente.");
+  }
+  consumeAlunoFromGlobalQueue(state, alunos, aluno);
+  state.updatedAt = new Date().toISOString();
+  saveState(state);
+
+  const text = buildMessage(aula, aluno);
+  const cardData = {
+    turma: String(config.turma || ""),
+    instituicao: String(config.instituicao || ""),
+    materia: String(aula.materia || ""),
+    professor: String(aula.professor || ""),
+    aluno: String(aluno || ""),
+    horario: String(aula.hora || "")
+  };
+  const message = await sendBotMessage(text, cardData);
+  markCycleMessageSent(aluno, itemKeyFromCycle);
+
+  saveLastRun({
+    type: "scheduled",
+    skipped: false,
+    aluno,
+    materia: aula.materia,
+    messageId: message.id?._serialized || "sem-id",
+    sentAt: new Date().toISOString()
+  });
+
+  return message;
 }
 
 export async function ensureInitialized() {

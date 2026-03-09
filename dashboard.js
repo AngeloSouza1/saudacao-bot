@@ -2295,6 +2295,7 @@ function pageHtml() {
     function isAgendaItemDone(item, index, doneCount, now, revertedSet) {
       const key = buildAgendaItemKey(item);
       if (revertedSet.has(key)) return false;
+      if (Boolean(item?.manualEfetivado)) return true;
       const itemDate = resolveAgendaItemDate(item);
       const doneByDate = itemDate ? itemDate.getTime() <= now : false;
       return index < doneCount || doneByDate;
