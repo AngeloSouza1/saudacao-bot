@@ -271,13 +271,8 @@ function markCycleMessageSent(alunoEfetivado = "", agendaItemKey = "") {
   return getActiveCycle(payload);
 }
 
-function assertConfig() {
+function assertAppConfig() {
   const config = loadConfig();
-  const settings = loadSettings();
-
-  if (!settings.to && !settings.groupId && !settings.groupName) {
-    throw new Error("Defina um destino em settings.json ou no dashboard.");
-  }
 
   if (!Array.isArray(config.alunos) || config.alunos.length === 0) {
     throw new Error("config.json precisa ter pelo menos um aluno em \"alunos\".");
@@ -286,6 +281,17 @@ function assertConfig() {
   const entries = getAgendaEntriesByConfig(config);
   if (entries.length === 0) {
     throw new Error("config.json precisa ter ao menos uma aula válida para os dias permitidos.");
+  }
+
+  return { config };
+}
+
+function assertSendConfig() {
+  const { config } = assertAppConfig();
+  const settings = loadSettings();
+
+  if (!settings.to && !settings.groupId && !settings.groupName) {
+    throw new Error("Defina um destino em settings.json ou no dashboard.");
   }
 
   return { config, settings };
@@ -543,13 +549,6 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
       ? state.revertidosEfetivados.map((item) => String(item || ""))
       : []
   );
-  const nowTs = Date.now();
-  const dateDoneFlags = baseRows.map((row) => {
-    const key = row.itemKey;
-    if (revertedSet.has(key)) return false;
-    const dateTs = new Date(row.scheduledDateISO).getTime();
-    return Number.isFinite(dateTs) && dateTs <= nowTs;
-  });
   const reservedManualNames = new Set(
     Array.from(manualEffectiveMap.values())
       .map((item) => String(item || "").trim())
@@ -573,8 +572,8 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
     const key = row.itemKey;
     const alunoManual = manualEffectiveMap.get(key);
     const manualEfetivado = Boolean(alunoManual && !revertedSet.has(key));
-    const doneByDate = dateDoneFlags[idx];
-    const done = manualEfetivado || doneByDate;
+    const doneBySend = idx < doneCountBase && !revertedSet.has(key);
+    const done = manualEfetivado || doneBySend;
 
     let alunoPrevisto = "";
     if (manualEfetivado) {
@@ -583,11 +582,8 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
       if (queueIndex >= 0) {
         pendingQueue.splice(queueIndex, 1);
       }
-    } else if (doneByDate) {
-      // Regra importante:
-      // "efetivado por data" não deve deslocar a fila pendente nem trocar alunos futuros.
-      // Só marca visualmente como efetivado.
-      alunoPrevisto = "efetivado";
+    } else if (doneBySend) {
+      alunoPrevisto = pullNextUnique(pendingQueue, { allowReserved: true }) || "não definido";
     } else {
       alunoPrevisto = pullNextUnique(pendingQueue) || "não definido";
     }
@@ -705,13 +701,11 @@ function resolveAgendaItemDate(item) {
   return null;
 }
 
-function isAgendaItemDone(item, index, doneCount, now, revertedSet) {
+function isAgendaItemDone(item, index, doneCount, revertedSet) {
   const key = buildAgendaItemKey(item);
   if (revertedSet.has(key)) return false;
   if (Boolean(item?.manualEfetivado)) return true;
-  const itemDate = resolveAgendaItemDate(item);
-  const doneByDate = itemDate ? itemDate.getTime() <= now : false;
-  return index < doneCount || doneByDate;
+  return index < doneCount;
 }
 
 function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly = false) {
@@ -732,7 +726,6 @@ function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly 
 
   const sentCount = Math.max(0, Number(activeCycle?.sentCount || 0));
   const doneCount = Math.min(sentCount, preview.length);
-  const now = Date.now();
   const revertedSet = new Set(
     Array.isArray(state?.revertidosEfetivados)
       ? state.revertidosEfetivados.map((item) => String(item || ""))
@@ -742,7 +735,7 @@ function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly 
   const seen = new Set();
   const result = [];
   preview.forEach((item, index) => {
-    const done = isAgendaItemDone(item, index, doneCount, now, revertedSet);
+    const done = isAgendaItemDone(item, index, doneCount, revertedSet);
     if (pendingOnly && done) return;
     const aluno = String(item?.alunoPrevisto || "").trim();
     if (!aluno || seen.has(aluno)) return;
@@ -907,13 +900,12 @@ function pickAlunoFromActiveCyclePreview(config, state, activeCycle) {
 
   const sentCount = Math.max(0, Number(activeCycle.sentCount || 0));
   const doneCount = Math.min(sentCount, preview.length);
-  const now = Date.now();
   const revertedSet = new Set(
     Array.isArray(state?.revertidosEfetivados)
       ? state.revertidosEfetivados.map((item) => String(item || ""))
       : []
   );
-  const pending = preview.find((item, index) => !isAgendaItemDone(item, index, doneCount, now, revertedSet));
+  const pending = preview.find((item, index) => !isAgendaItemDone(item, index, doneCount, revertedSet));
   if (!pending) return "";
   return {
     aluno: String(pending?.alunoPrevisto || "").trim(),
@@ -1067,14 +1059,14 @@ async function withManualSendLock(task, type = "manual") {
 
 export async function runNow() {
   return await withManualSendLock(async () => {
-    const { config } = assertConfig();
+    const { config } = assertSendConfig();
     return await runScheduledDispatch(config);
   }, "now");
 }
 
 export async function runNowForced() {
   return await withManualSendLock(async () => {
-    const { config } = assertConfig();
+    const { config } = assertSendConfig();
     const state = getStateNormalized();
     const aulas = getOrderedLessonsForManualSend(config);
     if (!aulas.length) {
@@ -1128,7 +1120,7 @@ export async function runNowForced() {
 }
 
 export async function runTest() {
-  assertConfig();
+  assertSendConfig();
   const message = await sendBotMessage("Teste do saudação-bot via WhatsApp Web.");
   saveLastRun({
     type: "test",
@@ -1154,7 +1146,7 @@ export function reloadScheduler() {
 }
 
 export function startScheduler() {
-  const { config } = assertConfig();
+  const { config } = assertAppConfig();
   scheduleSummary = [];
   const scheduledSlots = new Set();
 
@@ -1261,7 +1253,7 @@ async function runScheduledDispatch(config) {
 }
 
 export async function ensureInitialized() {
-  assertConfig();
+  assertAppConfig();
   bootstrapCycles();
   bootstrapLastRun();
   saveState(getStateNormalized());
