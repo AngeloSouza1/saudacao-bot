@@ -1,11 +1,10 @@
 {
-  "idxAluno": 3,
-  "idxAula": 0,
-  "dataInicio": "2026-03-09",
-  "updatedAt": "2026-03-09T21:58:36.779Z",
+  "idxAluno": 4,
+  "idxAula": 1,
+  "dataInicio": "2026-03-11",
+  "updatedAt": "2026-03-11T13:00:03.398Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
-    "Daniel Lucas",
     "Enzo Duarte",
     "Felipe Moreira",
     "Jaynni Nascimento",
@@ -21,7 +20,8 @@
     "João Marcos Basilio Sales",
     "João Vitor Gomes Oliveira Rodrigues Resende",
     "Angelo Souza",
-    "Bruna Alves"
+    "Bruna Alves",
+    "Clara Helena"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,
@@ -31,12 +31,11 @@
   "revertidosEfetivados": [],
   "efetivacoesManuais": [
     {
-      "itemKey": "cycle_1773093499749_73hrxc|2026-03-09T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "Clara Helena"
+      "itemKey": "cycle_1773228644490_oc6fjf|2026-03-11T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
+      "aluno": "Daniel Lucas"
     }
   ],
   "ordemVinculadaCiclo": [
-    "Clara Helena",
     "Daniel Lucas",
     "Enzo Duarte",
     "Felipe Moreira",
@@ -44,9 +43,10 @@
     "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Luana Costa",
-    "Matheus Leonardo"
+    "Matheus Leonardo",
+    "Matheus Marques"
   ],
   "efetivadosCiclo": [
-    "Clara Helena"
+    "Daniel Lucas"
   ]
 }

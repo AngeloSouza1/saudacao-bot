@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "cycle_1773093499749_73hrxc",
+  "activeCycleId": "cycle_1773228644490_oc6fjf",
   "cycles": [
     {
       "id": "cycle_1772822439144_fdl8wi",
@@ -1570,19 +1570,72 @@
     {
       "id": "cycle_1773093499749_73hrxc",
       "name": "Introdução e conceitos básicos sobre web",
-      "status": "active",
+      "status": "completed",
       "reason": "manual",
       "createdAt": "2026-03-09T21:58:19.749Z",
-      "completedAt": null,
+      "completedAt": "2026-03-10T17:17:45.742Z",
       "start": {
-        "idxAluno": 2,
-        "idxAula": 2,
+        "idxAluno": 3,
+        "idxAula": 0,
         "dataInicio": "2026-03-09"
       },
       "sentCount": 1,
-      "totalAlunos": 9,
-      "updatedAt": "2026-03-09T21:58:22.405Z",
+      "totalAlunos": 1,
+      "updatedAt": "2026-03-10T17:17:43.866Z",
       "lastMessageAt": "2026-03-09T21:58:36.779Z"
+    },
+    {
+      "id": "cycle_1773163701937_hxcxzl",
+      "name": "Aulas periodo (01/03 - 30/03)",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-10T17:28:21.946Z",
+      "completedAt": "2026-03-11T11:20:34.542Z",
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 2,
+        "dataInicio": "2026-03-11"
+      },
+      "sentCount": 0,
+      "totalAlunos": 11,
+      "updatedAt": "2026-03-10T17:41:10.934Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773228064442_llas6v",
+      "name": "Aulas periodo (01/03 - 30/03)",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-11T11:21:04.442Z",
+      "completedAt": "2026-03-11T11:30:24.777Z",
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 2,
+        "dataInicio": "2026-03-11"
+      },
+      "sentCount": 0,
+      "totalAlunos": 9,
+      "updatedAt": "2026-03-11T11:29:49.562Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1773228644490_oc6fjf",
+      "name": "Aulas periodo (01/03 - 30/03)",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-11T11:30:44.490Z",
+      "completedAt": null,
+      "start": {
+        "idxAluno": 3,
+        "idxAula": 3,
+        "dataInicio": "2026-03-11"
+      },
+      "sentCount": 1,
+      "totalAlunos": 9,
+      "updatedAt": "2026-03-11T11:30:44.491Z",
+      "lastMessageAt": "2026-03-11T13:00:03.398Z"
     }
   ]
 }

@@ -4,12 +4,6 @@
   "agendaSemanal": {
     "1": [
       {
-        "titulo": "Protocolos de Comunicação em Redes",
-        "materia": "Redes e Internet",
-        "professor": "Prof. Kenji",
-        "hora": "20:00"
-      },
-      {
         "titulo": "DNS (Domain Name System)",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
@@ -19,6 +13,14 @@
         "titulo": "Segurança de Redes",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
+        "hora": "20:00"
+      }
+    ],
+    "2": [
+      {
+        "titulo": "Fundamentos da Comunicação",
+        "materia": "Soft Skills",
+        "professor": "Prof. Flávia",
         "hora": "20:00"
       }
     ],
@@ -83,7 +85,7 @@
     "João Marcos Basilio Sales",
     "João Vitor Gomes Oliveira Rodrigues Resende"
   ],
-  "antecedenciaMin": 264,
+  "antecedenciaMin": 600,
   "diasUteisApenas": true,
   "imagePath": "risecode.png",
   "mediaAsDocument": false,
