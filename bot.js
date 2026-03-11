@@ -916,14 +916,21 @@ function pickAlunoFromActiveCyclePreview(config, state, activeCycle) {
 function buildMessage(aula, aluno) {
   const config = loadConfig();
   const alunoNome = String(aluno || "").trim();
+  const titulo = String(aula.titulo || "").trim();
+  const materia = String(aula.materia || "").trim();
+  const professor = String(aula.professor || "").trim();
   const hour = new Date().getHours();
   const cumprimento = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   const turmaNome = String(config.turma || "sua turma").trim();
-  const exemploPronto = `${cumprimento}, professor(a) ${aula.professor}. Aqui é a turma ${turmaNome}. Hoje estamos com a maioria presente. A turma está pronta, pode começar quando quiser.`;
+  const aulaContexto = titulo
+    ? `Hoje nossa saudação é para a aula *${titulo}*, da matéria ${materia}.`
+    : `Hoje nossa saudação é para a matéria ${materia}.`;
+  const exemploPronto = `${cumprimento}, professor(a) ${professor}. Aqui é a turma ${turmaNome}. ${aulaContexto} Hoje estamos com a maioria presente. A turma está pronta, pode começar quando quiser.`;
 
   return [
     `Turma: *${config.turma} — ${config.instituicao}*`,
     `Matéria: *${aula.materia}*`,
+    ...(titulo ? [`Título: *${titulo}*`] : []),
     `Professor: *${aula.professor}*`,
     `Aluno: *${alunoNome}*`,
     `Horário: *${aula.hora}*`,
@@ -950,7 +957,7 @@ function buildMessage(aula, aluno) {
     "",
     "*Exemplo pronto para usar:*",
     `_“${exemploPronto}”_`,
-    `*— ${alunoNome} (${aula.materia})*`
+    `*— ${alunoNome} (${materia})*`
   ].join("\n");
 }
 
