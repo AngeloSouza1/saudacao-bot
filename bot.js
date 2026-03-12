@@ -1210,8 +1210,8 @@ export function startScheduler() {
     if (!isDiaPermitido(config, dia)) continue;
     if (weekdaysWithClass.has(String(dia))) continue;
 
-    const expression = `0 12 * * ${dia}`;
-    const slotKey = `${dia}|12|0|sem-aula`;
+    const expression = `0 11 * * ${dia}`;
+    const slotKey = `${dia}|11|0|sem-aula`;
     if (scheduledSlots.has(slotKey)) continue;
 
     const job = cron.schedule(expression, async () => {
@@ -1224,7 +1224,7 @@ export function startScheduler() {
 
     scheduledJobs.push(job);
     scheduledSlots.add(slotKey);
-    console.log(`⏰ Agendado aviso sem aula: dia ${dia} às 12:00 (${TZ})`);
+    console.log(`⏰ Agendado aviso sem aula: dia ${dia} às 11:00 (${TZ})`);
   }
 
   schedulerStarted = true;
