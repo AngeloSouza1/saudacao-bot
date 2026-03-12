@@ -505,8 +505,7 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
   if (totalPassos <= 0) return [];
   const ordemPendentes = getCycleLinkedOrder(config, state || {}, totalPassos);
   if (!ordemPendentes.length) return [];
-  const doneCountBase = Math.max(0, Math.min(Number(sentCount || 0), totalPassos));
-  const totalLinhas = Math.min(totalPassos, doneCountBase + ordemPendentes.length);
+  const totalLinhas = Math.min(totalPassos, ordemPendentes.length);
   const baseRows = [];
   let cursor = new Date(timelineStart);
   const manualEffectiveMap = new Map(
@@ -572,8 +571,7 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
     const key = row.itemKey;
     const alunoManual = manualEffectiveMap.get(key);
     const manualEfetivado = Boolean(alunoManual && !revertedSet.has(key));
-    const doneBySend = idx < doneCountBase && !revertedSet.has(key);
-    const done = manualEfetivado || doneBySend;
+    const done = manualEfetivado;
 
     let alunoPrevisto = "";
     if (manualEfetivado) {
@@ -582,8 +580,6 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
       if (queueIndex >= 0) {
         pendingQueue.splice(queueIndex, 1);
       }
-    } else if (doneBySend) {
-      alunoPrevisto = pullNextUnique(pendingQueue, { allowReserved: true }) || "não definido";
     } else {
       alunoPrevisto = pullNextUnique(pendingQueue) || "não definido";
     }
@@ -705,7 +701,7 @@ function isAgendaItemDone(item, index, doneCount, revertedSet) {
   const key = buildAgendaItemKey(item);
   if (revertedSet.has(key)) return false;
   if (Boolean(item?.manualEfetivado)) return true;
-  return index < doneCount;
+  return false;
 }
 
 function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly = false) {
@@ -724,8 +720,6 @@ function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly 
   );
   if (!preview.length) return [];
 
-  const sentCount = Math.max(0, Number(activeCycle?.sentCount || 0));
-  const doneCount = Math.min(sentCount, preview.length);
   const revertedSet = new Set(
     Array.isArray(state?.revertidosEfetivados)
       ? state.revertidosEfetivados.map((item) => String(item || ""))
@@ -735,7 +729,7 @@ function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly 
   const seen = new Set();
   const result = [];
   preview.forEach((item, index) => {
-    const done = isAgendaItemDone(item, index, doneCount, revertedSet);
+    const done = isAgendaItemDone(item, index, 0, revertedSet);
     if (pendingOnly && done) return;
     const aluno = String(item?.alunoPrevisto || "").trim();
     if (!aluno || seen.has(aluno)) return;
@@ -898,14 +892,12 @@ function pickAlunoFromActiveCyclePreview(config, state, activeCycle) {
   );
   if (!preview.length) return "";
 
-  const sentCount = Math.max(0, Number(activeCycle.sentCount || 0));
-  const doneCount = Math.min(sentCount, preview.length);
   const revertedSet = new Set(
     Array.isArray(state?.revertidosEfetivados)
       ? state.revertidosEfetivados.map((item) => String(item || ""))
       : []
   );
-  const pending = preview.find((item, index) => !isAgendaItemDone(item, index, doneCount, revertedSet));
+  const pending = preview.find((item, index) => !isAgendaItemDone(item, index, 0, revertedSet));
   if (!pending) return "";
   return {
     aluno: String(pending?.alunoPrevisto || "").trim(),

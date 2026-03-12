@@ -2296,9 +2296,7 @@ function pageHtml() {
       const key = buildAgendaItemKey(item);
       if (revertedSet.has(key)) return false;
       if (Boolean(item?.manualEfetivado)) return true;
-      const itemDate = resolveAgendaItemDate(item);
-      const doneByDate = itemDate ? itemDate.getTime() <= now : false;
-      return index < doneCount || doneByDate;
+      return false;
     }
 
     function isSameLocalDay(left, right) {
@@ -2313,16 +2311,13 @@ function pageHtml() {
 
     function renderAgendaPreview(items) {
       agendaItemsCache = items;
-      const sentCount = Math.max(0, Number(latestStatusData?.cycle?.active?.sentCount || 0));
-      const doneCount = Math.min(sentCount, items.length);
-      const now = Date.now();
       const revertedSet = new Set(
         Array.isArray(latestStatusData?.state?.revertidosEfetivados)
           ? latestStatusData.state.revertidosEfetivados.map((item) => String(item || ""))
           : []
       );
       const pendingItems = items.filter((item, index) => {
-        return !isAgendaItemDone(item, index, doneCount, now, revertedSet);
+        return !isAgendaItemDone(item, index, 0, 0, revertedSet);
       });
 
       const preview = pendingItems.slice(0, 3).map((item) => "<li>" + formatAgendaItem(item) + "</li>").join("");
@@ -2332,9 +2327,6 @@ function pageHtml() {
     }
 
     function renderNextGreetings(items) {
-      const sentCount = Math.max(0, Number(latestStatusData?.cycle?.active?.sentCount || 0));
-      const doneCount = Math.min(sentCount, items.length);
-      const now = Date.now();
       const revertedSet = new Set(
         Array.isArray(latestStatusData?.state?.revertidosEfetivados)
           ? latestStatusData.state.revertidosEfetivados.map((item) => String(item || ""))
@@ -2342,16 +2334,13 @@ function pageHtml() {
       );
 
       const pendingItems = items.filter((item, index) =>
-        !isAgendaItemDone(item, index, doneCount, now, revertedSet)
+        !isAgendaItemDone(item, index, 0, 0, revertedSet)
       );
       const list = pendingItems.slice(0, 8).map((item) => "<li>" + formatAgendaItem(item) + "</li>").join("");
       els.nextGreetings.innerHTML = list ? "<ul>" + list + "</ul>" : "Sem próximas saudações pendentes.";
     }
 
     function renderAgendaModal() {
-      const sentCount = Math.max(0, Number(latestStatusData?.cycle?.active?.sentCount || 0));
-      const doneCount = Math.min(sentCount, agendaItemsCache.length);
-      const now = Date.now();
       const linkedOrder = Array.isArray(latestStatusData?.state?.ordemVinculadaCiclo)
         ? latestStatusData.state.ordemVinculadaCiclo.map((item) => String(item || "").trim()).filter(Boolean)
         : [];
@@ -2368,7 +2357,7 @@ function pageHtml() {
       agendaItemsCache.forEach((item, index) => {
         const alunoNome = String(item?.alunoPrevisto || "").trim();
         const itemKey = buildAgendaItemKey(item);
-        const done = isAgendaItemDone(item, index, doneCount, now, revertedSet);
+        const done = isAgendaItemDone(item, index, 0, 0, revertedSet);
         if (!done && linkedSet.size && alunoNome && !linkedSet.has(alunoNome)) {
           return;
         }
@@ -2490,9 +2479,6 @@ function pageHtml() {
 
       const unique = new Set(linkedOrder);
       const doneSet = new Set();
-      const sentCount = Math.max(0, Number(latestStatusData?.cycle?.active?.sentCount || 0));
-      const doneCount = Math.min(sentCount, agendaItemsCache.length);
-      const now = Date.now();
       const revertedSet = new Set(
         Array.isArray(latestStatusData?.state?.revertidosEfetivados)
           ? latestStatusData.state.revertidosEfetivados.map((item) => String(item || ""))
@@ -2501,7 +2487,7 @@ function pageHtml() {
 
       for (let index = 0; index < (Array.isArray(agendaItemsCache) ? agendaItemsCache.length : 0); index += 1) {
         const item = agendaItemsCache[index];
-        const done = isAgendaItemDone(item, index, doneCount, now, revertedSet);
+        const done = isAgendaItemDone(item, index, 0, 0, revertedSet);
         const aluno = String(item?.alunoPrevisto || "").trim();
         if (!done || !aluno || !unique.has(aluno)) continue;
         doneSet.add(aluno);
@@ -2510,9 +2496,6 @@ function pageHtml() {
     }
 
     function getPendingStudentsWithNextDate() {
-      const sentCount = Math.max(0, Number(latestStatusData?.cycle?.active?.sentCount || 0));
-      const doneCount = Math.min(sentCount, agendaItemsCache.length);
-      const now = Date.now();
       const linkedSet = new Set(
         Array.isArray(latestStatusData?.state?.ordemVinculadaCiclo)
           ? latestStatusData.state.ordemVinculadaCiclo.map((item) => String(item || "").trim()).filter(Boolean)
@@ -2531,7 +2514,7 @@ function pageHtml() {
       const byAluno = new Map();
       for (let index = 0; index < (Array.isArray(agendaItemsCache) ? agendaItemsCache.length : 0); index += 1) {
         const item = agendaItemsCache[index];
-        const done = isAgendaItemDone(item, index, doneCount, now, revertedSet);
+        const done = isAgendaItemDone(item, index, 0, 0, revertedSet);
         const aluno = String(item?.alunoPrevisto || "").trim();
         if (done) {
           if (aluno) doneStudents.add(aluno);
