@@ -953,6 +953,31 @@ function buildMessage(aula, aluno) {
   ].join("\n");
 }
 
+function buildNoClassMessage() {
+  const config = loadConfig();
+  const hour = new Date().getHours();
+  const cumprimento = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const turma = String(config.turma || "Turma").trim();
+  const instituicao = String(config.instituicao || "").trim();
+  const turmaLinha = instituicao ? `${turma} — ${instituicao}` : turma;
+
+  return [
+    `*📢 Aviso da turma*`,
+    "",
+    `Turma: *${turmaLinha}*`,
+    "",
+    `${cumprimento}, pessoal.`,
+    "",
+    `*HOJE NÃO HAVERÁ AULA.*`,
+    "",
+    "Aproveitem este tempo para colocar os estudos em dia, revisar os conteúdos já vistos e reforçar os pontos que ainda geram dúvida.",
+    "",
+    "Uma boa revisão hoje pode fazer diferença no entendimento das próximas aulas.",
+    "",
+    "*Sigam firmes nos estudos. Constância e dedicação trazem resultado.*"
+  ].join("\n");
+}
+
 async function sendBotMessage(text, cardData = null) {
   const settings = loadSettings();
   const config = loadConfig();
@@ -1148,8 +1173,10 @@ export function startScheduler() {
   const { config } = assertAppConfig();
   scheduleSummary = [];
   const scheduledSlots = new Set();
+  const weekdaysWithClass = new Set();
 
   for (const { dia, aula } of getAgendaEntriesByConfig(config)) {
+    weekdaysWithClass.add(String(dia));
     const { cronHour, cronMinute } = buildCronForAula(aula.hora, config.antecedenciaMin || 0);
     const expression = `${cronMinute} ${cronHour} * * ${dia}`;
     const label = `${String(cronHour).padStart(2, "0")}:${String(cronMinute).padStart(2, "0")}`;
@@ -1179,6 +1206,27 @@ export function startScheduler() {
     console.log(`⏰ Agendado: dia ${dia} às ${label} (${TZ})`);
   }
 
+  for (let dia = 1; dia <= 6; dia += 1) {
+    if (!isDiaPermitido(config, dia)) continue;
+    if (weekdaysWithClass.has(String(dia))) continue;
+
+    const expression = `0 12 * * ${dia}`;
+    const slotKey = `${dia}|12|0|sem-aula`;
+    if (scheduledSlots.has(slotKey)) continue;
+
+    const job = cron.schedule(expression, async () => {
+      try {
+        await runScheduledDispatch(config);
+      } catch (error) {
+        console.error(error);
+      }
+    }, { timezone: TZ });
+
+    scheduledJobs.push(job);
+    scheduledSlots.add(slotKey);
+    console.log(`⏰ Agendado aviso sem aula: dia ${dia} às 12:00 (${TZ})`);
+  }
+
   schedulerStarted = true;
 }
 
@@ -1203,13 +1251,16 @@ async function runScheduledDispatch(config) {
     .map((item) => item.aula);
 
   if (aulasDoDia.length === 0) {
+    const text = buildNoClassMessage();
+    const message = await sendBotMessage(text);
     saveLastRun({
       type: "scheduled",
-      skipped: true,
+      skipped: false,
       reason: "sem_aula_no_dia",
+      messageId: message.id?._serialized || "sem-id",
       sentAt: new Date().toISOString()
     });
-    return null;
+    return message;
   }
 
   const idxAulaBase = ((state.idxAula % aulasDoDia.length) + aulasDoDia.length) % aulasDoDia.length;
