@@ -1,10 +1,12 @@
 import http from "http";
+import net from "net";
 import { readFileSync } from "fs";
 import dotenv from "dotenv";
 import { dashboardHeroHtml, dashboardMainShellHtml } from "./dashboard/dashboard-shell.js";
 import { dashboardStaticHtml } from "./dashboard/dashboard-static.js";
 import {
   cancelActiveCycle,
+  clearCompletedCycles,
   createNewCycle,
   refreshActiveCyclePending,
   getAgendaEditorJson,
@@ -17,7 +19,9 @@ import {
   runNow,
   runNowForced,
   runTest,
+  sendAgendaListToDestination,
   swapPendingStudents,
+  validateDestinationPassword,
   validateLockPassword,
   updateAgendaEditorJson,
   updateConfig,
@@ -184,6 +188,12 @@ async function handleApi(req, res, pathname) {
     if (req.method === "POST" && pathname === "/api/send-test") {
       await runTest();
       sendJson(res, 200, { ok: true, message: "Teste enviado." });
+      return true;
+    }
+
+    if (req.method === "POST" && pathname === "/api/send-agenda-list") {
+      await sendAgendaListToDestination();
+      sendJson(res, 200, { ok: true, message: "Lista de agendamentos enviada pelo WhatsApp." });
       return true;
     }
 
@@ -354,6 +364,17 @@ async function handleApi(req, res, pathname) {
       return true;
     }
 
+    if (req.method === "POST" && pathname === "/api/unlock-destination") {
+      const body = await readBody(req);
+      const result = validateDestinationPassword(body?.password);
+      if (!result.ok) {
+        sendJson(res, 401, { ok: false, error: "Senha incorreta." });
+        return true;
+      }
+      sendJson(res, 200, { ok: true, configured: result.configured });
+      return true;
+    }
+
     if (req.method === "POST" && pathname === "/api/state") {
       const body = await readBody(req);
       const state = updateState(body);
@@ -380,6 +401,18 @@ async function handleApi(req, res, pathname) {
         ok: true,
         ...result,
         message: "Ciclo atual atualizado somente nos itens pendentes."
+      });
+      return true;
+    }
+
+    if (req.method === "POST" && pathname === "/api/cycle/clear-completed") {
+      const result = clearCompletedCycles();
+      sendJson(res, 200, {
+        ok: true,
+        ...result,
+        message: result.removed > 0
+          ? `${result.removed} ciclo(s) concluído(s) removido(s) do histórico.`
+          : "Nenhum ciclo concluído para remover."
       });
       return true;
     }
@@ -455,7 +488,12 @@ async function handleApi(req, res, pathname) {
 }
 
 export async function startDashboard() {
-  const server = http.createServer(async (req, res) => {
+  const server = createDashboardServer();
+  return await listenDashboardServer(server);
+}
+
+function createDashboardServer() {
+  return http.createServer(async (req, res) => {
     if (!requireDashboardAuth(req, res)) {
       return;
     }
@@ -483,14 +521,54 @@ export async function startDashboard() {
 
     sendJson(res, 404, { error: "not_found" });
   });
+}
 
-  server.on("error", (error) => {
-    console.error(`❌ Falha ao subir dashboard em http://${HOST}:${PORT}:`, error.message);
+function normalizeDashboardListenError(error) {
+  if (String(error?.code || "") === "EADDRINUSE") {
+    return new Error(
+      `A porta ${PORT} já está em uso. Encerre a instância anterior do dashboard antes de iniciar outra.`
+    );
+  }
+  return error instanceof Error ? error : new Error(String(error || "Falha ao subir dashboard."));
+}
+
+function listenDashboardServer(server) {
+  return new Promise((resolve, reject) => {
+    const onError = (error) => {
+      const normalized = normalizeDashboardListenError(error);
+      console.error(`❌ Falha ao subir dashboard em http://${HOST}:${PORT}:`, normalized.message);
+      reject(normalized);
+    };
+
+    server.once("error", onError);
+    server.listen(PORT, HOST, () => {
+      server.off("error", onError);
+      server.on("error", (error) => {
+        const normalized = normalizeDashboardListenError(error);
+        console.error(`❌ Erro no dashboard em http://${HOST}:${PORT}:`, normalized.message);
+      });
+      console.log(`🖥️ Dashboard disponível em http://${HOST}:${PORT}`);
+      resolve(server);
+    });
   });
+}
 
-  server.listen(PORT, HOST, () => {
-    console.log(`🖥️ Dashboard disponível em http://${HOST}:${PORT}`);
+export async function assertDashboardPortAvailable() {
+  const tester = net.createServer();
+  return await new Promise((resolve, reject) => {
+    const finalize = (error = null) => {
+      tester.removeAllListeners();
+      if (error) {
+        reject(normalizeDashboardListenError(error));
+        return;
+      }
+      resolve(true);
+    };
+
+    tester.once("error", (error) => finalize(error));
+    tester.once("listening", () => {
+      tester.close((closeError) => finalize(closeError));
+    });
+    tester.listen(PORT, HOST);
   });
-
-  return server;
 }

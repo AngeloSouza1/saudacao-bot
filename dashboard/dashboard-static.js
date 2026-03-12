@@ -134,6 +134,22 @@ export function dashboardStaticHtml() {
     </section>
   </div>
 
+  <div id="destination-unlock-modal" class="modal-backdrop" aria-hidden="true">
+    <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="destination-unlock-title" aria-describedby="destination-unlock-text">
+      <h2 id="destination-unlock-title" class="confirm-title">Desbloquear destino</h2>
+      <p id="destination-unlock-text" class="confirm-text">Digite a senha para liberar a seleção do grupo encontrado.</p>
+      <div>
+        <label for="destination-unlock-password">Senha</label>
+        <input id="destination-unlock-password" type="password" placeholder="Senha de desbloqueio">
+      </div>
+      <div id="destination-unlock-feedback" class="wa-login-feedback"></div>
+      <div class="confirm-actions">
+        <button id="destination-unlock-cancel" class="secondary">Cancelar</button>
+        <button id="destination-unlock-confirm" class="btn-save">Liberar</button>
+      </div>
+    </section>
+  </div>
+
   <div id="swap-modal" class="modal-backdrop" aria-hidden="true">
     <section class="swap-modal" role="dialog" aria-modal="true" aria-labelledby="swap-title" aria-describedby="swap-text">
       <h2 id="swap-title" class="info-title">Trocar posição do aluno</h2>
@@ -180,8 +196,11 @@ export function dashboardStaticHtml() {
   <div id="agenda-modal" class="modal-backdrop" aria-hidden="true">
     <section class="agenda-modal" role="dialog" aria-modal="true" aria-labelledby="agenda-modal-title">
       <div class="modal-head">
-        <h2 id="agenda-modal-title">Todos os agendamentos</h2>
-        <button id="btn-close-agenda-modal" class="secondary">Fechar</button>
+        <h2 id="agenda-modal-title">Agendamentos da turma</h2>
+        <div class="modal-head-actions">
+          <button id="btn-send-agenda-list" class="btn-save">Enviar pendentes</button>
+          <button id="btn-close-agenda-modal" class="secondary">Fechar</button>
+        </div>
       </div>
       <div id="agenda-modal-list" class="agenda-modal-list"></div>
     </section>
@@ -191,7 +210,10 @@ export function dashboardStaticHtml() {
     <section class="agenda-modal" role="dialog" aria-modal="true" aria-labelledby="cycles-modal-title">
       <div class="modal-head">
         <h2 id="cycles-modal-title">Todos os ciclos</h2>
-        <button id="btn-close-cycles-modal" class="secondary">Fechar</button>
+        <div class="modal-head-actions">
+          <button id="btn-clear-completed-cycles" class="secondary">Apagar concluídos</button>
+          <button id="btn-close-cycles-modal" class="secondary">Fechar</button>
+        </div>
       </div>
       <div class="cycle-modal-controls">
         <div>
@@ -223,14 +245,17 @@ export function dashboardStaticHtml() {
         </div>
         <div>
           <label for="groupSelect">Grupo encontrado</label>
-          <select id="groupSelect">
-            <option value="">Carregando...</option>
-          </select>
+          <div class="field-lock-row">
+            <select id="groupSelect" disabled>
+              <option value="">Carregando...</option>
+            </select>
+            <button id="btn-unlock-destination" class="secondary field-lock-btn" type="button" aria-label="Desbloquear seleção de grupo">🔒</button>
+          </div>
         </div>
       </div>
       <div style="margin-top:12px">
         <label for="groupName">Nome do grupo</label>
-        <input id="groupName" placeholder="Nome exato do grupo">
+        <input id="groupName" placeholder="Nome exato do grupo" readonly>
       </div>
       <input id="groupId" type="hidden">
     </section>

@@ -52,6 +52,14 @@
       text: document.getElementById("info-text"),
       ok: document.getElementById("info-ok")
     };
+    const destinationUnlockEls = {
+      wrap: document.getElementById("destination-unlock-modal"),
+      password: document.getElementById("destination-unlock-password"),
+      feedback: document.getElementById("destination-unlock-feedback"),
+      cancel: document.getElementById("destination-unlock-cancel"),
+      confirm: document.getElementById("destination-unlock-confirm"),
+      trigger: document.getElementById("btn-unlock-destination")
+    };
     const swapEls = {
       wrap: document.getElementById("swap-modal"),
       from: document.getElementById("swap-from"),
@@ -70,12 +78,14 @@
       openBtn: document.getElementById("btn-open-full-agenda"),
       wrap: document.getElementById("agenda-modal"),
       list: document.getElementById("agenda-modal-list"),
+      sendBtn: document.getElementById("btn-send-agenda-list"),
       closeBtn: document.getElementById("btn-close-agenda-modal")
     };
     const cyclesViewEls = {
       wrap: document.getElementById("cycles-modal"),
       list: document.getElementById("cycles-modal-list"),
       closeBtn: document.getElementById("btn-close-cycles-modal"),
+      clearCompletedBtn: document.getElementById("btn-clear-completed-cycles"),
       filter: document.getElementById("cycles-filter")
     };
     const cardViewEls = {
@@ -167,6 +177,7 @@
     const btnSaveStartDate = document.getElementById("btn-save-start-date");
     let agendaItemsCache = [];
     let cycleHistoryCache = [];
+    let destinationGroupUnlocked = false;
     let startSnapshot = { idxAluno: "", idxAula: "", dataInicio: "" };
     if (btnSaveDestination) btnSaveDestination.disabled = true;
     if (btnSaveConfig) btnSaveConfig.disabled = true;
@@ -246,6 +257,51 @@
       if (btnNowForced) btnNowForced.disabled = !enabled;
       if (btnNowMobile) btnNowMobile.disabled = !enabled;
       if (btnNowForcedMobile) btnNowForcedMobile.disabled = !enabled;
+    }
+
+    function updateCycleButtonsState() {
+      const hasCompletedCycles = cycleHistoryCache.some((cycle) => String(cycle?.status || "") === "completed");
+      if (cyclesViewEls.clearCompletedBtn) {
+        cyclesViewEls.clearCompletedBtn.disabled = !hasCompletedCycles;
+      }
+    }
+
+    function setDestinationUnlockFeedback(message = "", isError = false) {
+      if (!destinationUnlockEls.feedback) return;
+      destinationUnlockEls.feedback.textContent = message;
+      destinationUnlockEls.feedback.className = "wa-login-feedback" + (message ? (isError ? " error" : " ok") : "");
+    }
+
+    function updateDestinationLockState() {
+      if (els.groupSelect) els.groupSelect.disabled = !destinationGroupUnlocked;
+      if (els.groupName) els.groupName.readOnly = !destinationGroupUnlocked;
+      if (destinationUnlockEls.trigger) {
+        destinationUnlockEls.trigger.textContent = destinationGroupUnlocked ? "🔓" : "🔒";
+        destinationUnlockEls.trigger.setAttribute(
+          "aria-label",
+          destinationGroupUnlocked ? "Seleção de grupo liberada" : "Desbloquear seleção de grupo"
+        );
+      }
+    }
+
+    function openDestinationUnlockModal() {
+      if (destinationGroupUnlocked) return;
+      setDestinationUnlockFeedback("", false);
+      if (destinationUnlockEls.password) destinationUnlockEls.password.value = "";
+      if (destinationUnlockEls.wrap) {
+        destinationUnlockEls.wrap.classList.add("open");
+        destinationUnlockEls.wrap.setAttribute("aria-hidden", "false");
+      }
+      setTimeout(() => destinationUnlockEls.password?.focus(), 40);
+    }
+
+    function closeDestinationUnlockModal() {
+      if (destinationUnlockEls.wrap) {
+        destinationUnlockEls.wrap.classList.remove("open");
+        destinationUnlockEls.wrap.setAttribute("aria-hidden", "true");
+      }
+      if (destinationUnlockEls.password) destinationUnlockEls.password.value = "";
+      setDestinationUnlockFeedback("", false);
     }
 
     function onById(id, event, handler) {
@@ -1570,6 +1626,7 @@
       if (!lockConfigured && isScreenLocked) {
         unlockScreen();
       }
+      updateDestinationLockState();
       scheduleAutoLock();
       destinationSnapshot = {
         to: normalizeText(data.settings.to || ""),
@@ -1655,6 +1712,7 @@
 
       cycleHistoryCache = Array.isArray(data?.cycle?.history) ? data.cycle.history : [];
       renderCycleHistorySummary();
+      updateCycleButtonsState();
 
       const agendaItems = Array.isArray(data.schedulePreview) && data.schedulePreview.length
         ? data.schedulePreview
@@ -2453,6 +2511,25 @@
     onById("btn-open-full-agenda", "click", () => {
       openAgendaModal();
     });
+    if (agendaViewEls.sendBtn) {
+      agendaViewEls.sendBtn.addEventListener("click", async () => {
+        const confirmed = await openConfirmModal({
+          title: "Enviar agenda pendente",
+          message: "Confirma o envio da lista com apenas os agendamentos pendentes para o grupo do WhatsApp?",
+          confirmLabel: "Enviar pendentes"
+        });
+        if (!confirmed) return;
+        await runWithBusyButton(agendaViewEls.sendBtn, async () => {
+          try {
+            setLog("Enviando agenda pendente para o WhatsApp...");
+            const data = await fetchJson("/api/send-agenda-list", { method: "POST" });
+            setLog(data.message || "Agenda pendente enviada.");
+          } catch (error) {
+            setLog(error.message || "Falha ao enviar a agenda pendente.", true);
+          }
+        });
+      });
+    }
     if (agendaViewEls.closeBtn) {
       agendaViewEls.closeBtn.addEventListener("click", () => closeAgendaModal());
     }
@@ -2516,6 +2593,26 @@
     if (cyclesViewEls.closeBtn) {
       cyclesViewEls.closeBtn.addEventListener("click", () => closeCyclesModal());
     }
+    if (cyclesViewEls.clearCompletedBtn) {
+      cyclesViewEls.clearCompletedBtn.addEventListener("click", async () => {
+        const confirmed = await openConfirmModal({
+          title: "Apagar ciclos concluídos",
+          message: "Confirma a remoção de todos os ciclos com status concluído do histórico? Essa ação não afeta o ciclo ativo.",
+          confirmLabel: "Apagar concluídos"
+        });
+        if (!confirmed) return;
+        await runWithBusyButton(cyclesViewEls.clearCompletedBtn, async () => {
+          try {
+            const data = await fetchJson("/api/cycle/clear-completed", { method: "POST" });
+            setLog(data.message || "Ciclos concluídos removidos.");
+            await refresh();
+            renderCyclesModal();
+          } catch (error) {
+            setLog(error.message || "Falha ao apagar ciclos concluídos.", true);
+          }
+        });
+      });
+    }
     if (cyclesViewEls.filter) {
       cyclesViewEls.filter.addEventListener("change", () => renderCyclesModal());
     }
@@ -2539,6 +2636,55 @@
 
     if (newCycleEls.cancel) {
       newCycleEls.cancel.addEventListener("click", () => closeNewCycleModal());
+    }
+    if (destinationUnlockEls.trigger) {
+      destinationUnlockEls.trigger.addEventListener("click", () => {
+        if (destinationGroupUnlocked) {
+          destinationGroupUnlocked = false;
+          updateDestinationLockState();
+          setLog("Seleção de grupo bloqueada novamente.");
+          return;
+        }
+        openDestinationUnlockModal();
+      });
+    }
+    if (destinationUnlockEls.cancel) {
+      destinationUnlockEls.cancel.addEventListener("click", () => closeDestinationUnlockModal());
+    }
+    if (destinationUnlockEls.wrap) {
+      destinationUnlockEls.wrap.addEventListener("click", (event) => {
+        if (event.target === destinationUnlockEls.wrap) closeDestinationUnlockModal();
+      });
+    }
+    if (destinationUnlockEls.confirm) {
+      destinationUnlockEls.confirm.addEventListener("click", async () => {
+        const password = String(destinationUnlockEls.password?.value || "");
+        setDestinationUnlockFeedback("");
+        destinationUnlockEls.confirm.disabled = true;
+        try {
+          await fetchJson("/api/unlock-destination", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password })
+          });
+          destinationGroupUnlocked = true;
+          updateDestinationLockState();
+          closeDestinationUnlockModal();
+          setLog("Seleção de grupo liberada.");
+        } catch (error) {
+          setDestinationUnlockFeedback(error.message || "Senha incorreta.", true);
+        } finally {
+          destinationUnlockEls.confirm.disabled = false;
+        }
+      });
+    }
+    if (destinationUnlockEls.password) {
+      destinationUnlockEls.password.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          destinationUnlockEls.confirm?.click();
+        }
+      });
     }
     if (newCycleEls.wrap) {
       newCycleEls.wrap.addEventListener("click", (event) => {

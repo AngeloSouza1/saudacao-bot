@@ -1,5 +1,5 @@
 import { ensureInitialized, ensureService, runNow, runTest } from "./bot.js";
-import { startDashboard } from "./dashboard-server.js";
+import { assertDashboardPortAvailable, startDashboard } from "./dashboard-server.js";
 
 const isNowMode = process.argv.includes("--now");
 const isTestMode = process.argv.includes("--test");
@@ -17,6 +17,7 @@ async function main() {
     process.exit(0);
   }
 
+  await assertDashboardPortAvailable();
   await startDashboard();
   ensureService()
     .then(() => {

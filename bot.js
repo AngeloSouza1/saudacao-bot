@@ -697,6 +697,77 @@ function resolveAgendaItemDate(item) {
   return null;
 }
 
+function formatAgendaDatePt(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  const label = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TZ,
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  }).format(date);
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function formatAgendaLine(item) {
+  const date = resolveAgendaItemDate(item);
+  const dateLabel = formatAgendaDatePt(date);
+  const horario = String(item?.horario || "").trim();
+  const titulo = String(item?.titulo || "").trim();
+  const materia = String(item?.materia || "").trim();
+  const professor = String(item?.professor || "").trim();
+  const aluno = String(item?.alunoPrevisto || "").trim() || "não definido";
+  const status = item?.manualEfetivado ? "Efetivado" : "Pendente";
+
+  return [
+    `• *${titulo || "Agendamento"}*`,
+    `  ${dateLabel}${horario ? ` às ${horario}` : ""}`,
+    materia ? `  Matéria: ${materia}` : "",
+    professor ? `  Professor: ${professor}` : "",
+    `  Aluno: ${aluno}`,
+    `  Status: ${status}`
+  ].filter(Boolean).join("\n");
+}
+
+function buildAgendaListMessage(config, state, activeCycle) {
+  const sortedSummary = sortPreviewSummaryLikeLessonsModal(
+    getScheduleSummaryForPreview(config),
+    state
+  );
+  const agenda = buildSchedulePreview(
+    config,
+    state,
+    sortedSummary,
+    activeCycle ? Number(activeCycle.totalAlunos || 0) : null,
+    String(activeCycle?.id || "no-cycle"),
+    activeCycle ? Number(activeCycle.sentCount || 0) : 0
+  );
+  const pendingAgenda = agenda.filter((item) => !Boolean(item?.manualEfetivado));
+  if (!pendingAgenda.length) {
+    throw new Error("Não há agendamentos disponíveis para envio.");
+  }
+
+  const turma = String(config.turma || "Turma").trim();
+  const instituicao = String(config.instituicao || "").trim();
+  const turmaLinha = instituicao ? `${turma} — ${instituicao}` : turma;
+  const total = pendingAgenda.length;
+
+  return [
+    "*Agenda pendente da turma*",
+    turmaLinha ? `*${turmaLinha}*` : "",
+    `Total de pendentes: *${total}*`,
+    "",
+    ...pendingAgenda.flatMap((item, index) => [
+      formatAgendaLine(item),
+      index < pendingAgenda.length - 1 ? "\n──────────" : null
+    ]),
+    "",
+    "Qualquer ajuste na ordem ou ausência pode ser tratado pelo painel."
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
+}
+
 function isAgendaItemDone(item, index, doneCount, revertedSet) {
   const key = buildAgendaItemKey(item);
   if (revertedSet.has(key)) return false;
@@ -1155,6 +1226,31 @@ export async function runTest() {
   return message;
 }
 
+export async function sendAgendaListToDestination() {
+  const { config, settings } = assertSendConfig();
+  const state = getStateNormalized();
+  const cycles = completeActiveCycleIfNeeded(loadCycles());
+  saveCycles(cycles);
+  const activeCycle = getActiveCycle(cycles);
+  const text = buildAgendaListMessage(config, state, activeCycle);
+  const message = await sendText({
+    to: settings.to,
+    groupId: settings.groupId,
+    groupName: settings.groupName,
+    text
+  });
+
+  saveLastRun({
+    type: "agenda_list",
+    skipped: false,
+    destination: settings.groupName || settings.groupId || settings.to,
+    messageId: message.id?._serialized || "sem-id",
+    sentAt: new Date().toISOString()
+  });
+
+  return message;
+}
+
 function stopScheduler() {
   for (const job of scheduledJobs) {
     job.stop();
@@ -1484,6 +1580,22 @@ export function refreshActiveCyclePending() {
   };
 }
 
+export function clearCompletedCycles() {
+  const payload = completeActiveCycleIfNeeded(loadCycles());
+  const list = Array.isArray(payload.cycles) ? payload.cycles : [];
+  const before = list.length;
+  payload.cycles = list.filter((cycle) => String(cycle?.status || "") === "active");
+  if (!payload.cycles.some((cycle) => cycle.id === payload.activeCycleId)) {
+    payload.activeCycleId = "";
+  }
+  saveCycles(payload);
+
+  return {
+    removed: Math.max(0, before - payload.cycles.length),
+    remaining: payload.cycles.length
+  };
+}
+
 export function updateSettings(partial) {
   const current = loadSettings();
   const next = {
@@ -1536,6 +1648,19 @@ export function validateLockPassword(password) {
   if (!expected) {
     return { ok: true, configured: false };
   }
+  return {
+    ok: String(password || "") === expected,
+    configured: true
+  };
+}
+
+export function validateDestinationPassword(password) {
+  const config = loadConfig();
+  const expected = String(
+    config?.destinationLockPassword ||
+    process.env.DESTINATION_LOCK_PASSWORD ||
+    "admin"
+  );
   return {
     ok: String(password || "") === expected,
     configured: true

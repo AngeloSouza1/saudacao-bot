@@ -493,6 +493,24 @@
       gap: 12px;
       font-size: 18px;
     }
+    .field-lock-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .field-lock-row select {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .field-lock-btn {
+      flex: 0 0 46px;
+      min-width: 46px;
+      width: 46px;
+      padding: 9px 12px;
+      border-radius: 12px;
+      line-height: 1;
+      font-size: 18px;
+    }
     .agenda-modal-actions {
       margin-top: 2px;
     }
@@ -871,7 +889,8 @@
     }
     #confirm-modal,
     #info-modal,
-    #new-cycle-modal {
+    #new-cycle-modal,
+    #destination-unlock-modal {
       z-index: 150;
     }
     #swap-modal {
