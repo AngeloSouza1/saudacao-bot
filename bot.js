@@ -709,6 +709,16 @@ function formatAgendaDatePt(date) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+function getLocalDateKey(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
 function formatAgendaLine(item) {
   const date = resolveAgendaItemDate(item);
   const dateLabel = formatAgendaDatePt(date);
@@ -720,8 +730,9 @@ function formatAgendaLine(item) {
   const status = item?.manualEfetivado ? "Efetivado" : "Pendente";
 
   return [
-    `• *${titulo || "Agendamento"}*`,
+    "• *Agendamento*",
     `  ${dateLabel}${horario ? ` às ${horario}` : ""}`,
+    titulo ? `  Título: ${titulo}` : "",
     materia ? `  Matéria: ${materia}` : "",
     professor ? `  Professor: ${professor}` : "",
     `  Aluno: ${aluno}`,
@@ -976,6 +987,48 @@ function pickAlunoFromActiveCyclePreview(config, state, activeCycle) {
   };
 }
 
+function pickAgendaItemForCurrentDispatch(config, state, activeCycle, aula, targetDate = new Date()) {
+  if (!activeCycle || !aula) return null;
+
+  const cycleId = String(activeCycle?.id || "no-cycle");
+  const sortedSummary = sortPreviewSummaryLikeLessonsModal(
+    getScheduleSummaryForPreview(config),
+    state
+  );
+  const preview = buildSchedulePreview(
+    config,
+    state,
+    sortedSummary,
+    Number(activeCycle.totalAlunos || 0),
+    cycleId,
+    Number(activeCycle.sentCount || 0)
+  );
+  if (!preview.length) return null;
+
+  const targetDateKey = getLocalDateKey(targetDate);
+  const targetHora = String(aula?.hora || "").trim();
+  const targetTitulo = String(aula?.titulo || "").trim();
+  const targetMateria = String(aula?.materia || "").trim();
+  const targetProfessor = String(aula?.professor || "").trim();
+
+  const exact = preview.find((item) => {
+    if (Boolean(item?.manualEfetivado)) return false;
+    return (
+      getLocalDateKey(resolveAgendaItemDate(item)) === targetDateKey &&
+      String(item?.horario || "").trim() === targetHora &&
+      String(item?.titulo || "").trim() === targetTitulo &&
+      String(item?.materia || "").trim() === targetMateria &&
+      String(item?.professor || "").trim() === targetProfessor
+    );
+  });
+  if (exact) return exact;
+
+  return preview.find((item) => {
+    if (Boolean(item?.manualEfetivado)) return false;
+    return getLocalDateKey(resolveAgendaItemDate(item)) === targetDateKey;
+  }) || null;
+}
+
 function buildMessage(aula, aluno) {
   const config = loadConfig();
   const alunoNome = String(aluno || "").trim();
@@ -1093,6 +1146,7 @@ async function sendBotMessage(text, cardData = null) {
 function getOrderedLessonsForManualSend(config) {
   const entries = getAgendaEntriesByConfig(config).map(({ dia, aula }) => ({
     dia: String(dia),
+    titulo: String(aula?.titulo || ""),
     materia: aula.materia,
     professor: aula.professor,
     hora: aula.hora
@@ -1193,6 +1247,7 @@ export async function runNowForced() {
     const cardData = {
       turma: String(config.turma || ""),
       instituicao: String(config.instituicao || ""),
+      titulo: String(aula.titulo || ""),
       materia: String(aula.materia || ""),
       professor: String(aula.professor || ""),
       aluno: String(aluno || ""),
@@ -1363,9 +1418,9 @@ async function runScheduledDispatch(config) {
   const aula = aulasDoDia[idxAulaBase];
   state.idxAula = (idxAulaBase + 1) % aulasDoDia.length;
   const alunos = Array.isArray(config.alunos) ? config.alunos : [];
-  const pendingFromCycle = pickAlunoFromActiveCyclePreview(config, state, activeCycle);
-  const alunoFromCycle = typeof pendingFromCycle === "object" ? pendingFromCycle.aluno : "";
-  const itemKeyFromCycle = typeof pendingFromCycle === "object" ? pendingFromCycle.itemKey : "";
+  const pendingFromCycle = pickAgendaItemForCurrentDispatch(config, state, activeCycle, aula, new Date());
+  const alunoFromCycle = String(pendingFromCycle?.alunoPrevisto || "").trim();
+  const itemKeyFromCycle = String(pendingFromCycle?.itemKey || "").trim();
   const aluno = alunoFromCycle || (alunos.length ? normalizePendingOrder(state, alunos)[0] : "");
   if (!aluno) {
     throw new Error("Não foi possível selecionar o próximo aluno pendente.");
@@ -1378,6 +1433,7 @@ async function runScheduledDispatch(config) {
   const cardData = {
     turma: String(config.turma || ""),
     instituicao: String(config.instituicao || ""),
+    titulo: String(aula.titulo || ""),
     materia: String(aula.materia || ""),
     professor: String(aula.professor || ""),
     aluno: String(aluno || ""),
