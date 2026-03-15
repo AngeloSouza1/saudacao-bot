@@ -1,4 +1,9 @@
     const els = {
+      dashboardMainGrid: document.getElementById("dashboard-main-grid"),
+      sidebarMenu: document.getElementById("sidebar-menu"),
+      sidebarToggleBtn: document.getElementById("btn-toggle-sidebar"),
+      sidebarToggleIcon: document.getElementById("sidebar-toggle-icon"),
+      sessionCard: document.getElementById("session-status-card"),
       statusBadge: document.getElementById("status-badge"),
       statusLines: document.getElementById("status-lines"),
       actionLog: document.getElementById("action-log"),
@@ -162,6 +167,7 @@
     let effectiveFixContext = { index: -1, itemKey: "", alunoPrevisto: "" };
     const AUTO_FOCUS_INVALID_FIELD = false;
     const DEBUG_LESSON_FLOW = true;
+    const SIDEBAR_COLLAPSED_STORAGE_KEY = "saudacao.sidebar.collapsed";
     const btnAddStudent = document.getElementById("btn-add-student");
     const btnSaveStudentEdit = document.getElementById("btn-save-student-edit");
     const btnAddLesson = document.getElementById("btn-add-lesson");
@@ -310,6 +316,59 @@
       el.addEventListener(event, handler);
     }
 
+    function setSidebarCollapsed(collapsed) {
+      if (!els.dashboardMainGrid) return;
+      const isCollapsed = Boolean(collapsed);
+      els.dashboardMainGrid.classList.toggle("sidebar-collapsed", isCollapsed);
+      if (els.sidebarToggleBtn) {
+        els.sidebarToggleBtn.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+        els.sidebarToggleBtn.setAttribute("aria-label", isCollapsed ? "Maximizar menu lateral" : "Minimizar menu lateral");
+        els.sidebarToggleBtn.setAttribute("title", isCollapsed ? "Maximizar menu" : "Minimizar menu");
+      }
+      if (els.sidebarToggleIcon) {
+        els.sidebarToggleIcon.textContent = isCollapsed ? "▶" : "◀";
+      }
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, isCollapsed ? "1" : "0");
+      } catch (_) {
+        // Ignora falha de storage (navegação privada, políticas etc).
+      }
+    }
+
+    function toggleSidebarCollapsed() {
+      if (!els.dashboardMainGrid) return;
+      const current = els.dashboardMainGrid.classList.contains("sidebar-collapsed");
+      setSidebarCollapsed(!current);
+    }
+
+    function initSidebarMenu() {
+      let initialCollapsed = false;
+      try {
+        initialCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "1";
+      } catch (_) {
+        initialCollapsed = false;
+      }
+      setSidebarCollapsed(initialCollapsed);
+
+      if (els.sidebarToggleBtn) {
+        els.sidebarToggleBtn.addEventListener("click", (event) => {
+          event.stopPropagation();
+          toggleSidebarCollapsed();
+        });
+      }
+
+      if (els.sidebarMenu) {
+        els.sidebarMenu.addEventListener("click", (event) => {
+          if (!els.dashboardMainGrid?.classList.contains("sidebar-collapsed")) return;
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          if (target.closest("button")) return;
+          if (target.closest("#btn-toggle-sidebar")) return;
+          setSidebarCollapsed(false);
+        });
+      }
+    }
+
     function pad2(value) {
       return String(value).padStart(2, "0");
     }
@@ -441,18 +500,18 @@
 
     function renderCycleHistorySummary() {
       if (!cycleHistoryCache.length) {
-        els.cycleHistory.innerHTML = '<div class="muted-small">Sem histórico de ciclos.</div>';
+        els.cycleHistory.innerHTML = '<div class="text-sm text-saudacao-800/65">Sem histórico de ciclos.</div>';
         return;
       }
 
-      const btnHtml = '<button id="btn-open-cycles-modal" class="secondary">Ver todos os ciclos</button>';
+      const btnHtml = '<button id="btn-open-cycles-modal" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Ver todos os ciclos</button>';
 
       els.cycleHistory.innerHTML =
-        '<div class="cycle-history-head">' +
-          '<h3 class="cycle-history-title">Histórico de ciclos</h3>' +
+        '<div class="cycle-history-head flex items-center justify-between gap-4">' +
+          '<h3 class="title-with-icon cycle-history-title text-2xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">🔁</span><span>Histórico de ciclos</span></h3>' +
           btnHtml +
         "</div>" +
-        '<div class="muted-small">Clique no botão para visualizar o histórico completo.</div>';
+        '<div class="mt-3 text-sm text-saudacao-800/65">Clique no botão para visualizar o histórico completo.</div>';
 
       const openBtn = document.getElementById("btn-open-cycles-modal");
       if (openBtn) {
@@ -472,17 +531,19 @@
       });
 
       if (!filtered.length) {
-        cyclesViewEls.list.innerHTML = '<div class="muted-small">Nenhum ciclo para o filtro selecionado.</div>';
+        cyclesViewEls.list.innerHTML = '<div class="rounded-[24px] border border-dashed border-saudacao-700/15 bg-white/70 p-5 text-base leading-7 text-saudacao-800/65">Nenhum ciclo para o filtro selecionado.</div>';
         return;
       }
 
       const items = filtered.map((cycle) => {
         const status = String(cycle?.status || "completed");
-        const className = "cycle-history-item " + (status === "active" ? "active" : "completed");
-        return '<li class="' + className + '">' + formatCycleLine(cycle) + "</li>";
+        const classes = status === "active"
+          ? "border-saudacao-500/30 bg-saudacao-100/90"
+          : "border-saudacao-700/10 bg-white/80";
+        return '<li class="rounded-[22px] border p-4 text-lg leading-8 text-saudacao-900 shadow-sm ' + classes + '">' + formatCycleLine(cycle) + "</li>";
       }).join("");
 
-      cyclesViewEls.list.innerHTML = '<ul class="cycle-history-list">' + items + "</ul>";
+      cyclesViewEls.list.innerHTML = '<ul class="cycle-history-list space-y-3">' + items + "</ul>";
     }
 
     function openCyclesModal() {
@@ -527,6 +588,42 @@
           }
         });
       });
+    }
+
+    function syncSessionCardButtonState() {
+      const button = document.getElementById("btn-focus-session-card");
+      if (!button) return;
+      const isVisible = Boolean(els.sessionCard && !els.sessionCard.classList.contains("is-hidden"));
+      button.classList.toggle("sidebar-btn-active", isVisible);
+      button.setAttribute("aria-expanded", isVisible ? "true" : "false");
+    }
+
+    function setSessionCardVisible(visible) {
+      if (!els.sessionCard) return;
+      els.sessionCard.classList.toggle("is-hidden", !visible);
+      syncSessionCardButtonState();
+    }
+
+    function toggleSessionCardVisibility() {
+      if (!els.sessionCard) return;
+      const isVisible = !els.sessionCard.classList.contains("is-hidden");
+      setSessionCardVisible(!isVisible);
+      if (!isVisible) {
+        focusSessionCard();
+      }
+    }
+
+    function focusSessionCard() {
+      if (!els.sessionCard) return;
+      setSessionCardVisible(true);
+      els.sessionCard.scrollIntoView({ behavior: "smooth", block: "start" });
+      els.sessionCard.classList.remove("card-focus-pulse");
+      requestAnimationFrame(() => {
+        els.sessionCard.classList.add("card-focus-pulse");
+      });
+      setTimeout(() => {
+        els.sessionCard?.classList.remove("card-focus-pulse");
+      }, 1300);
     }
 
     function capitalizeFirst(text) {
@@ -595,13 +692,38 @@
     function formatNextGreetingItem(item) {
       const priority = getGreetingPriority(item);
       const title = String(item?.alunoPrevisto || "").trim() || "Aluno não definido";
+      const dayNames = {
+        "0": "Domingo",
+        "1": "Segunda-feira",
+        "2": "Terça-feira",
+        "3": "Quarta-feira",
+        "4": "Quinta-feira",
+        "5": "Sexta-feira",
+        "6": "Sábado"
+      };
+      const dayLabel = dayNames[String(item?.dia ?? "")] || "Dia";
+      const date = resolveAgendaItemDate(item);
+      const dateLabel = date ? formatDatePtBr(date) : "";
+      const timeLabel = String(item?.horario || "").trim() || "--:--";
+      const lineTop = dateLabel
+        ? dayLabel + " (" + dateLabel + ") às " + timeLabel
+        : dayLabel + " às " + timeLabel;
+      const lineBottom = [
+        String(item?.titulo || "").trim() ? "Título: " + String(item?.titulo || "").trim() : "",
+        String(item?.materia || "").trim(),
+        String(item?.professor || "").trim(),
+        "Próximo aluno: " + title
+      ].filter(Boolean).join(" | ");
       return (
         '<li class="' + (priority.className === "today" ? "today" : "") + '">' +
           '<div class="greeting-item-head">' +
             '<span class="greeting-item-title">' + escapeHtml(title) + '</span>' +
             '<span class="priority-badge ' + priority.className + '">' + priority.label + '</span>' +
           '</div>' +
-          '<div class="greeting-item-body">' + escapeHtml(formatAgendaItem(item)) + '</div>' +
+          '<div class="greeting-item-body">' +
+            '<div class="greeting-item-meta">' + escapeHtml(lineTop) + '</div>' +
+            '<div class="greeting-item-detail">' + escapeHtml(lineBottom) + '</div>' +
+          '</div>' +
         '</li>'
       );
     }
@@ -647,7 +769,13 @@
 
       const preview = pendingItems.slice(0, 3).map((item) => "<li>" + formatAgendaItem(item) + "</li>").join("");
       els.agenda.setAttribute("aria-busy", "false");
-      els.agenda.innerHTML = preview ? "<ul>" + preview + "</ul>" : '<div class="muted-small">Sem agendamentos pendentes.</div>';
+      els.agenda.innerHTML = preview
+        ? '<ul class="space-y-3">' + pendingItems.slice(0, 3).map((item) =>
+            '<li class="rounded-[22px] border border-saudacao-700/10 bg-white/80 p-4 text-[15px] leading-7 text-saudacao-900 shadow-sm">' +
+              escapeHtml(formatAgendaItem(item)) +
+            '</li>'
+          ).join("") + "</ul>"
+        : '<div class="rounded-[24px] border border-dashed border-saudacao-700/15 bg-white/70 p-5 text-sm text-saudacao-800/65">Sem agendamentos pendentes.</div>';
       // Mantém o acesso ao modal completo sempre visível.
       agendaViewEls.openBtn.classList.remove("is-hidden");
     }
@@ -664,7 +792,9 @@
       );
       const list = pendingItems.slice(0, 8).map((item) => formatNextGreetingItem(item)).join("");
       els.nextGreetings.setAttribute("aria-busy", "false");
-      els.nextGreetings.innerHTML = list ? "<ul>" + list + "</ul>" : '<div class="muted-small">Sem próximas saudações pendentes.</div>';
+      els.nextGreetings.innerHTML = list
+        ? '<ul class="space-y-3">' + list + "</ul>"
+        : '<div class="rounded-[24px] border border-dashed border-saudacao-700/15 bg-white/70 p-5 text-sm text-saudacao-800/65">Sem próximas saudações pendentes.</div>';
     }
 
     function renderAgendaModal() {
@@ -689,7 +819,9 @@
           return;
         }
         const icon = done ? "☑" : "•";
-        const doneBadge = done ? '<span class="agenda-done-badge">✓ Efetivado</span>' : "";
+        const doneBadge = done
+          ? '<span class="inline-flex items-center rounded-full border border-saudacao-500/30 bg-white/85 px-3 py-1 text-xs font-semibold text-saudacao-700">✓ Efetivado</span>'
+          : "";
         const itemDate = resolveAgendaItemDate(item);
         const canMarkAbsence = !done && itemDate && isSameLocalDay(itemDate, new Date());
         const absenceDisabledAttr = canMarkAbsence ? "" : " disabled";
@@ -715,9 +847,37 @@
           });
           pendingIndex += 1;
         }
-        const row = "<li class='" + (done ? "done" : "") + "'>" +
-          '<div class="agenda-modal-item">' +
-            '<div class="agenda-modal-item-text"><span class="agenda-check">' + icon + "</span>" + formatAgendaItem(item) + doneBadge + "</div>" +
+        const dayNames = {
+          "0": "Domingo",
+          "1": "Segunda-feira",
+          "2": "Terça-feira",
+          "3": "Quarta-feira",
+          "4": "Quinta-feira",
+          "5": "Sexta-feira",
+          "6": "Sábado"
+        };
+        const dayLabel = dayNames[String(item?.dia ?? "")] || "Dia";
+        const scheduleDateLabel = itemDate ? formatDatePtBr(itemDate) : "";
+        const timeLabel = String(item?.horario || "").trim() || "--:--";
+        const headline = scheduleDateLabel
+          ? dayLabel + " (" + scheduleDateLabel + ") às " + timeLabel
+          : dayLabel + " às " + timeLabel;
+        const detail = [
+          String(item?.titulo || "").trim() ? "Título: " + String(item?.titulo || "").trim() : "",
+          String(item?.materia || "").trim(),
+          String(item?.professor || "").trim()
+        ].filter(Boolean).join(" | ");
+        const nextAluno = "Próximo aluno: " + (alunoNome || "não definido");
+        const rowClass = done
+          ? "border-saudacao-500/35 bg-saudacao-100/95"
+          : "border-saudacao-700/10 bg-white/80";
+        const row = "<li>" +
+          '<div class="agenda-modal-item rounded-[24px] border p-4 shadow-sm ' + rowClass + '">' +
+            '<div class="agenda-modal-item-text text-[15px] leading-7 text-saudacao-900">' +
+              '<div class="agenda-item-headline"><span class="agenda-check mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-sm font-bold text-saudacao-700">' + icon + "</span>" + escapeHtml(headline) + ' <span class="ml-2">' + doneBadge + "</span></div>" +
+              '<div class="agenda-item-detail">' + escapeHtml(detail || "Sem detalhes da aula.") + "</div>" +
+              '<div class="agenda-item-next">' + escapeHtml(nextAluno) + "</div>" +
+            "</div>" +
             actions +
           "</div>" +
         "</li>";
@@ -728,8 +888,8 @@
       });
       const content = orderedRows.join("");
       agendaViewEls.list.innerHTML = content
-        ? "<ul>" + content + "</ul>"
-        : '<div class="muted-small">Sem agenda carregada.</div>';
+        ? '<ul class="space-y-3">' + content + "</ul>"
+        : '<div class="rounded-[24px] border border-dashed border-saudacao-700/15 bg-white/70 p-5 text-sm text-saudacao-800/65">Sem agenda carregada.</div>';
     }
 
     function openAgendaModal() {
@@ -1153,6 +1313,9 @@
     function refreshStudentActionButtons() {
       const editing = editingStudentIndex >= 0;
       btnSaveStudentEdit.classList.toggle("is-hidden", !editing);
+      if (modalEls.studentName) {
+        modalEls.studentName.classList.toggle("field-dirty", editing);
+      }
       if (editing) {
         btnAddStudent.disabled = true;
       } else {
@@ -1165,6 +1328,9 @@
       btnAddLesson.classList.toggle("is-hidden", editing);
       btnSaveLessonEdit.classList.toggle("is-hidden", !editing);
       btnCancelLessonEdit.classList.toggle("is-hidden", !editing);
+      [modalEls.dia, modalEls.hora, modalEls.titulo, modalEls.materia, modalEls.professor]
+        .filter(Boolean)
+        .forEach((field) => field.classList.toggle("field-dirty", editing));
       if (!editing) {
         clearLessonValidation();
         updateAddLessonButtonState();
@@ -1225,7 +1391,7 @@
 
     function fillLessonForm(lesson) {
       if (!lesson) return;
-      if (modalEls.dia) modalEls.dia.value = String(lesson.dia || "1");
+      if (modalEls.dia) modalEls.dia.value = String(lesson.dia || "");
       if (modalEls.hora) modalEls.hora.value = String(lesson.hora || "");
       if (modalEls.titulo) modalEls.titulo.value = String(lesson.titulo || "");
       if (modalEls.materia) modalEls.materia.value = String(lesson.materia || "");
@@ -1262,7 +1428,7 @@
     }
 
     function clearLessonInputs() {
-      if (modalEls.dia) modalEls.dia.value = "1";
+      if (modalEls.dia) modalEls.dia.value = "";
       if (modalEls.hora) modalEls.hora.value = "";
       if (modalEls.titulo) modalEls.titulo.value = "";
       if (modalEls.materia) modalEls.materia.value = "";
@@ -1312,15 +1478,15 @@
     function renderModalStudents() {
       if (!modalEls.students) return;
       const rows = (Array.isArray(modalData?.alunos) ? modalData.alunos : []).map((name, index) =>
-        '<div class="student-item">' +
-          "<span>" + escapeHtml(String(name || "")) + "</span>" +
-          '<div class="student-actions">' +
-            '<button class="secondary icon-btn" title="Editar aluno" aria-label="Editar aluno" data-edit-student="' + index + '">✎</button>' +
-            '<button class="secondary icon-btn" title="Excluir aluno" aria-label="Excluir aluno" data-remove-student="' + index + '">🗑</button>' +
+        '<div class="student-item rounded-[20px] border border-saudacao-700/10 bg-white/80 px-4 py-3 shadow-sm">' +
+          '<span class="student-name font-medium text-saudacao-900">' + escapeHtml(String(name || "")) + "</span>" +
+          '<div class="student-actions flex items-center gap-2">' +
+            '<button class="secondary icon-btn rounded-2xl border border-saudacao-700/15 bg-white px-4 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50" title="Editar aluno" aria-label="Editar aluno" data-edit-student="' + index + '">✎</button>' +
+            '<button class="secondary icon-btn rounded-2xl border border-saudacao-700/15 bg-white px-4 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50" title="Excluir aluno" aria-label="Excluir aluno" data-remove-student="' + index + '">🗑</button>' +
           "</div>" +
         "</div>"
       );
-      modalEls.students.innerHTML = rows.join("") || '<div class="muted-small">Sem alunos cadastrados.</div>';
+      modalEls.students.innerHTML = rows.join("") || '<div class="rounded-[20px] border border-dashed border-saudacao-700/15 bg-white/70 p-4 text-sm text-saudacao-800/65">Sem alunos cadastrados.</div>';
     }
 
     function renderModalLessons() {
@@ -1371,7 +1537,7 @@
         "</tr>"
       );
       modalEls.lessons.innerHTML =
-        '<table class="table"><thead><tr><th>Dia</th><th>Hora</th><th>Próxima data</th><th>Título</th><th>Matéria</th><th>Professor</th><th></th><th></th></tr></thead><tbody>' +
+        '<table class="table w-full text-[15px]"><thead><tr><th>Dia</th><th>Hora</th><th>Próxima data</th><th>Título</th><th>Matéria</th><th>Professor</th><th></th><th></th></tr></thead><tbody>' +
         (rows.join("") || '<tr><td colspan="8" class="muted-small">Sem aulas cadastradas.</td></tr>') +
         "</tbody></table>";
     }
@@ -1606,8 +1772,8 @@
         data.whatsapp.lastError ? { label: "Último erro", value: data.whatsapp.lastError } : null
       ].filter(Boolean);
       els.statusLines.setAttribute("aria-busy", "false");
-      els.statusLines.innerHTML = '<div class="status-lines-grid">' + statusRows.map((row) =>
-        '<div class="status-line"><span class="status-label">' + row.label + '</span><span class="status-value">' + row.value + "</span></div>"
+      els.statusLines.innerHTML = '<div class="status-lines-grid grid gap-3">' + statusRows.map((row) =>
+        '<div class="status-line flex items-center justify-between rounded-[18px] border border-saudacao-700/10 bg-white/80 px-4 py-3 text-[15px] shadow-sm"><span class="status-label font-semibold text-saudacao-700">' + row.label + '</span><span class="status-value text-right font-semibold text-saudacao-900">' + row.value + "</span></div>"
       ).join("") + "</div>";
 
       updateManualSendButtonsState();
@@ -1745,14 +1911,14 @@
           : fullId;
 
         const rows = [
-          '<div class="last-run-item"><b>Tipo:</b> ' + (typeLabels[data.lastRun.type] || data.lastRun.type || "-") + "</div>",
-          '<div class="last-run-item"><b>Quando:</b> ' + when + "</div>",
-          data.lastRun.aluno ? '<div class="last-run-item"><b>Aluno:</b> ' + data.lastRun.aluno + "</div>" : "",
-          data.lastRun.materia ? '<div class="last-run-item"><b>Matéria:</b> ' + data.lastRun.materia + "</div>" : "",
-          data.lastRun.reason ? '<div class="last-run-item"><b>Motivo:</b> ' + (reasonLabels[data.lastRun.reason] || data.lastRun.reason) + "</div>" : ""
+          '<div class="last-run-item flex items-start justify-between gap-4 rounded-[18px] border border-saudacao-700/10 bg-white/80 px-4 py-3"><b class="text-saudacao-700">Tipo:</b><span class="text-right text-saudacao-900">' + (typeLabels[data.lastRun.type] || data.lastRun.type || "-") + "</span></div>",
+          '<div class="last-run-item flex items-start justify-between gap-4 rounded-[18px] border border-saudacao-700/10 bg-white/80 px-4 py-3"><b class="text-saudacao-700">Quando:</b><span class="text-right text-saudacao-900">' + when + "</span></div>",
+          data.lastRun.aluno ? '<div class="last-run-item flex items-start justify-between gap-4 rounded-[18px] border border-saudacao-700/10 bg-white/80 px-4 py-3"><b class="text-saudacao-700">Aluno:</b><span class="text-right text-saudacao-900">' + data.lastRun.aluno + "</span></div>" : "",
+          data.lastRun.materia ? '<div class="last-run-item flex items-start justify-between gap-4 rounded-[18px] border border-saudacao-700/10 bg-white/80 px-4 py-3"><b class="text-saudacao-700">Matéria:</b><span class="text-right text-saudacao-900">' + data.lastRun.materia + "</span></div>" : "",
+          data.lastRun.reason ? '<div class="last-run-item flex items-start justify-between gap-4 rounded-[18px] border border-saudacao-700/10 bg-white/80 px-4 py-3"><b class="text-saudacao-700">Motivo:</b><span class="text-right text-saudacao-900">' + (reasonLabels[data.lastRun.reason] || data.lastRun.reason) + "</span></div>" : ""
         ].filter(Boolean);
 
-        els.lastRun.innerHTML = '<div class="last-run-list">' + rows.join("") + "</div>";
+        els.lastRun.innerHTML = '<div class="last-run-list space-y-3">' + rows.join("") + "</div>";
       } else {
         els.lastRun.textContent = "Nenhum envio ainda.";
       }
@@ -2511,6 +2677,9 @@
     onById("btn-open-full-agenda", "click", () => {
       openAgendaModal();
     });
+    onById("btn-focus-session-card", "click", () => {
+      toggleSessionCardVisibility();
+    });
     if (agendaViewEls.sendBtn) {
       agendaViewEls.sendBtn.addEventListener("click", async () => {
         const confirmed = await openConfirmModal({
@@ -3263,6 +3432,22 @@
       const btn = document.getElementById("btn-now-forced");
       if (btn) btn.click();
     });
+    onById("btn-collapsed-session", "click", () => {
+      const btn = document.getElementById("btn-focus-session-card");
+      if (btn) btn.click();
+    });
+    onById("btn-collapsed-destination", "click", () => {
+      const btn = document.getElementById("btn-open-destination-modal");
+      if (btn) btn.click();
+    });
+    onById("btn-collapsed-config", "click", () => {
+      const btn = document.getElementById("btn-open-config-modal");
+      if (btn) btn.click();
+    });
+    onById("btn-collapsed-agenda", "click", () => {
+      const btn = document.getElementById("btn-open-agenda-card-modal");
+      if (btn) btn.click();
+    });
 
     // Exibe feedback de carregamento imediatamente, mesmo em boots rápidos.
     renderLoadingChecklist(null, []);
@@ -3275,6 +3460,8 @@
     }, MAX_APP_LOADING_MS);
 
     bindCardAccessModals();
+    syncSessionCardButtonState();
+    initSidebarMenu();
 
     Promise.all([refresh(), loadGroups()])
       .then(() => {

@@ -1,34 +1,34 @@
 export function dashboardStaticHtml() {
   return String.raw`
   <div id="qr-connect-overlay" class="qr-connect-overlay hidden" aria-live="polite">
-    <section class="qr-connect-card" role="status">
+    <section class="qr-connect-card rounded-[30px] border border-saudacao-700/10 bg-white/95 p-8 text-center shadow-soft-panel backdrop-blur-xl" role="status">
       <div class="loader-dot"></div>
-      <h2 class="qr-connect-title">Acesso em andamento</h2>
-      <p id="qr-connect-text" class="qr-connect-text">QR validado. Carregando e acessando a aplicação...</p>
+      <h2 class="title-with-icon qr-connect-title mt-4 text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">🔄</span><span>Acesso em andamento</span></h2>
+      <p id="qr-connect-text" class="qr-connect-text mt-3 text-base leading-7 text-saudacao-800/75">QR validado. Carregando e acessando a aplicação...</p>
     </section>
   </div>
 
   <div id="wa-login-overlay" class="wa-login-overlay hidden" aria-live="polite">
-    <section class="wa-login-card" role="status">
-      <h2 class="wa-login-title">Login do WhatsApp</h2>
-      <p id="wa-login-text" class="wa-login-text">Aguardando conexão do WhatsApp Web.</p>
+    <section class="wa-login-card rounded-[32px] border border-saudacao-700/10 bg-white/95 p-8 shadow-soft-panel backdrop-blur-xl" role="status">
+      <h2 class="title-with-icon wa-login-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">💬</span><span>Login do WhatsApp</span></h2>
+      <p id="wa-login-text" class="wa-login-text mt-3 text-base leading-7 text-saudacao-800/75">Aguardando conexão do WhatsApp Web.</p>
       <div class="wa-login-qr-wrap">
         <img id="wa-login-qr" class="wa-login-qr is-hidden" alt="QR Code para login no WhatsApp Web">
         <div id="wa-login-empty" class="muted">QR Code ainda não disponível. Clique em “Gerar QR”.</div>
       </div>
-      <div class="wa-login-actions">
-        <button id="btn-wa-reconnect" class="btn-save">Gerar QR</button>
+      <div class="wa-login-actions mt-6 flex justify-end">
+        <button id="btn-wa-reconnect" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Gerar QR</button>
       </div>
       <div id="wa-login-feedback" class="wa-login-feedback"></div>
     </section>
   </div>
 
   <div id="app-loading" class="app-loading" aria-live="polite" aria-busy="true">
-    <section class="app-loading-card" role="status">
+    <section class="app-loading-card rounded-[30px] border border-saudacao-700/10 bg-white/95 p-8 text-center shadow-soft-panel backdrop-blur-xl" role="status">
       <div class="loader-dot"></div>
-      <h2 id="app-loading-title" class="app-loading-title">Carregando aplicação</h2>
-      <p id="app-loading-text" class="app-loading-text">Aguarde enquanto inicializamos o painel.</p>
-      <div id="app-loading-checklist" class="app-loading-checklist"></div>
+      <h2 id="app-loading-title" class="title-with-icon app-loading-title mt-4 text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">⏳</span><span>Carregando aplicação</span></h2>
+      <p id="app-loading-text" class="app-loading-text mt-3 text-base leading-7 text-saudacao-800/75">Aguarde enquanto inicializamos o painel.</p>
+      <div id="app-loading-checklist" class="app-loading-checklist mt-5"></div>
     </section>
   </div>
 
@@ -40,35 +40,36 @@ export function dashboardStaticHtml() {
   </nav>
 
   <div id="editor-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="modal">
-      <div class="modal-head">
-        <h2>Editor de Agenda</h2>
-        <div class="modal-head-actions">
-          <button id="btn-close-modal" class="secondary">Fechar</button>
+    <section class="modal rounded-[32px] border border-saudacao-700/10 bg-white/95 p-8 shadow-soft-panel backdrop-blur-xl">
+      <div class="modal-head flex items-center justify-between gap-4">
+        <h2 class="title-with-icon text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">📅</span><span>Editor de Agenda</span></h2>
+        <div class="modal-head-actions flex items-center gap-3">
+          <button id="btn-close-modal" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-4 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Fechar</button>
         </div>
       </div>
 
-      <div class="grid">
-        <div class="card">
-          <h2>Alunos</h2>
+      <div class="grid mt-6">
+        <div class="card rounded-[28px] border border-saudacao-700/10 bg-white/80 p-6 shadow-sm">
+          <h2 class="title-with-icon text-2xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">👥</span><span>Alunos</span></h2>
           <div class="row">
             <div style="grid-column: 1 / -1;">
               <label for="modal-student-name">Nome do aluno</label>
               <input id="modal-student-name" placeholder="Ex.: Angelo">
             </div>
           </div>
-          <div class="buttons">
-            <button id="btn-add-student" class="btn-save">Adicionar Aluno</button>
-            <button id="btn-save-student-edit" class="secondary is-hidden">Salvar Edição</button>
+          <div class="buttons mt-4 flex flex-wrap gap-3">
+            <button id="btn-add-student" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Adicionar Aluno</button>
+            <button id="btn-save-student-edit" class="secondary is-hidden rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Salvar Edição</button>
           </div>
           <div class="muted-small" style="margin-top:6px;">Para adicionar aluno, preencha corretamente o nome do aluno.</div>
           <div id="modal-students" class="students-list"></div>
         </div>
 
-        <div class="card">
-          <h2>Aulas da Semana</h2>
+        <div class="card rounded-[28px] border border-saudacao-700/10 bg-white/80 p-6 shadow-sm">
+          <h2 class="title-with-icon text-2xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">📅</span><span>Aulas da Semana</span></h2>
           <div class="mini-row">
             <select id="modal-dia">
+              <option value="" selected disabled>Selecione o dia</option>
               <option value="1">1 - Segunda</option>
               <option value="2">2 - Terça</option>
               <option value="3">3 - Quarta</option>
@@ -83,15 +84,17 @@ export function dashboardStaticHtml() {
             <input id="modal-professor" placeholder="Professor(a)">
           </div>
           <div class="inline-hint-row">
-            <div class="buttons">
-              <button id="btn-add-lesson" class="btn-save">Adicionar Aula</button>
-              <button id="btn-save-lesson-edit" class="secondary is-hidden">Salvar Edição</button>
-              <button id="btn-cancel-lesson-edit" class="secondary is-hidden">Cancelar</button>
+            <div class="buttons flex flex-wrap gap-3">
+              <button id="btn-add-lesson" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Adicionar Aula</button>
+              <button id="btn-save-lesson-edit" class="secondary is-hidden rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Salvar Edição</button>
+              <button id="btn-cancel-lesson-edit" class="secondary is-hidden rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Cancelar</button>
             </div>
-            <div class="inline-hint">Clique em Editar para carregar uma aula nos campos e salvar as alterações.</div>
+            <div class="inline-hint-card">
+              <p class="inline-hint inline-hint-title">Editar: clique em ✎, ajuste e salve.</p>
+              <p class="muted-small inline-hint-sub">Novo: preencha os campos e clique em Adicionar Aula.</p>
+            </div>
           </div>
-          <div class="muted-small">Para adicionar aula, preencha corretamente dia, hora, título, matéria e professor.</div>
-          <div id="modal-lessons" class="agenda-list" style="margin-top:8px; height:330px; max-height:none; overflow:auto;"></div>
+          <div id="modal-lessons" class="agenda-list"></div>
         </div>
       </div>
 
@@ -99,61 +102,61 @@ export function dashboardStaticHtml() {
   </div>
 
   <div id="confirm-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
-      <h2 id="confirm-title" class="confirm-title">Confirmar exclusão</h2>
-      <p id="confirm-text" class="confirm-text">Deseja realmente excluir este item?</p>
-      <div class="confirm-actions">
-        <button id="confirm-cancel" class="secondary">Cancelar</button>
-        <button id="confirm-ok" class="btn-danger">Excluir</button>
+    <section class="confirm-modal rounded-[28px] border border-saudacao-700/10 bg-white/95 p-7 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+      <h2 id="confirm-title" class="title-with-icon confirm-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">⚠️</span><span>Confirmar exclusão</span></h2>
+      <p id="confirm-text" class="confirm-text mt-3 text-base leading-7 text-saudacao-800/75">Deseja realmente excluir este item?</p>
+      <div class="confirm-actions mt-6 flex justify-end gap-3">
+        <button id="confirm-cancel" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Cancelar</button>
+        <button id="confirm-ok" class="btn-danger rounded-2xl bg-[#a43a2f] px-5 py-3 font-semibold text-white shadow-lg shadow-[#a43a2f]/20 transition hover:bg-[#8c3127]">Excluir</button>
       </div>
     </section>
   </div>
 
   <div id="new-cycle-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="new-cycle-title" aria-describedby="new-cycle-text">
-      <h2 id="new-cycle-title" class="confirm-title">Novo ciclo</h2>
-      <p id="new-cycle-text" class="confirm-text">Defina um nome para identificar este ciclo.</p>
+    <section class="confirm-modal rounded-[28px] border border-saudacao-700/10 bg-white/95 p-7 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="new-cycle-title" aria-describedby="new-cycle-text">
+      <h2 id="new-cycle-title" class="title-with-icon confirm-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">🔁</span><span>Novo ciclo</span></h2>
+      <p id="new-cycle-text" class="confirm-text mt-3 text-base leading-7 text-saudacao-800/75">Defina um nome para identificar este ciclo.</p>
       <div>
         <label for="new-cycle-name">Nome do ciclo</label>
         <input id="new-cycle-name" placeholder="Ex.: Módulo 2 - Semana 1">
       </div>
-      <div class="confirm-actions">
-        <button id="new-cycle-cancel" class="secondary">Cancelar</button>
-        <button id="new-cycle-confirm" class="btn-save">Criar ciclo</button>
+      <div class="confirm-actions mt-6 flex justify-end gap-3">
+        <button id="new-cycle-cancel" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Cancelar</button>
+        <button id="new-cycle-confirm" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Criar ciclo</button>
       </div>
     </section>
   </div>
 
   <div id="info-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="info-modal" role="dialog" aria-modal="true" aria-labelledby="info-title" aria-describedby="info-text">
-      <h2 id="info-title" class="info-title">Alteração concluída</h2>
-      <p id="info-text" class="info-text">Alteração feita com sucesso.</p>
-      <div class="info-actions">
-        <button id="info-ok" class="btn-save">OK</button>
+    <section class="info-modal rounded-[28px] border border-saudacao-700/10 bg-white/95 p-7 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="info-title" aria-describedby="info-text">
+      <h2 id="info-title" class="title-with-icon info-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">✅</span><span>Alteração concluída</span></h2>
+      <p id="info-text" class="info-text mt-3 text-base leading-7 text-saudacao-800/75">Alteração feita com sucesso.</p>
+      <div class="info-actions mt-6 flex justify-end">
+        <button id="info-ok" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">OK</button>
       </div>
     </section>
   </div>
 
   <div id="destination-unlock-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="destination-unlock-title" aria-describedby="destination-unlock-text">
-      <h2 id="destination-unlock-title" class="confirm-title">Desbloquear destino</h2>
-      <p id="destination-unlock-text" class="confirm-text">Digite a senha para liberar a seleção do grupo encontrado.</p>
+    <section class="confirm-modal rounded-[28px] border border-saudacao-700/10 bg-white/95 p-7 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="destination-unlock-title" aria-describedby="destination-unlock-text">
+      <h2 id="destination-unlock-title" class="title-with-icon confirm-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">🔓</span><span>Desbloquear destino</span></h2>
+      <p id="destination-unlock-text" class="confirm-text mt-3 text-base leading-7 text-saudacao-800/75">Digite a senha para liberar a seleção do grupo encontrado.</p>
       <div>
         <label for="destination-unlock-password">Senha</label>
         <input id="destination-unlock-password" type="password" placeholder="Senha de desbloqueio">
       </div>
       <div id="destination-unlock-feedback" class="wa-login-feedback"></div>
-      <div class="confirm-actions">
-        <button id="destination-unlock-cancel" class="secondary">Cancelar</button>
-        <button id="destination-unlock-confirm" class="btn-save">Liberar</button>
+      <div class="confirm-actions mt-6 flex justify-end gap-3">
+        <button id="destination-unlock-cancel" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Cancelar</button>
+        <button id="destination-unlock-confirm" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Liberar</button>
       </div>
     </section>
   </div>
 
   <div id="swap-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="swap-modal" role="dialog" aria-modal="true" aria-labelledby="swap-title" aria-describedby="swap-text">
-      <h2 id="swap-title" class="info-title">Trocar posição do aluno</h2>
-      <p id="swap-text" class="info-text">Selecione o aluno para trocar a posição no agendamento pendente.</p>
+    <section class="swap-modal rounded-[28px] border border-saudacao-700/10 bg-white/95 p-7 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="swap-title" aria-describedby="swap-text">
+      <h2 id="swap-title" class="title-with-icon info-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">👥</span><span>Trocar posição do aluno</span></h2>
+      <p id="swap-text" class="info-text mt-3 text-base leading-7 text-saudacao-800/75">Selecione o aluno para trocar a posição no agendamento pendente.</p>
       <div>
         <label for="swap-from">Aluno selecionado</label>
         <input id="swap-from" readonly>
@@ -164,18 +167,18 @@ export function dashboardStaticHtml() {
           <option value="">Selecione</option>
         </select>
       </div>
-      <div class="swap-modal-actions">
-        <button id="swap-cancel" class="secondary">Cancelar</button>
-        <button id="swap-confirm" class="btn-save">Confirmar troca</button>
+      <div class="swap-modal-actions mt-6 flex justify-end gap-3">
+        <button id="swap-cancel" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Cancelar</button>
+        <button id="swap-confirm" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Confirmar troca</button>
       </div>
     </section>
   </div>
 
   <div id="effective-fix-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="swap-modal" role="dialog" aria-modal="true" aria-labelledby="effective-fix-title" aria-describedby="effective-fix-text">
-      <h2 id="effective-fix-title" class="info-title">Corrigir efetivação</h2>
-      <p id="effective-fix-text" class="info-text">Informe quem realmente realizou a saudação nesta data. O aluno previsto irá para o fim da fila.</p>
-      <p class="info-text">Mostrando apenas alunos vinculados ao ciclo ativo.</p>
+    <section class="swap-modal rounded-[28px] border border-saudacao-700/10 bg-white/95 p-7 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="effective-fix-title" aria-describedby="effective-fix-text">
+      <h2 id="effective-fix-title" class="title-with-icon info-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">👥</span><span>Corrigir efetivação</span></h2>
+      <p id="effective-fix-text" class="info-text mt-3 text-base leading-7 text-saudacao-800/75">Informe quem realmente realizou a saudação nesta data. O aluno previsto irá para o fim da fila.</p>
+      <p class="info-text mt-2 text-base leading-7 text-saudacao-800/75">Mostrando apenas alunos vinculados ao ciclo ativo.</p>
       <div>
         <label for="effective-fix-expected">Aluno previsto</label>
         <input id="effective-fix-expected" readonly>
@@ -186,36 +189,36 @@ export function dashboardStaticHtml() {
           <option value="">Selecione</option>
         </select>
       </div>
-      <div class="swap-modal-actions">
-        <button id="effective-fix-cancel" class="secondary">Cancelar</button>
-        <button id="effective-fix-confirm" class="btn-save">Confirmar</button>
+      <div class="swap-modal-actions mt-6 flex justify-end gap-3">
+        <button id="effective-fix-cancel" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Cancelar</button>
+        <button id="effective-fix-confirm" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Confirmar</button>
       </div>
     </section>
   </div>
 
   <div id="agenda-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="agenda-modal" role="dialog" aria-modal="true" aria-labelledby="agenda-modal-title">
-      <div class="modal-head">
-        <h2 id="agenda-modal-title">Agendamentos da turma</h2>
-        <div class="modal-head-actions">
-          <button id="btn-send-agenda-list" class="btn-save">Enviar pendentes</button>
-          <button id="btn-close-agenda-modal" class="secondary">Fechar</button>
+    <section class="agenda-modal rounded-[32px] border border-saudacao-700/10 bg-white/95 p-8 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="agenda-modal-title">
+      <div class="modal-head flex items-center justify-between gap-4">
+        <h2 id="agenda-modal-title" class="title-with-icon text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">📅</span><span>Agendamentos da turma</span></h2>
+        <div class="modal-head-actions flex items-center gap-3">
+          <button id="btn-send-agenda-list" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Enviar pendentes</button>
+          <button id="btn-close-agenda-modal" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Fechar</button>
         </div>
       </div>
-      <div id="agenda-modal-list" class="agenda-modal-list"></div>
+      <div id="agenda-modal-list" class="agenda-modal-list mt-6"></div>
     </section>
   </div>
 
   <div id="cycles-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="agenda-modal" role="dialog" aria-modal="true" aria-labelledby="cycles-modal-title">
-      <div class="modal-head">
-        <h2 id="cycles-modal-title">Todos os ciclos</h2>
-        <div class="modal-head-actions">
-          <button id="btn-clear-completed-cycles" class="secondary">Apagar concluídos</button>
-          <button id="btn-close-cycles-modal" class="secondary">Fechar</button>
+    <section class="agenda-modal rounded-[32px] border border-saudacao-700/10 bg-white/95 p-8 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="cycles-modal-title">
+      <div class="modal-head flex items-center justify-between gap-4">
+        <h2 id="cycles-modal-title" class="title-with-icon text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">🔁</span><span>Todos os ciclos</span></h2>
+        <div class="modal-head-actions flex items-center gap-3">
+          <button id="btn-clear-completed-cycles" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Apagar concluídos</button>
+          <button id="btn-close-cycles-modal" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Fechar</button>
         </div>
       </div>
-      <div class="cycle-modal-controls">
+      <div class="cycle-modal-controls mt-6 rounded-[24px] border border-saudacao-700/10 bg-white/80 p-5 shadow-sm">
         <div>
           <label for="cycles-filter">Filtrar por status</label>
           <select id="cycles-filter">
@@ -225,20 +228,20 @@ export function dashboardStaticHtml() {
           </select>
         </div>
       </div>
-      <div id="cycles-modal-list" class="agenda-modal-list"></div>
+      <div id="cycles-modal-list" class="agenda-modal-list mt-5"></div>
     </section>
   </div>
 
   <div id="destination-card-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="card-content-modal" role="dialog" aria-modal="true" aria-labelledby="destination-card-title">
-      <div class="card-head">
-        <h2 id="destination-card-title">Destino</h2>
-        <div class="buttons">
-          <button id="btn-save-destination" class="btn-save">Salvar Destino</button>
-          <button id="btn-close-destination-modal" class="secondary">Fechar</button>
+    <section class="card-content-modal rounded-[32px] border border-saudacao-700/10 bg-white/95 p-8 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="destination-card-title">
+      <div class="card-head flex items-center justify-between gap-4">
+        <h2 id="destination-card-title" class="title-with-icon text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">🎯</span><span>Destino</span></h2>
+        <div class="buttons flex items-center gap-3">
+          <button id="btn-save-destination" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Salvar Destino</button>
+          <button id="btn-close-destination-modal" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Fechar</button>
         </div>
       </div>
-      <div class="row">
+      <div class="row mt-6">
         <div>
           <label for="to">Número individual</label>
           <input id="to" placeholder="Ex.: 5511987654321">
@@ -262,18 +265,18 @@ export function dashboardStaticHtml() {
   </div>
 
   <div id="config-card-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="card-content-modal" role="dialog" aria-modal="true" aria-labelledby="config-card-title">
-      <div class="config-head">
-        <h2 id="config-card-title">Configuração</h2>
-        <div class="buttons">
-          <button id="btn-new-cycle" class="secondary">Novo Ciclo</button>
-          <button id="btn-cancel-cycle" class="secondary">Cancelar Ciclo</button>
-          <button id="btn-refresh-cycle-pending" class="secondary">Atualizar Pendentes</button>
-          <button id="btn-save-config" class="btn-save">Salvar Configuração</button>
-          <button id="btn-close-config-modal" class="secondary">Fechar</button>
+    <section class="card-content-modal rounded-[32px] border border-saudacao-700/10 bg-white/95 p-8 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="config-card-title">
+      <div class="config-head flex items-center justify-between gap-4">
+        <h2 id="config-card-title" class="title-with-icon text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">⚙️</span><span>Configuração</span></h2>
+        <div class="buttons flex flex-wrap items-center gap-3">
+          <button id="btn-new-cycle" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Novo Ciclo</button>
+          <button id="btn-cancel-cycle" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Cancelar Ciclo</button>
+          <button id="btn-refresh-cycle-pending" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Atualizar Pendentes</button>
+          <button id="btn-save-config" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Salvar Configuração</button>
+          <button id="btn-close-config-modal" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Fechar</button>
         </div>
       </div>
-      <div class="row">
+      <div class="row mt-6">
         <div>
           <label for="turma">Turma</label>
           <input id="turma">
@@ -341,35 +344,35 @@ export function dashboardStaticHtml() {
   </div>
 
   <div id="lock-overlay" class="lock-overlay hidden" aria-live="polite">
-    <section class="lock-card" role="dialog" aria-modal="true" aria-labelledby="lock-title">
-      <h2 id="lock-title" class="lock-title">Painel bloqueado</h2>
-      <p id="lock-text" class="lock-text">Digite a senha para continuar.</p>
+    <section class="lock-card rounded-[28px] border border-saudacao-700/10 bg-white/95 p-7 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="lock-title">
+      <h2 id="lock-title" class="title-with-icon lock-title text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">🔒</span><span>Painel bloqueado</span></h2>
+      <p id="lock-text" class="lock-text mt-3 text-base leading-7 text-saudacao-800/75">Digite a senha para continuar.</p>
       <label for="lock-unlock-password">Senha</label>
       <input id="lock-unlock-password" type="password" placeholder="Senha de desbloqueio">
-      <div class="lock-actions">
-        <button id="btn-unlock" class="btn-save">Desbloquear</button>
+      <div class="lock-actions mt-6 flex justify-end">
+        <button id="btn-unlock" class="btn-save rounded-2xl bg-saudacao-700 px-5 py-3 font-semibold text-white shadow-lg shadow-saudacao-900/15 transition hover:bg-saudacao-800">Desbloquear</button>
       </div>
       <div id="lock-feedback" class="wa-login-feedback"></div>
     </section>
   </div>
 
   <div id="agenda-card-modal" class="modal-backdrop" aria-hidden="true">
-    <section class="card-content-modal" role="dialog" aria-modal="true" aria-labelledby="agenda-card-title">
-      <div class="card-head">
-        <h2 id="agenda-card-title">Agenda</h2>
-        <div class="buttons">
-          <button id="btn-close-agenda-card-modal" class="secondary">Fechar</button>
+    <section class="card-content-modal rounded-[32px] border border-saudacao-700/10 bg-white/95 p-8 shadow-soft-panel backdrop-blur-xl" role="dialog" aria-modal="true" aria-labelledby="agenda-card-title">
+      <div class="card-head flex items-center justify-between gap-4">
+        <h2 id="agenda-card-title" class="title-with-icon text-3xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">📅</span><span>Agenda</span></h2>
+        <div class="buttons flex items-center gap-3">
+          <button id="btn-close-agenda-card-modal" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Fechar</button>
         </div>
       </div>
       <div id="agenda" class="agenda-list muted is-hidden" aria-hidden="true">Carregando...</div>
-      <div class="buttons agenda-modal-actions">
-        <button id="btn-open-full-agenda" class="secondary is-hidden">Mais</button>
-        <button id="btn-open-json" class="secondary">Editar Agenda</button>
+      <div class="buttons agenda-modal-actions mt-5 flex items-center gap-3">
+        <button id="btn-open-full-agenda" class="secondary is-hidden rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Mais</button>
+        <button id="btn-open-json" class="secondary rounded-2xl border border-saudacao-700/15 bg-white px-5 py-3 font-semibold text-saudacao-800 shadow-sm transition hover:border-saudacao-700/30 hover:bg-saudacao-50">Editar Agenda</button>
       </div>
-      <div id="cycle-info" class="muted-small" style="margin-top:8px;"></div>
-      <div id="cycle-history" class="cycle-history"></div>
-      <div class="last-run-box">
-        <h3 class="last-run-title">Último envio</h3>
+      <div id="cycle-info" class="muted-small mt-4"></div>
+      <div id="cycle-history" class="cycle-history mt-4 rounded-[24px] border border-saudacao-700/10 bg-white/80 p-5 shadow-sm"></div>
+      <div class="last-run-box mt-5 rounded-[24px] border border-saudacao-700/10 bg-white/80 p-5 shadow-sm">
+        <h3 class="title-with-icon last-run-title text-2xl font-black tracking-[-0.03em] text-saudacao-900"><span class="title-icon" aria-hidden="true">📤</span><span>Último envio</span></h3>
         <div id="last-run" class="muted">Nenhum envio ainda.</div>
       </div>
     </section>
