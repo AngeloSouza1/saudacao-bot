@@ -149,6 +149,39 @@ function pageHtml() {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Saudação Bot</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5b3a'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-family='Georgia' font-size='28' fill='%23e9f7eb' font-weight='700'%3ESB%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            saudacao: {
+              50: "#f6fbf7",
+              100: "#e5f3e8",
+              200: "#c9e6d0",
+              300: "#9fd0ac",
+              400: "#6cb07e",
+              500: "#3f8a58",
+              600: "#2f6d46",
+              700: "#255539",
+              800: "#1d432f",
+              900: "#163126"
+            },
+            sun: {
+              100: "#fff4d9",
+              300: "#f6d88d"
+            }
+          },
+          boxShadow: {
+            "soft-panel": "0 22px 56px rgba(18, 45, 31, 0.12)"
+          },
+          borderRadius: {
+            "4xl": "2rem"
+          }
+        }
+      }
+    };
+  </script>
   <link rel="stylesheet" href="/dashboard.css">
 </head>
 <body>

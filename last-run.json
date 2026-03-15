@@ -1,8 +1,6 @@
 {
-  "type": "scheduled",
+  "type": "test",
   "skipped": false,
-  "aluno": "Daniel Lucas",
-  "materia": "Redes e Internet",
-  "messageId": "true_120363407433046278@g.us_3EB07631168462F270C4D6_138469896626257@lid",
-  "sentAt": "2026-03-11T13:00:03.399Z"
+  "messageId": "true_120363407433046278@g.us_3EB08F91630971D88498B1_138469896626257@lid",
+  "sentAt": "2026-03-15T19:11:38.432Z"
 }

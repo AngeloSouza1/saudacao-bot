@@ -542,50 +542,21 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
   }
 
   const preview = [];
-  const pendingQueue = [...ordemPendentes];
   const revertedSet = new Set(
     Array.isArray(state?.revertidosEfetivados)
       ? state.revertidosEfetivados.map((item) => String(item || ""))
       : []
   );
-  const reservedManualNames = new Set(
-    Array.from(manualEffectiveMap.values())
-      .map((item) => String(item || "").trim())
-      .filter(Boolean)
-  );
-  const usedNames = new Set();
-  const pullNextUnique = (queue, options = {}) => {
-    const allowReserved = Boolean(options.allowReserved);
-    while (queue.length) {
-      const candidate = String(queue.shift() || "").trim();
-      if (!candidate) continue;
-      if (usedNames.has(candidate)) continue;
-       if (!allowReserved && reservedManualNames.has(candidate)) continue;
-      return candidate;
-    }
-    return "";
-  };
 
   for (const row of baseRows) {
     const idx = Number(row.index || 0);
     const key = row.itemKey;
     const alunoManual = manualEffectiveMap.get(key);
     const manualEfetivado = Boolean(alunoManual && !revertedSet.has(key));
-    const done = manualEfetivado;
-
-    let alunoPrevisto = "";
-    if (manualEfetivado) {
-      alunoPrevisto = !usedNames.has(alunoManual) ? alunoManual : "";
-      const queueIndex = pendingQueue.indexOf(alunoPrevisto);
-      if (queueIndex >= 0) {
-        pendingQueue.splice(queueIndex, 1);
-      }
-    } else {
-      alunoPrevisto = pullNextUnique(pendingQueue) || "não definido";
-    }
-    if (alunoPrevisto && alunoPrevisto !== "efetivado" && alunoPrevisto !== "não definido") {
-      usedNames.add(alunoPrevisto);
-    }
+    const alunoVinculado = String(ordemPendentes[idx] || "").trim();
+    const alunoPrevisto = manualEfetivado
+      ? String(alunoManual || "").trim() || alunoVinculado || "não definido"
+      : alunoVinculado || "não definido";
 
     preview.push({
       dia: row.dia,
