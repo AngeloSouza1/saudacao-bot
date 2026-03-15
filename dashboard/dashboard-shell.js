@@ -49,6 +49,10 @@ export function dashboardHeroHtml() {
           <div class="hero-meta flex w-full flex-wrap items-center gap-2 lg:absolute lg:right-0 lg:top-[36px] lg:w-auto lg:justify-end">
             <div class="hero-kicker inline-flex w-fit items-center gap-2 rounded-full border border-saudacao-700/10 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-saudacao-700">Painel operacional</div>
             <div id="hero-cycle" class="hero-cycle" style="display:none;"></div>
+            <div id="hero-user" class="hero-user" style="display:none;">
+              <span id="hero-user-avatar" class="hero-user-avatar" aria-hidden="true">👤</span>
+              <span id="hero-user-name" class="hero-user-name"></span>
+            </div>
           </div>
         </div>
       </div>

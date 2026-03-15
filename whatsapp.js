@@ -18,6 +18,8 @@ const status = {
   phase: "idle",
   transportState: "",
   sender: "",
+  userName: "",
+  userAvatar: "",
   lastError: "",
   qrAvailable: false,
   qrText: "",
@@ -64,6 +66,46 @@ function toChatId(number) {
 
 function fromChatId(chatId) {
   return String(chatId || "").replace(/@c\.us$/, "");
+}
+
+async function refreshCurrentUserProfile(client) {
+  const wid = String(client?.info?.wid?._serialized || "").trim();
+  const sender = fromChatId(wid);
+  status.sender = sender;
+
+  const displayName = String(
+    client?.info?.pushname ||
+    client?.info?.me?.pushname ||
+    client?.info?.me?.name ||
+    ""
+  ).trim();
+  status.userName = displayName || sender || "";
+
+  if (!wid) {
+    status.userAvatar = "";
+    return;
+  }
+
+  let avatarUrl = "";
+
+  try {
+    avatarUrl = String(await client.getProfilePicUrl(wid) || "").trim();
+  } catch {
+    avatarUrl = "";
+  }
+
+  if (!avatarUrl) {
+    try {
+      const meContact = await client.getContactById(wid);
+      if (meContact && typeof meContact.getProfilePicUrl === "function") {
+        avatarUrl = String(await meContact.getProfilePicUrl() || "").trim();
+      }
+    } catch {
+      avatarUrl = "";
+    }
+  }
+
+  status.userAvatar = avatarUrl;
 }
 
 function normalizeGroupId(groupId) {
@@ -193,6 +235,8 @@ function createClient() {
     readyLogged = false;
     status.phase = "qr";
     status.sender = "";
+    status.userName = "";
+    status.userAvatar = "";
     status.qrAvailable = true;
     status.qrText = String(qr || "");
     status.qrImageDataUrl = "";
@@ -217,13 +261,13 @@ function createClient() {
     console.log(`⏳ Carregando WhatsApp Web: ${percent}% ${message || ""}`.trim());
   });
 
-  client.on("ready", () => {
+  client.on("ready", async () => {
     status.phase = "ready";
     status.qrAvailable = false;
     status.qrText = "";
     status.qrImageDataUrl = "";
     status.lastError = "";
-    status.sender = fromChatId(client.info?.wid?._serialized || "");
+    await refreshCurrentUserProfile(client);
     if (!readyLogged) {
       console.log("✅ WhatsApp Web conectado.");
       readyLogged = true;
@@ -236,6 +280,8 @@ function createClient() {
     status.qrText = "";
     status.qrImageDataUrl = "";
     status.lastError = "";
+    status.userName = "";
+    status.userAvatar = "";
     if (!authenticatedLogged) {
       console.log("🔐 Sessão autenticada.");
       authenticatedLogged = true;
@@ -260,6 +306,8 @@ function createClient() {
     status.phase = "disconnected";
     status.lastError = String(reason || "");
     status.sender = "";
+    status.userName = "";
+    status.userAvatar = "";
     status.qrAvailable = false;
     status.qrText = "";
     status.qrImageDataUrl = "";

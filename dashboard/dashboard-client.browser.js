@@ -25,7 +25,10 @@
       startDate: document.getElementById("startDate"),
       cycleInfo: document.getElementById("cycle-info"),
       cycleHistory: document.getElementById("cycle-history"),
-      heroCycle: document.getElementById("hero-cycle")
+      heroCycle: document.getElementById("hero-cycle"),
+      heroUser: document.getElementById("hero-user"),
+      heroUserAvatar: document.getElementById("hero-user-avatar"),
+      heroUserName: document.getElementById("hero-user-name")
     };
     const modalEls = {
       wrap: document.getElementById("editor-modal"),
@@ -1641,6 +1644,43 @@
       return phase || "desconhecido";
     }
 
+    function getNameInitials(value) {
+      const parts = String(value || "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (!parts.length) return "👤";
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function renderHeroUser(whatsAppState) {
+      if (!els.heroUser || !els.heroUserName || !els.heroUserAvatar) return;
+
+      const rawName = String(whatsAppState?.userName || "").trim();
+      const sender = String(whatsAppState?.sender || "").trim();
+      const userName = rawName || (sender ? ("+" + sender) : "");
+      const avatarUrl = String(whatsAppState?.userAvatar || "").trim();
+
+      if (!userName) {
+        els.heroUser.style.display = "none";
+        els.heroUserName.textContent = "";
+        els.heroUserAvatar.textContent = "👤";
+        return;
+      }
+
+      els.heroUserName.textContent = userName;
+
+      if (avatarUrl) {
+        const safeUrl = escapeHtml(avatarUrl);
+        els.heroUserAvatar.innerHTML = '<img src="' + safeUrl + '" alt="" loading="lazy" referrerpolicy="no-referrer">';
+      } else {
+        els.heroUserAvatar.textContent = getNameInitials(userName);
+      }
+
+      els.heroUser.style.display = "inline-flex";
+    }
+
     function statusClasse(phase) {
       if (phase === "ready" || phase === "authenticated") return "status-ok";
       if (phase === "disconnected" || phase === "auth_failure") return "status-error";
@@ -1761,6 +1801,7 @@
       els.statusBadge.className = "status " + statusClasse(phase);
       els.statusBadge.innerHTML = '<span class="dot"></span><span>' + statusEmPortugues(phase) + '</span>';
       updateWhatsAppLoginOverlay(data);
+      renderHeroUser(data?.whatsapp || {});
       if (shouldShowWhatsAppLogin(phase) && isScreenLocked) {
         unlockScreen();
         setLog("Sessão do WhatsApp desconectada. Painel de QR aberto para reconexão.");
