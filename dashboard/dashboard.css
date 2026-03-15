@@ -823,10 +823,12 @@
       color: var(--tone-success-ink);
     }
     .next-greetings-box li:nth-child(odd) {
-      background: linear-gradient(180deg, #f2f8ef, #e9f3e6);
+      background: linear-gradient(180deg, #f4faf1, #eaf4e7);
+      border-left-color: #7fad8a;
     }
     .next-greetings-box li:nth-child(even) {
-      background: linear-gradient(180deg, #ebf4e8, #e2eedf);
+      background: linear-gradient(180deg, #eaf4e7, #deecdb);
+      border-left-color: #6a9877;
     }
     .status-actions {
       display: flex;
