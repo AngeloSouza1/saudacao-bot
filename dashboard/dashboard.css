@@ -1,4 +1,5 @@
     :root {
+      --font-sans: "Inter", "Avenir Next", "Segoe UI Variable", "Trebuchet MS", sans-serif;
       --bg: #edf4ee;
       --bg-deep: #d7e8dd;
       --card: rgba(251, 253, 249, 0.84);
@@ -35,7 +36,7 @@
       margin: 0;
       height: 100vh;
       overflow: hidden;
-      font-family: "Avenir Next", "Segoe UI Variable", "Trebuchet MS", sans-serif;
+      font-family: var(--font-sans);
       font-size: 17px;
       color: var(--ink);
       background:
@@ -44,6 +45,20 @@
         radial-gradient(circle at bottom left, rgba(197, 220, 231, 0.9) 0, transparent 28%),
         linear-gradient(145deg, rgba(247, 250, 245, 0.96), rgba(228, 239, 230, 0.94)),
         var(--bg);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(126, 169, 138, 0.55);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(74, 122, 90, 0.72);
     }
     .wrap {
       width: 100%;
@@ -62,7 +77,7 @@
       border: 1px solid var(--line);
       border-radius: 24px;
       padding: 14px;
-      box-shadow: var(--shadow-soft);
+      box-shadow: 0 10px 26px rgba(18, 45, 31, 0.08);
       backdrop-filter: blur(16px);
     }
     .hero {
@@ -77,6 +92,33 @@
         var(--card);
       position: relative;
       overflow: hidden;
+    }
+    .hero-v0 {
+      display: block;
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    .hero-v0-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 68px;
+    }
+    .hero-v0-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .hero-v0-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
     }
     .hero::after {
       content: "";
@@ -141,9 +183,9 @@
     .hero-subtitle {
       margin-top: 0;
       color: var(--muted);
-      font-size: 30px;
-      max-width: 56ch;
-      line-height: 1.5;
+      font-size: 16px;
+      max-width: 60ch;
+      line-height: 1.35;
     }
     .hero-meta {
       display: flex;
@@ -249,23 +291,32 @@
       min-height: 0;
       overflow-y: hidden;
       overflow-x: hidden;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(246, 251, 246, 0.94), rgba(234, 244, 236, 0.96));
+      border: 1px solid rgba(131, 163, 142, 0.22);
     }
     .sidebar-nav {
       display: grid;
-      gap: 8px;
+      gap: 6px;
     }
     .sidebar-nav-btn {
       display: flex;
       align-items: center;
       gap: 10px;
-      width: 86%;
-      margin-right: auto;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(131, 163, 142, 0.2);
-      background: rgba(255, 255, 255, 0.82);
+      width: 100%;
+      margin-right: 0;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
       color: var(--ink-strong);
-      box-shadow: 0 8px 16px rgba(18, 45, 31, 0.08);
+      box-shadow: none;
+      transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+    .sidebar-nav-btn:hover,
+    .sidebar-nav-btn:focus-visible {
+      background: rgba(223, 243, 217, 0.58);
+      border-color: rgba(131, 163, 142, 0.28);
     }
     .sidebar-nav-icon {
       display: inline-flex;
@@ -306,6 +357,7 @@
       font-size: 14px;
       font-weight: 800;
       line-height: 1;
+      border-radius: 999px;
     }
     .sidebar-collapsed-nav {
       display: none;
@@ -394,10 +446,8 @@
       min-height: 0;
     }
     .card-highlight {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.7), rgba(245,250,239,0.96)),
-        var(--card);
-      box-shadow: var(--shadow-strong);
+      background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(243,248,239,0.96));
+      box-shadow: 0 12px 28px rgba(18, 45, 31, 0.1);
     }
     .card-section {
       margin-top: 14px;
@@ -913,10 +963,10 @@
       animation: card-focus-pulse 1.1s ease;
     }
     .sidebar-btn-active {
-      border-color: rgba(117, 161, 122, 0.38) !important;
-      background: linear-gradient(180deg, rgba(223,243,217,0.96), rgba(233,248,228,0.96)) !important;
+      border-color: rgba(117, 161, 122, 0.34) !important;
+      background: linear-gradient(180deg, rgba(214,236,218,0.95), rgba(227,244,229,0.95)) !important;
       color: #1f6a43 !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 10px 20px rgba(31, 106, 67, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 14px rgba(31, 106, 67, 0.09);
     }
     ul {
       margin: 10px 0 0;
@@ -1182,10 +1232,10 @@
     .confirm-modal,
     .info-modal,
     .swap-modal {
-      border-radius: 28px;
+      border-radius: 22px;
       border: 1px solid var(--modal-border);
       background: var(--modal-bg);
-      box-shadow: var(--modal-shadow);
+      box-shadow: 0 20px 50px rgba(18, 45, 31, 0.16);
       backdrop-filter: blur(12px);
     }
     .modal-backdrop.open {
@@ -1297,27 +1347,42 @@
       max-height: clamp(260px, 40vh, 520px);
       overflow: auto;
       margin-top: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(131, 163, 142, 0.2);
+      background: linear-gradient(180deg, rgba(251, 253, 249, 0.9), rgba(243, 248, 239, 0.94));
+      padding: 8px;
     }
     #editor-modal .table {
       font-size: 16px;
-      border-radius: 18px;
+      border-radius: 14px;
       overflow: hidden;
       table-layout: auto;
+      border: 1px solid rgba(131, 163, 142, 0.2);
+      background: rgba(251, 253, 249, 0.94);
     }
     #editor-modal .table th {
       font-size: 13px;
       line-height: 1.3;
-      padding: 10px 10px;
+      padding: 9px 10px;
       position: sticky;
       top: 0;
       z-index: 2;
-      background: rgba(236, 244, 235, 0.98);
+      background: rgba(236, 244, 235, 0.92);
       border-bottom: 1px solid rgba(131, 163, 142, 0.3);
     }
     #editor-modal .table td {
       line-height: 1.4;
       padding: 11px 10px;
       vertical-align: top;
+    }
+    #editor-modal #modal-lessons .table tbody tr:nth-child(odd) {
+      background: rgba(250, 252, 249, 0.95);
+    }
+    #editor-modal #modal-lessons .table tbody tr:nth-child(even) {
+      background: rgba(238, 246, 237, 0.88);
+    }
+    #editor-modal #modal-lessons .table tbody tr:hover {
+      background: rgba(223, 243, 217, 0.5);
     }
     #editor-modal #modal-lessons .table th:nth-child(1),
     #editor-modal #modal-lessons .table td:nth-child(1) {
@@ -1356,11 +1421,21 @@
       font-weight: 500;
     }
     #editor-modal .icon-btn {
-      width: 44px;
-      min-width: 44px;
-      height: 40px;
-      font-size: 18px;
-      border-radius: 12px;
+      width: 38px;
+      min-width: 38px;
+      height: 34px;
+      font-size: 15px;
+      border-radius: 10px;
+      padding: 0;
+      box-shadow: none;
+      border-color: rgba(131, 163, 142, 0.24) !important;
+      background: rgba(255, 255, 255, 0.9) !important;
+    }
+    #editor-modal .icon-btn:hover {
+      background: rgba(223, 243, 217, 0.65) !important;
+      border-color: rgba(117, 161, 122, 0.35) !important;
+      transform: none;
+      box-shadow: none;
     }
     #editor-modal #modal-lessons {
       flex: 1 1 auto;
@@ -1405,6 +1480,10 @@
       gap: 10px;
       padding-bottom: 12px;
       border-bottom: 1px solid rgba(206, 216, 203, 0.88);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: linear-gradient(180deg, rgba(251, 253, 249, 0.98), rgba(247, 251, 245, 0.96));
     }
     .modal-head h2,
     .confirm-title,
@@ -1729,18 +1808,28 @@
       border: 1px solid var(--line);
       background: rgba(247, 251, 245, 0.88);
       font-size: 16px;
+      transition: background-color 150ms ease, border-color 150ms ease;
     }
     .students-list .student-item:nth-child(odd) {
-      background: #eaf4e8;
+      background: rgba(244, 250, 242, 0.95);
     }
     .students-list .student-item:nth-child(even) {
-      background: #dcebd9;
+      background: rgba(233, 245, 231, 0.95);
+    }
+    .students-list .student-item:hover {
+      background: rgba(223, 243, 217, 0.72);
+      border-color: rgba(131, 163, 142, 0.36);
     }
     .student-actions {
       display: inline-flex;
       gap: 8px;
       align-items: center;
       flex-shrink: 0;
+      opacity: 0.92;
+      transition: opacity 150ms ease;
+    }
+    .student-item:hover .student-actions {
+      opacity: 1;
     }
     .field-invalid {
       border-bottom-color: #b23d31 !important;
@@ -1911,14 +2000,17 @@
       line-height: 1.5;
       padding: 0;
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 14px;
       list-style: none;
+      overflow: hidden;
+      background: rgba(251, 253, 249, 0.92);
     }
     .agenda-modal-item {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 14px;
+      padding: 12px 14px;
     }
     .agenda-modal-item-text {
       min-width: 0;
@@ -1984,10 +2076,10 @@
       content: "";
     }
     .agenda-modal-list li:nth-child(odd) {
-      background: #eaf4e8;
+      background: rgba(250, 252, 249, 0.94);
     }
     .agenda-modal-list li:nth-child(even) {
-      background: #dcebd9;
+      background: rgba(237, 246, 235, 0.92);
     }
     .agenda-modal-list li.done {
       background: linear-gradient(135deg, #d4ead1, #c6e0c3) !important;
@@ -2035,6 +2127,14 @@
       .hero {
         grid-template-columns: 1fr;
         padding: 16px;
+      }
+      .hero-v0-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero-v0-right {
+        width: 100%;
+        justify-content: flex-start;
       }
       .hero-title {
         font-size: 34px;

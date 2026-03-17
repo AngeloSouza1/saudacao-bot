@@ -35,24 +35,21 @@ export function dashboardSidebarButton(id, icon, title, subtitle) {
 
 export function dashboardHeroHtml() {
   return `
-    <section class="hero sticky top-2 z-30 relative overflow-hidden rounded-[24px] border border-saudacao-700/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.97),rgba(241,248,239,0.9))] px-5 py-2 shadow-soft-panel backdrop-blur-xl">
-      <div class="absolute inset-y-0 right-[-10rem] w-72 rounded-full bg-[radial-gradient(circle,rgba(246,216,141,0.16),rgba(246,216,141,0))]"></div>
-      <div class="relative lg:min-h-[84px]">
-        <div class="hero-brand flex flex-col gap-2 lg:w-full lg:h-full">
-          <div class="hero-copy-wrap flex items-start gap-4 min-w-0 lg:pr-[420px]">
-            <div class="hero-logo shrink-0" aria-hidden="true"><span class="hero-logo-mark">SB</span></div>
-            <div class="hero-copy min-w-0">
+    <section class="hero hero-v0 sticky top-2 z-30 rounded-[24px] border border-saudacao-700/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(242,248,240,0.92))] px-5 py-3 shadow-soft-panel backdrop-blur-xl">
+      <div class="hero-v0-row">
+        <div class="hero-v0-left">
+          <div class="hero-logo shrink-0" aria-hidden="true"><span class="hero-logo-mark">SB</span></div>
+          <div class="hero-copy min-w-0">
             <h1 class="hero-title mt-0.5 text-2xl font-black tracking-[-0.03em] text-saudacao-900 xl:text-[2.2rem]">Saudação Bot</h1>
             <div class="hero-subtitle mt-0.5 max-w-3xl text-[13px] leading-5 text-saudacao-800/70">Painel de controle da sessão, com definição de destino e envio rápido de mensagens.</div>
-            </div>
           </div>
-          <div class="hero-meta flex w-full flex-wrap items-center gap-2 lg:absolute lg:right-0 lg:top-[36px] lg:w-auto lg:justify-end">
-            <div class="hero-kicker inline-flex w-fit items-center gap-2 rounded-full border border-saudacao-700/10 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-saudacao-700">Painel operacional</div>
-            <div id="hero-cycle" class="hero-cycle" style="display:none;"></div>
-            <div id="hero-user" class="hero-user" style="display:none;">
-              <span id="hero-user-avatar" class="hero-user-avatar" aria-hidden="true">👤</span>
-              <span id="hero-user-name" class="hero-user-name"></span>
-            </div>
+        </div>
+        <div class="hero-v0-right">
+          <div class="hero-kicker inline-flex w-fit items-center gap-2 rounded-full border border-saudacao-700/10 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-saudacao-700">Painel operacional</div>
+          <div id="hero-cycle" class="hero-cycle" style="display:none;"></div>
+          <div id="hero-user" class="hero-user" style="display:none;">
+            <span id="hero-user-avatar" class="hero-user-avatar" aria-hidden="true">👤</span>
+            <span id="hero-user-name" class="hero-user-name"></span>
           </div>
         </div>
       </div>
