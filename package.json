@@ -2,8 +2,10 @@
   "name": "saudacao-bot",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start": "node scripts/start-v0.js",
+    "start:legacy": "node index.js",
     "dashboard": "node index.js",
+    "frontend": "npm --prefix frontend-v0 run dev",
     "now": "node index.js --now",
     "test": "node index.js --test",
     "render-build": "npm install && PUPPETEER_CACHE_DIR=./.cache/puppeteer npx puppeteer browsers install chrome"
