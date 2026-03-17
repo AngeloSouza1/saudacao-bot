@@ -57,6 +57,8 @@ type DashboardStatusResponse = {
     phase?: string
     sender?: string
     qrAvailable?: boolean
+    qrImageDataUrl?: string
+    qrText?: string
     lastError?: string
     userName?: string
     userAvatar?: string
@@ -148,6 +150,7 @@ function mapGreetingItems(data: DashboardStatusResponse | null, limit = 12): Gre
 }
 
 export default function DashboardPage() {
+  const [isMounted, setIsMounted] = useState(false)
   const [activeItem, setActiveItem] = useState("")
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
@@ -158,6 +161,10 @@ export default function DashboardPage() {
   const [statusData, setStatusData] = useState<DashboardStatusResponse | null>(null)
   const [statusError, setStatusError] = useState<string>("")
   const [shortcutLoading, setShortcutLoading] = useState<string>("")
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -288,6 +295,83 @@ export default function DashboardPage() {
     }
   }
 
+  if (!isMounted) {
+    return <div className="h-screen bg-background" suppressHydrationWarning />
+  }
+
+  if (!isSystemReady) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden bg-background">
+        <AppHeader
+          cycleLabel={cycleLabel}
+          userName={userName}
+          userInitials={userInitials}
+          userAvatar={userAvatar}
+        />
+
+        <main className="flex flex-1 items-center justify-center overflow-y-auto p-6">
+          <div className="w-full max-w-5xl">
+            <div className="mb-6 text-center">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Autenticação do WhatsApp</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Conecte a sessão para liberar o painel operacional e os envios automáticos da aplicação.
+              </p>
+            </div>
+
+            {statusError ? (
+              <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {statusError}
+              </div>
+            ) : null}
+
+            <div className="grid items-stretch gap-6 lg:grid-cols-[0.95fr_1.25fr]">
+              <section className="rounded-3xl border border-border bg-card/90 p-8 shadow-sm">
+                <span className="inline-flex rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  Saudação Bot
+                </span>
+                <h2 className="mt-4 text-3xl font-black tracking-tight text-foreground">
+                  Mensagens automáticas com controle operacional simples
+                </h2>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                  Esta aplicação organiza os alunos, a agenda semanal e a fila de saudações para enviar mensagens
+                  no momento certo pelo WhatsApp.
+                </p>
+                <div className="mt-6 space-y-3">
+                  <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
+                    <p className="text-sm font-semibold text-foreground">1. Escaneie o QR Code</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Abra o WhatsApp no celular e conecte esta sessão.</p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
+                    <p className="text-sm font-semibold text-foreground">2. Libere o painel</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Após a autenticação, o painel e os atalhos serão desbloqueados automaticamente.</p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
+                    <p className="text-sm font-semibold text-foreground">3. Continue de onde parou</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Sua sessão fica pronta para operar envios, ciclos e agenda do bot.</p>
+                  </div>
+                </div>
+              </section>
+
+              <div className="mx-auto h-[680px] w-full max-w-2xl">
+                <SessionStatusCard
+                  title="Login necessário"
+                  subtitle="Escaneie o QR Code para liberar o uso da aplicação"
+                  statusRows={statusRows}
+                  qrAvailable={Boolean(statusData?.whatsapp?.qrAvailable)}
+                  qrImageDataUrl={String(statusData?.whatsapp?.qrImageDataUrl || "")}
+                  qrText={String(statusData?.whatsapp?.qrText || "")}
+                  showStatusRows={false}
+                  showActions={false}
+                  showOverallBadge={false}
+                />
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       <AppHeader
@@ -340,6 +424,9 @@ export default function DashboardPage() {
                 <div className="lg:h-[560px]">
                   <SessionStatusCard
                     statusRows={statusRows}
+                    qrAvailable={Boolean(statusData?.whatsapp?.qrAvailable)}
+                    qrImageDataUrl={String(statusData?.whatsapp?.qrImageDataUrl || "")}
+                    qrText={String(statusData?.whatsapp?.qrText || "")}
                     disableManualSend={disableManualSend}
                     onSendTest={() => runAction("/api/send-test", "Teste enviado.")}
                     onSendNow={() => runAction("/api/send-now", "Envio imediato executado.")}

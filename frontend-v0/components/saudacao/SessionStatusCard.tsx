@@ -14,6 +14,14 @@ interface StatusRow {
 
 interface SessionStatusCardProps {
   statusRows: StatusRow[]
+  qrAvailable?: boolean
+  qrImageDataUrl?: string
+  qrText?: string
+  title?: string
+  subtitle?: string
+  showStatusRows?: boolean
+  showActions?: boolean
+  showOverallBadge?: boolean
   onSendTest?: () => Promise<string>
   onSendNow?: () => Promise<string>
   onSendForced?: () => Promise<string>
@@ -23,6 +31,14 @@ interface SessionStatusCardProps {
 
 export function SessionStatusCard({
   statusRows,
+  qrAvailable = false,
+  qrImageDataUrl,
+  qrText,
+  title = "Status da Sessão",
+  subtitle = "Saúde do sistema em tempo real",
+  showStatusRows = true,
+  showActions = true,
+  showOverallBadge = true,
   onSendTest,
   onSendNow,
   onSendForced,
@@ -56,12 +72,12 @@ export function SessionStatusCard({
           <RefreshCw size={16} className="text-primary" />
         </div>
         <div>
-          <h2 className="text-base font-semibold text-foreground leading-tight">Status da Sessão</h2>
-          <p className="text-xs text-muted-foreground">Saúde do sistema em tempo real</p>
+          <h2 className="text-base font-semibold text-foreground leading-tight">{title}</h2>
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
         <div className="ml-auto">
           <div className="flex items-center gap-2">
-            <OverallBadge rows={statusRows} />
+            {showOverallBadge ? <OverallBadge rows={statusRows} /> : null}
             {onClose ? (
               <button
                 onClick={onClose}
@@ -78,49 +94,77 @@ export function SessionStatusCard({
 
       {/* Status rows */}
       <div className="flex-1 px-6 py-4 flex flex-col gap-1 overflow-y-auto">
-        {statusRows.map((row) => (
-          <StatusRowItem key={row.label} row={row} />
-        ))}
+        {showStatusRows
+          ? statusRows.map((row) => (
+              <StatusRowItem key={row.label} row={row} />
+            ))
+          : null}
+        {qrAvailable ? (
+          <div
+            className={cn(
+              "rounded-2xl border border-border bg-muted/20 p-4",
+              showStatusRows ? "mt-3" : "mt-0 flex flex-1 items-center justify-center"
+            )}
+          >
+            {qrImageDataUrl ? (
+              <div className="flex w-full max-w-[560px] items-center justify-center rounded-2xl bg-white p-6 shadow-sm">
+                <img
+                  src={qrImageDataUrl}
+                  alt="QR Code para autenticar WhatsApp Web"
+                  className="h-[360px] w-[360px] rounded-xl object-contain"
+                />
+              </div>
+            ) : (
+              <div className="w-full max-w-[560px] rounded-2xl border border-dashed border-border bg-card px-3 py-10 text-center text-xs text-muted-foreground">
+                Gerando imagem do QR...
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Action buttons */}
-      <div className="px-6 py-4 border-t border-border">
-        <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Ações</p>
-        <div className="flex flex-wrap gap-2">
-          <ActionButton
-            label="Enviar Teste"
-            icon={<Send size={13} />}
-            variant="secondary"
-            loading={loading === "test"}
-            onClick={() => handleAction("test", onSendTest)}
-          />
-          <ActionButton
-            label="Enviar Agora"
-            icon={<Zap size={13} />}
-            variant="primary"
-            loading={loading === "now"}
-            disabled={disableManualSend}
-            onClick={() => handleAction("now", onSendNow)}
-          />
-          <ActionButton
-            label="Forçar Envio"
-            icon={<RefreshCw size={13} />}
-            variant="danger"
-            loading={loading === "force"}
-            disabled={disableManualSend}
-            onClick={() => handleAction("force", onSendForced)}
-          />
+      {showActions ? (
+        <div className="px-6 py-4 border-t border-border">
+          <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Ações</p>
+          <div className="flex flex-wrap gap-2">
+            <ActionButton
+              label="Enviar Teste"
+              icon={<Send size={13} />}
+              variant="secondary"
+              loading={loading === "test"}
+              onClick={() => handleAction("test", onSendTest)}
+            />
+            <ActionButton
+              label="Enviar Agora"
+              icon={<Zap size={13} />}
+              variant="primary"
+              loading={loading === "now"}
+              disabled={disableManualSend}
+              onClick={() => handleAction("now", onSendNow)}
+            />
+            <ActionButton
+              label="Forçar Envio"
+              icon={<RefreshCw size={13} />}
+              variant="danger"
+              loading={loading === "force"}
+              disabled={disableManualSend}
+              onClick={() => handleAction("force", onSendForced)}
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Feedback area */}
-      <div className={cn(
-        "px-6 py-3 text-xs transition-all border-t border-border",
-        lastFeedback ? "opacity-100" : "opacity-0 pointer-events-none",
-        feedbackType === "ok" ? "bg-green-soft text-green-deep" : "bg-red-50 text-destructive"
-      )}>
-        <span className="font-medium">Última ação:</span> {lastFeedback ?? "—"}
-      </div>
+      {showActions ? (
+        <div className={cn(
+          "px-6 py-3 text-xs transition-all border-t border-border",
+          lastFeedback ? "opacity-100" : "opacity-0 pointer-events-none",
+          feedbackType === "ok" ? "bg-green-soft text-green-deep" : "bg-red-50 text-destructive"
+        )}>
+          <span className="font-medium">Última ação:</span> {lastFeedback ?? "—"}
+        </div>
+      ) : null}
     </div>
   )
 }
