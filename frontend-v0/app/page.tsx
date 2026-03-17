@@ -337,7 +337,7 @@ export default function DashboardPage() {
             ) : null}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               {showSessionCard ? (
-                <div className="lg:h-[520px]">
+                <div className="lg:h-[560px]">
                   <SessionStatusCard
                     statusRows={statusRows}
                     disableManualSend={disableManualSend}
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                 </div>
               ) : null}
 
-              <div className={`lg:h-[520px] ${showSessionCard ? "" : "lg:col-span-2"}`}>
+              <div className={`lg:h-[560px] ${showSessionCard ? "" : "lg:col-span-2"}`}>
                 <UpcomingGreetingsCard items={greetingItems} onOpenAll={() => setAllSchedulesOpen(true)} />
               </div>
             </div>

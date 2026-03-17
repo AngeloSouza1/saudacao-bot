@@ -114,6 +114,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   const [studentError, setStudentError] = useState("")
   const [lessonErrors, setLessonErrors] = useState<Record<string, string>>({})
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
+  const isLessonFormVisible = showLessonForm || Boolean(editingLessonId)
 
   const isLessonValid = useMemo(() => {
     const titulo = normalizeText(lessonForm.titulo)
@@ -433,7 +434,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
 
           <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0">
             <h3 className="text-[2rem] font-black tracking-tight text-foreground">Aulas da Semana</h3>
-            {showLessonForm || editingLessonId ? (
+            {isLessonFormVisible ? (
               <>
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
@@ -522,8 +523,8 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center gap-3">
-                  <p className="text-xs text-muted-foreground">Preencha dia, hora, título, matéria e professor.</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <p className="text-sm text-muted-foreground">Preencha dia, hora, título, matéria e professor.</p>
                 </div>
               </>
             ) : (
@@ -542,7 +543,13 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
               </div>
             )}
 
-            <div id="modal-lessons" className="agenda-list mt-3 flex-1 min-h-0 overflow-auto rounded-xl border border-border">
+            <div
+              id="modal-lessons"
+              className={cn(
+                "agenda-list mt-7 min-h-0 overflow-x-auto overflow-y-auto rounded-xl border border-border",
+                isLessonFormVisible ? "flex-none max-h-[264px]" : "flex-1"
+              )}
+            >
               <table className="table w-full text-sm">
                 <thead className="sticky top-0 z-10 bg-muted/60">
                   <tr>

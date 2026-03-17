@@ -51,8 +51,8 @@ export function UpcomingGreetingsCard({ items, onOpenAll }: UpcomingGreetingsCar
       </div>
 
       {/* Table header */}
-      <div className="px-5 py-2 border-b border-border bg-muted/40 shrink-0">
-        <div className="grid grid-cols-[minmax(220px,1.3fr)_110px_90px_minmax(420px,2.4fr)] gap-x-4 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <div className="px-5 py-2.5 border-b border-border bg-muted/40 shrink-0">
+        <div className="grid grid-cols-[minmax(220px,1.3fr)_110px_90px_minmax(420px,2.4fr)] gap-x-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           <span>Aluno</span>
           <span className="text-center">Data</span>
           <span className="text-center">Hora</span>
@@ -83,19 +83,19 @@ function GreetingRow({ item, isEven }: { item: GreetingItem; isEven: boolean }) 
   return (
     <div
       className={cn(
-        "grid grid-cols-[minmax(220px,1.3fr)_110px_90px_minmax(420px,2.4fr)] gap-x-4 items-center px-5 py-3.5 transition-colors hover:bg-primary/5 group border-b border-border/70 last:border-b-0",
+        "grid grid-cols-[minmax(220px,1.3fr)_110px_90px_minmax(420px,2.4fr)] gap-x-4 items-center px-5 py-4 transition-colors hover:bg-primary/5 group border-b border-border/70 last:border-b-0",
         isEven ? "bg-card" : "bg-muted/20"
       )}
     >
       <div className="flex items-center gap-2.5 min-w-0">
         {item.isNext && (
-          <span className="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-primary text-primary-foreground uppercase tracking-widest">
+          <span className="shrink-0 px-2.5 py-1 text-[11px] font-bold rounded-md bg-primary text-primary-foreground uppercase tracking-widest">
             Próx
           </span>
         )}
         <span
           className={cn(
-            "text-base font-semibold truncate",
+            "text-lg font-semibold truncate",
             item.isNext ? "text-primary font-semibold" : "text-foreground"
           )}
         >
@@ -103,13 +103,13 @@ function GreetingRow({ item, isEven }: { item: GreetingItem; isEven: boolean }) 
         </span>
       </div>
 
-      <span className="text-sm text-muted-foreground tabular-nums whitespace-nowrap text-center">
+      <span className="text-base text-muted-foreground tabular-nums whitespace-nowrap text-center">
         {item.date}
       </span>
 
       <span
         className={cn(
-          "text-sm font-semibold tabular-nums whitespace-nowrap text-center",
+          "text-base font-semibold tabular-nums whitespace-nowrap text-center",
           item.isNext ? "text-primary" : "text-foreground"
         )}
       >
@@ -117,8 +117,8 @@ function GreetingRow({ item, isEven }: { item: GreetingItem; isEven: boolean }) 
       </span>
 
       <div className="flex items-center gap-2 min-w-0">
-        <GraduationCap size={13} className="text-muted-foreground shrink-0" />
-        <span className="text-sm text-muted-foreground truncate">{item.classInfo}</span>
+        <GraduationCap size={15} className="text-muted-foreground shrink-0" />
+        <span className="text-base text-muted-foreground truncate">{item.classInfo}</span>
       </div>
     </div>
   )

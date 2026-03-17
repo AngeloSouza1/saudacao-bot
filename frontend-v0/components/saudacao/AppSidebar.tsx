@@ -39,7 +39,7 @@ export function AppSidebar({
   shortcutsOpen,
   onToggleShortcuts,
 }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
 
   const items: SidebarItem[] = [
     {
@@ -158,7 +158,7 @@ export function AppSidebar({
       {!collapsed && (
         <div className="px-4 py-4 border-t border-sidebar-border">
           <p className="text-[10px] text-muted-foreground text-center">
-            Saudação Bot v2.1.0
+            Saudação Bot v2.2.0
           </p>
         </div>
       )}
