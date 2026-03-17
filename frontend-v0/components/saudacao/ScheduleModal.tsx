@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Calendar, Pencil, Trash2, Plus } from "lucide-react"
 import { ModalShell, ModalActions, UnderlineInput } from "./ModalShell"
 import { cn } from "@/lib/utils"
+import { isNullWord, isValidStudentName, normalizeHourInput, normalizeText } from "@/lib/validation"
 
 interface Student {
   id: string
@@ -24,6 +25,10 @@ interface ScheduleModalProps {
   onClose: () => void
   onSaved?: () => Promise<void> | void
 }
+
+type DeleteTarget =
+  | { kind: "student"; id: string; label: string }
+  | { kind: "lesson"; id: string; label: string }
 
 const DAY_OPTIONS = [
   { value: "", label: "Selecione o dia" },
@@ -82,9 +87,17 @@ function lessonsToAgenda(lessons: Lesson[]): AgendaJsonPayload["agendaSemanal"] 
   return out
 }
 
+function sortStudentsByName(list: Student[]): Student[] {
+  return [...list].sort((a, b) =>
+    a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
+  )
+}
+
 export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   const [studentName, setStudentName] = useState("")
   const [students, setStudents] = useState<Student[]>([])
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null)
+  const [showStudentForm, setShowStudentForm] = useState(false)
   const [lessonForm, setLessonForm] = useState({
     dia: "",
     hora: "",
@@ -93,17 +106,30 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     professor: "",
   })
   const [lessons, setLessons] = useState<Lesson[]>([])
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
+  const [showLessonForm, setShowLessonForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [feedback, setFeedback] = useState("")
+  const [studentError, setStudentError] = useState("")
+  const [lessonErrors, setLessonErrors] = useState<Record<string, string>>({})
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
 
   const isLessonValid = useMemo(() => {
+    const titulo = normalizeText(lessonForm.titulo)
+    const hora = normalizeHourInput(lessonForm.hora)
+    const materia = normalizeText(lessonForm.materia)
+    const professor = normalizeText(lessonForm.professor)
     return (
       Boolean(lessonForm.dia) &&
-      Boolean(lessonForm.hora) &&
-      Boolean(lessonForm.titulo.trim()) &&
-      Boolean(lessonForm.materia.trim()) &&
-      Boolean(lessonForm.professor.trim())
+      Boolean(hora) &&
+      (!titulo || (titulo.length >= 2 && !isNullWord(titulo))) &&
+      Boolean(materia) &&
+      materia.length >= 2 &&
+      !isNullWord(materia) &&
+      Boolean(professor) &&
+      professor.length >= 2 &&
+      !isNullWord(professor)
     )
   }, [lessonForm])
 
@@ -116,8 +142,16 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
       .then((data) => {
         if (!active) return
         const rawStudents = Array.isArray(data?.alunos) ? data.alunos : []
-        setStudents(rawStudents.map((name, idx) => ({ id: `s-${idx}-${name}`, name: String(name) })))
+        setStudents(
+          sortStudentsByName(rawStudents.map((name, idx) => ({ id: `s-${idx}-${name}`, name: String(name) })))
+        )
         setLessons(agendaToLessons(data?.agendaSemanal))
+        setStudentError("")
+        setLessonErrors({})
+        setEditingStudentId(null)
+        setShowStudentForm(false)
+        setEditingLessonId(null)
+        setShowLessonForm(false)
       })
       .catch((error) => {
         if (!active) return
@@ -133,36 +167,145 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
 
   function addStudent() {
     const name = studentName.trim()
-    if (!name) return
-    setStudents((prev) => [...prev, { id: `s${Date.now()}`, name }])
+    if (!isValidStudentName(name)) {
+      setStudentError("Nome de aluno inválido.")
+      return
+    }
+    const alreadyExists = students.some((s) => normalizeText(s.name).toLowerCase() === name.toLowerCase())
+    if (alreadyExists) {
+      setStudentError("Este aluno já está cadastrado.")
+      return
+    }
+    if (editingStudentId) {
+      setStudents((prev) =>
+        sortStudentsByName(prev.map((s) => (s.id === editingStudentId ? { ...s, name } : s)))
+      )
+      setEditingStudentId(null)
+    } else {
+      setStudents((prev) => sortStudentsByName([...prev, { id: `s${Date.now()}`, name }]))
+    }
     setStudentName("")
+    setStudentError("")
+    setShowStudentForm(false)
   }
 
   function removeStudent(id: string) {
+    const student = students.find((s) => s.id === id)
+    setDeleteTarget({
+      kind: "student",
+      id,
+      label: student?.name?.trim() || "aluno",
+    })
+  }
+
+  function confirmRemoveStudent(id: string) {
     setStudents((prev) => prev.filter((s) => s.id !== id))
+    if (editingStudentId === id) {
+      setEditingStudentId(null)
+      setStudentName("")
+      setShowStudentForm(false)
+    }
+  }
+
+  function startEditStudent(student: Student) {
+    setEditingStudentId(student.id)
+    setStudentName(student.name)
+    setStudentError("")
+    setShowStudentForm(true)
   }
 
   function addLesson() {
-    if (!isLessonValid) return
-    setLessons((prev) => [
-      ...prev,
-      {
-        id: `l${Date.now()}`,
-        dia: lessonForm.dia,
-        hora: lessonForm.hora,
-        titulo: lessonForm.titulo.trim(),
-        materia: lessonForm.materia.trim(),
-        professor: lessonForm.professor.trim(),
-      },
-    ])
+    const nextErrors: Record<string, string> = {}
+    const hora = normalizeHourInput(lessonForm.hora)
+    const titulo = normalizeText(lessonForm.titulo)
+    const materia = normalizeText(lessonForm.materia)
+    const professor = normalizeText(lessonForm.professor)
+    if (!lessonForm.dia) nextErrors.dia = "Selecione o dia da aula."
+    if (!hora) nextErrors.hora = "Hora inválida. Use HH:MM."
+    if (titulo && (titulo.length < 2 || isNullWord(titulo))) nextErrors.titulo = "Título inválido."
+    if (materia.length < 2 || isNullWord(materia)) nextErrors.materia = "Matéria inválida."
+    if (professor.length < 2 || isNullWord(professor)) nextErrors.professor = "Professor inválido."
+    setLessonErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0 || !isLessonValid) return
+
+    if (editingLessonId) {
+      setLessons((prev) =>
+        prev.map((l) =>
+          l.id === editingLessonId
+            ? { ...l, dia: lessonForm.dia, hora, titulo, materia, professor }
+            : l
+        )
+      )
+      setEditingLessonId(null)
+    } else {
+      setLessons((prev) => [
+        ...prev,
+        {
+          id: `l${Date.now()}`,
+          dia: lessonForm.dia,
+          hora,
+          titulo,
+          materia,
+          professor,
+        },
+      ])
+    }
     setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
+    setLessonErrors({})
+    setShowLessonForm(false)
   }
 
   function removeLesson(id: string) {
+    const lesson = lessons.find((l) => l.id === id)
+    setDeleteTarget({
+      kind: "lesson",
+      id,
+      label: lesson?.titulo?.trim() || "aula",
+    })
+  }
+
+  function confirmRemoveLesson(id: string) {
     setLessons((prev) => prev.filter((l) => l.id !== id))
+    if (editingLessonId === id) {
+      setEditingLessonId(null)
+      setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
+      setShowLessonForm(false)
+    }
+  }
+
+  function confirmDeleteTarget() {
+    if (!deleteTarget) return
+    if (deleteTarget.kind === "student") {
+      confirmRemoveStudent(deleteTarget.id)
+    } else {
+      confirmRemoveLesson(deleteTarget.id)
+    }
+    setDeleteTarget(null)
+  }
+
+  function startEditLesson(lesson: Lesson) {
+    setEditingLessonId(lesson.id)
+    setLessonForm({
+      dia: lesson.dia,
+      hora: lesson.hora,
+      titulo: lesson.titulo,
+      materia: lesson.materia,
+      professor: lesson.professor,
+    })
+    setLessonErrors({})
+    setShowLessonForm(true)
   }
 
   async function handleSaveAgenda() {
+    if (!students.length) {
+      setFeedback("Cadastre ao menos 1 aluno antes de salvar.")
+      return
+    }
+    if (!lessons.length) {
+      setFeedback("Cadastre ao menos 1 item de aula antes de salvar.")
+      return
+    }
+
     setSaving(true)
     setFeedback("")
     try {
@@ -189,29 +332,71 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
       title="Editor de Agenda"
       subtitle="Aulas, histórico e acompanhamento"
       icon={<Calendar size={16} className="text-primary" />}
-      size="xl"
+      size="xxl"
+      bodyClassName="overflow-hidden"
     >
-      <div className="px-6 py-6">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 min-h-[66vh]">
-          <div className="rounded-2xl border border-border bg-card/80 p-4 flex flex-col min-h-0">
-            <h3 className="text-3xl font-black tracking-tight text-foreground">Alunos</h3>
-            <div className="mt-3">
-              <UnderlineInput
-                label="Nome do aluno"
-                value={studentName}
-                onChange={setStudentName}
-                placeholder="Ex.: Angelo"
-              />
-            </div>
-            <button
-              onClick={addStudent}
-              className="mt-3 inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
-            >
-              <Plus size={14} /> Adicionar Aluno
-            </button>
+      <div className="h-full px-6 py-5 flex flex-col min-h-0">
+        <div className="grid grid-cols-1 xl:grid-cols-[0.82fr_1.18fr] gap-5 flex-1 min-h-0">
+          <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0">
+            <h3 className="text-[2rem] font-black tracking-tight text-foreground">Alunos</h3>
+            {showStudentForm || editingStudentId ? (
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <div className="w-full max-w-[640px]">
+                  <UnderlineInput
+                    label="Nome do aluno"
+                    value={studentName}
+                    onChange={(v) => {
+                      setStudentName(v)
+                      if (studentError) setStudentError("")
+                    }}
+                    placeholder="Ex.: Angelo"
+                    error={studentError || undefined}
+                    required
+                    inputClassName={showStudentForm || editingStudentId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+                  />
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    onClick={addStudent}
+                    className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+                  >
+                    <Plus size={14} /> {editingStudentId ? "Salvar Aluno" : "Adicionar Aluno"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingStudentId(null)
+                      setStudentName("")
+                      setStudentError("")
+                      setShowStudentForm(false)
+                    }}
+                    className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+                  >
+                    Cancelar edição
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 flex justify-start">
+                <button
+                  onClick={() => {
+                    setEditingStudentId(null)
+                    setStudentName("")
+                    setStudentError("")
+                    setShowStudentForm(true)
+                  }}
+                  className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+                >
+                  <Plus size={14} /> Adicionar Aluno
+                </button>
+              </div>
+            )}
             <p className="mt-3 text-sm text-muted-foreground">Para adicionar aluno, preencha corretamente o nome do aluno.</p>
 
-            <div id="modal-students" className="mt-3 flex-1 min-h-0 overflow-auto rounded-xl border border-border p-2">
+            <div
+              id="modal-students"
+              className="mt-3 min-h-0 overflow-auto rounded-xl border border-border p-2"
+              style={{ maxHeight: "455px" }}
+            >
               <div className="space-y-2">
                 {students.map((student, idx) => (
                   <div
@@ -221,9 +406,14 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                       idx % 2 === 1 && "bg-green-soft/70"
                     )}
                   >
-                    <span className="student-name text-xl font-semibold text-foreground">{student.name}</span>
+                    <span className="student-name text-[1.1rem] font-semibold text-foreground leading-tight">{student.name}</span>
                     <div className="student-actions flex items-center gap-2">
-                      <button className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2 text-sm" title="Editar aluno" aria-label="Editar aluno">
+                      <button
+                        className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2 text-sm"
+                        title="Editar aluno"
+                        aria-label="Editar aluno"
+                        onClick={() => startEditStudent(student)}
+                      >
                         <Pencil size={14} />
                       </button>
                       <button
@@ -241,57 +431,116 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card/80 p-4 flex flex-col min-h-0">
-            <h3 className="text-3xl font-black tracking-tight text-foreground">Aulas da Semana</h3>
+          <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0">
+            <h3 className="text-[2rem] font-black tracking-tight text-foreground">Aulas da Semana</h3>
+            {showLessonForm || editingLessonId ? (
+              <>
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dia</label>
+                    <select
+                      value={lessonForm.dia}
+                      onChange={(e) => {
+                        setLessonForm((p) => ({ ...p, dia: e.target.value }))
+                        setLessonErrors((prev) => ({ ...prev, dia: "" }))
+                      }}
+                      className={`${editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : "bg-transparent"} border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
+                        lessonErrors.dia ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
+                      }`}
+                    >
+                      {DAY_OPTIONS.map((d) => (
+                        <option key={d.value || "ph"} value={d.value} disabled={!d.value}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                    {lessonErrors.dia ? <p className="text-[11px] text-status-err">{lessonErrors.dia}</p> : null}
+                  </div>
+                  <UnderlineInput
+                    label="Hora"
+                    value={lessonForm.hora}
+                    onChange={(v) => {
+                      setLessonForm((p) => ({ ...p, hora: v }))
+                      setLessonErrors((prev) => ({ ...prev, hora: "" }))
+                    }}
+                    type="time"
+                    required
+                    error={lessonErrors.hora}
+                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+                  />
+                  <UnderlineInput
+                    label="Título da aula"
+                    value={lessonForm.titulo}
+                    onChange={(v) => {
+                      setLessonForm((p) => ({ ...p, titulo: v }))
+                      setLessonErrors((prev) => ({ ...prev, titulo: "" }))
+                    }}
+                    error={lessonErrors.titulo}
+                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+                  />
+                  <UnderlineInput
+                    label="Matéria"
+                    value={lessonForm.materia}
+                    onChange={(v) => {
+                      setLessonForm((p) => ({ ...p, materia: v }))
+                      setLessonErrors((prev) => ({ ...prev, materia: "" }))
+                    }}
+                    required
+                    error={lessonErrors.materia}
+                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+                  />
+                  <UnderlineInput
+                    label="Professor(a)"
+                    value={lessonForm.professor}
+                    onChange={(v) => {
+                      setLessonForm((p) => ({ ...p, professor: v }))
+                      setLessonErrors((prev) => ({ ...prev, professor: "" }))
+                    }}
+                    required
+                    error={lessonErrors.professor}
+                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+                  />
+                  <div className="flex items-end justify-start md:justify-end gap-2">
+                    <button
+                      onClick={addLesson}
+                      disabled={!isLessonValid}
+                      className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep disabled:opacity-50"
+                    >
+                      <Plus size={14} /> {editingLessonId ? "Salvar Aula" : "Adicionar Aula"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingLessonId(null)
+                        setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
+                        setLessonErrors({})
+                        setShowLessonForm(false)
+                      }}
+                      className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+                    >
+                      Cancelar edição
+                    </button>
+                  </div>
+                </div>
 
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dia</label>
-                <select
-                  value={lessonForm.dia}
-                  onChange={(e) => setLessonForm((p) => ({ ...p, dia: e.target.value }))}
-                  className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
+                <div className="mt-3 flex items-center gap-3">
+                  <p className="text-xs text-muted-foreground">Preencha dia, hora, título, matéria e professor.</p>
+                </div>
+              </>
+            ) : (
+              <div className="mt-3 flex justify-start">
+                <button
+                  onClick={() => {
+                    setEditingLessonId(null)
+                    setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
+                    setLessonErrors({})
+                    setShowLessonForm(true)
+                  }}
+                  className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
                 >
-                  {DAY_OPTIONS.map((d) => (
-                    <option key={d.value || "ph"} value={d.value} disabled={!d.value}>
-                      {d.label}
-                    </option>
-                  ))}
-                </select>
+                  <Plus size={14} /> Adicionar Aula
+                </button>
               </div>
-              <UnderlineInput
-                label="Hora"
-                value={lessonForm.hora}
-                onChange={(v) => setLessonForm((p) => ({ ...p, hora: v }))}
-                type="time"
-              />
-              <UnderlineInput
-                label="Título da aula"
-                value={lessonForm.titulo}
-                onChange={(v) => setLessonForm((p) => ({ ...p, titulo: v }))}
-              />
-              <UnderlineInput
-                label="Matéria"
-                value={lessonForm.materia}
-                onChange={(v) => setLessonForm((p) => ({ ...p, materia: v }))}
-              />
-              <UnderlineInput
-                label="Professor(a)"
-                value={lessonForm.professor}
-                onChange={(v) => setLessonForm((p) => ({ ...p, professor: v }))}
-              />
-            </div>
-
-            <div className="mt-3 flex items-center gap-3">
-              <button
-                onClick={addLesson}
-                disabled={!isLessonValid}
-                className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep disabled:opacity-50"
-              >
-                <Plus size={14} /> Adicionar Aula
-              </button>
-              <p className="text-xs text-muted-foreground">Preencha dia, hora, título, matéria e professor.</p>
-            </div>
+            )}
 
             <div id="modal-lessons" className="agenda-list mt-3 flex-1 min-h-0 overflow-auto rounded-xl border border-border">
               <table className="table w-full text-sm">
@@ -317,7 +566,12 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                       <td className="px-3 py-2 text-[15px]">{lesson.materia}</td>
                       <td className="px-3 py-2 text-[15px]">{lesson.professor}</td>
                       <td className="px-3 py-2">
-                        <button className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2" title="Editar aula" aria-label="Editar aula">
+                        <button
+                          className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2"
+                          title="Editar aula"
+                          aria-label="Editar aula"
+                          onClick={() => startEditLesson(lesson)}
+                        >
                           <Pencil size={14} />
                         </button>
                       </td>
@@ -338,11 +592,40 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
             </div>
           </div>
         </div>
+        {loading ? <p className="pt-3 text-sm text-muted-foreground shrink-0">Carregando agenda...</p> : null}
+        {feedback ? <p className="pt-3 text-sm text-destructive shrink-0">{feedback}</p> : null}
       </div>
-
-      {loading ? <p className="px-6 pb-3 text-sm text-muted-foreground">Carregando agenda...</p> : null}
-      {feedback ? <p className="px-6 pb-3 text-sm text-destructive">{feedback}</p> : null}
-      <ModalActions onCancel={onClose} onConfirm={handleSaveAgenda} confirmLabel="Salvar Agenda" loading={saving} />
+      {deleteTarget ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-foreground/30 backdrop-blur-[2px]"
+            onClick={() => setDeleteTarget(null)}
+            aria-label="Fechar confirmação de exclusão"
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl">
+            <h4 className="text-lg font-bold text-foreground">Confirmar exclusão</h4>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {deleteTarget.kind === "student"
+                ? `Deseja realmente excluir o aluno "${deleteTarget.label}"?`
+                : `Deseja realmente excluir a aula "${deleteTarget.label}"?`}
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteTarget}
+                className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-status-err hover:bg-destructive/20"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </ModalShell>
   )
 }

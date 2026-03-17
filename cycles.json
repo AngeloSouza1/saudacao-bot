@@ -9,13 +9,13 @@
       "createdAt": "2026-03-11T11:30:44.490Z",
       "completedAt": null,
       "start": {
-        "idxAluno": 6,
+        "idxAluno": 7,
         "idxAula": 0,
         "dataInicio": "2026-03-11"
       },
       "sentCount": 4,
       "totalAlunos": 9,
-      "updatedAt": "2026-03-15T22:50:49.680Z",
+      "updatedAt": "2026-03-17T16:20:31.012Z",
       "lastMessageAt": "2026-03-17T13:00:04.269Z"
     }
   ]

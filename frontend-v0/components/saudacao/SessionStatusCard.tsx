@@ -18,6 +18,7 @@ interface SessionStatusCardProps {
   onSendNow?: () => Promise<string>
   onSendForced?: () => Promise<string>
   disableManualSend?: boolean
+  onClose?: () => void
 }
 
 export function SessionStatusCard({
@@ -26,6 +27,7 @@ export function SessionStatusCard({
   onSendNow,
   onSendForced,
   disableManualSend = false,
+  onClose,
 }: SessionStatusCardProps) {
   const [lastFeedback, setLastFeedback] = useState<string | null>(null)
   const [feedbackType, setFeedbackType] = useState<"ok" | "err">("ok")
@@ -58,7 +60,19 @@ export function SessionStatusCard({
           <p className="text-xs text-muted-foreground">Saúde do sistema em tempo real</p>
         </div>
         <div className="ml-auto">
-          <OverallBadge rows={statusRows} />
+          <div className="flex items-center gap-2">
+            <OverallBadge rows={statusRows} />
+            {onClose ? (
+              <button
+                onClick={onClose}
+                className="w-7 h-7 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="Fechar status da sessão"
+                title="Fechar"
+              >
+                ✕
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 

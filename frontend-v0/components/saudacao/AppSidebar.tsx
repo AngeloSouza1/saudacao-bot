@@ -26,6 +26,8 @@ interface SidebarProps {
   onOpenSchedule: () => void
   activeItem: string
   setActiveItem: (id: string) => void
+  shortcutsOpen: boolean
+  onToggleShortcuts: () => void
 }
 
 export function AppSidebar({
@@ -34,6 +36,8 @@ export function AppSidebar({
   onOpenSchedule,
   activeItem,
   setActiveItem,
+  shortcutsOpen,
+  onToggleShortcuts,
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
 
@@ -101,26 +105,33 @@ export function AppSidebar({
 
       {/* Items */}
       <nav className="flex-1 px-2 pt-4 flex flex-col gap-1 overflow-y-auto">
-        {items.map((item) => (
+        {items.map((item) => {
+          const isShortcuts = item.id === "shortcuts"
+          const isActive = isShortcuts ? shortcutsOpen : activeItem === item.id
+          return (
           <button
             key={item.id}
             onClick={() => {
-              setActiveItem(item.id)
+              if (isShortcuts) {
+                onToggleShortcuts()
+                return
+              }
+              setActiveItem(activeItem === item.id ? "" : item.id)
               item.onClick?.()
             }}
             className={cn(
               "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group",
-              activeItem === item.id
+              isActive && !isShortcuts
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             )}
             title={collapsed ? item.title : undefined}
-            aria-current={activeItem === item.id ? "page" : undefined}
+            aria-current={isActive ? "page" : undefined}
           >
             <span
               className={cn(
                 "flex-shrink-0 transition-colors",
-                activeItem === item.id ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary"
+                isActive && !isShortcuts ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary"
               )}
             >
               {item.icon}
@@ -131,7 +142,7 @@ export function AppSidebar({
                 <span
                   className={cn(
                     "block text-[11px] leading-tight truncate",
-                    activeItem === item.id ? "text-primary-foreground/70" : "text-muted-foreground"
+                    isActive && !isShortcuts ? "text-primary-foreground/70" : "text-muted-foreground"
                   )}
                 >
                   {item.subtitle}
@@ -139,7 +150,8 @@ export function AppSidebar({
               </span>
             )}
           </button>
-        ))}
+          )
+        })}
       </nav>
 
       {/* Footer */}

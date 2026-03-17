@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, ChevronRight, GraduationCap } from "lucide-react"
+import { Bell, GraduationCap } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface GreetingItem {
@@ -11,13 +11,15 @@ export interface GreetingItem {
   classInfo: string
   nextStudent: string
   isNext: boolean
+  pendingIndex?: number
 }
 
 interface UpcomingGreetingsCardProps {
   items: GreetingItem[]
+  onOpenAll?: () => void
 }
 
-export function UpcomingGreetingsCard({ items }: UpcomingGreetingsCardProps) {
+export function UpcomingGreetingsCard({ items, onOpenAll }: UpcomingGreetingsCardProps) {
   return (
     <div className="flex flex-col bg-card rounded-2xl border border-border shadow-sm overflow-hidden h-full">
       {/* Sticky header */}
@@ -32,20 +34,29 @@ export function UpcomingGreetingsCard({ items }: UpcomingGreetingsCardProps) {
           <p className="text-xs text-muted-foreground">Fila de envio programado</p>
         </div>
         <div className="ml-auto">
-          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gold-light text-accent-foreground border border-gold/30">
-            {items.length} na fila
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gold-light text-accent-foreground border border-gold/30">
+              {items.length} na fila
+            </span>
+            {onOpenAll ? (
+              <button
+                onClick={onOpenAll}
+                className="px-2.5 py-1 rounded-full text-xs font-semibold border border-border bg-card hover:bg-muted transition-colors"
+              >
+                Ver todos
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
 
       {/* Table header */}
-      <div className="px-6 py-2 border-b border-border bg-muted/30 shrink-0">
-        <div className="grid grid-cols-[1fr_auto_auto_1fr_auto] gap-x-4 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <div className="px-5 py-2 border-b border-border bg-muted/40 shrink-0">
+        <div className="grid grid-cols-[minmax(220px,1.3fr)_110px_90px_minmax(420px,2.4fr)] gap-x-4 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           <span>Aluno</span>
           <span className="text-center">Data</span>
           <span className="text-center">Hora</span>
-          <span>Turma</span>
-          <span className="text-right">Próximo</span>
+          <span>Aula</span>
         </div>
       </div>
 
@@ -72,20 +83,19 @@ function GreetingRow({ item, isEven }: { item: GreetingItem; isEven: boolean }) 
   return (
     <div
       className={cn(
-        "grid grid-cols-[1fr_auto_auto_1fr_auto] gap-x-4 items-center px-6 py-3 transition-colors hover:bg-primary/5 group",
+        "grid grid-cols-[minmax(220px,1.3fr)_110px_90px_minmax(420px,2.4fr)] gap-x-4 items-center px-5 py-3.5 transition-colors hover:bg-primary/5 group border-b border-border/70 last:border-b-0",
         isEven ? "bg-card" : "bg-muted/20"
       )}
     >
-      {/* Student name */}
       <div className="flex items-center gap-2.5 min-w-0">
         {item.isNext && (
-          <span className="shrink-0 px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-primary text-primary-foreground uppercase tracking-widest">
+          <span className="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-primary text-primary-foreground uppercase tracking-widest">
             Próx
           </span>
         )}
         <span
           className={cn(
-            "text-sm font-medium truncate",
+            "text-base font-semibold truncate",
             item.isNext ? "text-primary font-semibold" : "text-foreground"
           )}
         >
@@ -93,31 +103,22 @@ function GreetingRow({ item, isEven }: { item: GreetingItem; isEven: boolean }) 
         </span>
       </div>
 
-      {/* Date */}
-      <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap text-center">
+      <span className="text-sm text-muted-foreground tabular-nums whitespace-nowrap text-center">
         {item.date}
       </span>
 
-      {/* Time */}
       <span
         className={cn(
-          "text-xs font-semibold tabular-nums whitespace-nowrap text-center",
+          "text-sm font-semibold tabular-nums whitespace-nowrap text-center",
           item.isNext ? "text-primary" : "text-foreground"
         )}
       >
         {item.time}
       </span>
 
-      {/* Class info */}
-      <div className="flex items-center gap-1.5 min-w-0">
-        <GraduationCap size={12} className="text-muted-foreground shrink-0" />
-        <span className="text-xs text-muted-foreground truncate">{item.classInfo}</span>
-      </div>
-
-      {/* Next student */}
-      <div className="flex items-center gap-1 justify-end min-w-0">
-        <ChevronRight size={12} className="text-muted-foreground shrink-0" />
-        <span className="text-xs text-muted-foreground truncate max-w-[100px]">{item.nextStudent}</span>
+      <div className="flex items-center gap-2 min-w-0">
+        <GraduationCap size={13} className="text-muted-foreground shrink-0" />
+        <span className="text-sm text-muted-foreground truncate">{item.classInfo}</span>
       </div>
     </div>
   )

@@ -10,8 +10,9 @@ interface ModalShellProps {
   title: string
   subtitle?: string
   children: ReactNode
-  size?: "sm" | "md" | "lg" | "xl"
+  size?: "sm" | "md" | "lg" | "xl" | "xxl"
   icon?: ReactNode
+  bodyClassName?: string
 }
 
 export function ModalShell({
@@ -22,6 +23,7 @@ export function ModalShell({
   children,
   size = "md",
   icon,
+  bodyClassName,
 }: ModalShellProps) {
   // Close on Escape
   useEffect(() => {
@@ -40,6 +42,7 @@ export function ModalShell({
     md: "max-w-lg",
     lg: "max-w-2xl",
     xl: "max-w-4xl",
+    xxl: "max-w-[96vw]",
   }
 
   return (
@@ -93,7 +96,7 @@ export function ModalShell({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto">{children}</div>
+        <div className={cn("flex-1 overflow-y-auto", bodyClassName)}>{children}</div>
       </div>
     </div>
   )
@@ -107,6 +110,9 @@ export function UnderlineInput({
   placeholder,
   type = "text",
   hint,
+  error,
+  required = false,
+  inputClassName = "",
 }: {
   label: string
   value: string
@@ -114,20 +120,26 @@ export function UnderlineInput({
   placeholder?: string
   type?: string
   hint?: string
+  error?: string
+  required?: boolean
+  inputClassName?: string
 }) {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-        {label}
+        {label} {required ? <span className="text-status-err">*</span> : null}
       </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground placeholder:text-muted-foreground/50 transition-colors"
+        className={`bg-transparent border-0 border-b-2 outline-none py-1.5 text-sm text-foreground placeholder:text-muted-foreground/50 transition-colors ${
+          error ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
+        } ${inputClassName}`}
       />
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {error ? <p className="text-[11px] text-status-err">{error}</p> : null}
+      {!error && hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}
     </div>
   )
 }

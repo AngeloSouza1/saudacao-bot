@@ -8,6 +8,9 @@ import { UpcomingGreetingsCard, type GreetingItem } from "@/components/saudacao/
 import { DestinationModal } from "@/components/saudacao/DestinationModal"
 import { ConfigModal } from "@/components/saudacao/ConfigModal"
 import { ScheduleModal } from "@/components/saudacao/ScheduleModal"
+import { AllSchedulesModal } from "@/components/saudacao/AllSchedulesModal"
+import { hasRequiredConfig } from "@/lib/validation"
+import { RefreshCw, Send, TestTube2 } from "lucide-react"
 
 type DashboardStatusResponse = {
   settings?: {
@@ -105,7 +108,7 @@ function dayName(dia: string | number | undefined) {
   return labels[String(dia ?? "")] || "Dia"
 }
 
-function mapGreetingItems(data: DashboardStatusResponse | null): GreetingItem[] {
+function mapGreetingItems(data: DashboardStatusResponse | null, limit = 12): GreetingItem[] {
   const preview = Array.isArray(data?.schedulePreview) ? data!.schedulePreview : []
   const reverted = new Set(
     Array.isArray(data?.state?.revertidosEfetivados) ? data!.state!.revertidosEfetivados!.map(String) : []
@@ -123,7 +126,7 @@ function mapGreetingItems(data: DashboardStatusResponse | null): GreetingItem[] 
     return !reverted.has(key)
   })
 
-  return pending.slice(0, 12).map((item, index) => {
+  return pending.slice(0, limit).map((item, index) => {
     const date = String(item?.scheduledDateISO || "")
     const title = String(item?.titulo || "").trim()
     const materia = String(item?.materia || "").trim()
@@ -139,17 +142,21 @@ function mapGreetingItems(data: DashboardStatusResponse | null): GreetingItem[] 
       classInfo: classInfo || "Sem dados da aula",
       nextStudent: index < pending.length - 1 ? String(pending[index + 1]?.alunoPrevisto || "—") : "—",
       isNext: index === 0,
+      pendingIndex: index,
     }
   })
 }
 
 export default function DashboardPage() {
-  const [activeItem, setActiveItem] = useState("session")
+  const [activeItem, setActiveItem] = useState("")
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [allSchedulesOpen, setAllSchedulesOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(true)
   const [statusData, setStatusData] = useState<DashboardStatusResponse | null>(null)
   const [statusError, setStatusError] = useState<string>("")
+  const [shortcutLoading, setShortcutLoading] = useState<string>("")
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -237,7 +244,8 @@ export default function DashboardPage() {
     ]
   }, [statusData])
 
-  const greetingItems = useMemo(() => mapGreetingItems(statusData), [statusData])
+  const greetingItems = useMemo(() => mapGreetingItems(statusData, 12), [statusData])
+  const allGreetingItems = useMemo(() => mapGreetingItems(statusData, 500), [statusData])
 
   const cycleName = String(statusData?.cycle?.active?.name || "").trim()
   const cycleLabel = cycleName ? `Ciclo atual: ${cycleName}` : "Sem ciclo ativo"
@@ -254,6 +262,25 @@ export default function DashboardPage() {
   })
   const whatsappPhase = String(statusData?.whatsapp?.phase || "")
   const isSystemReady = whatsappPhase === "ready" || whatsappPhase === "authenticated" || Boolean(statusData?.whatsapp?.sender)
+  const hasConfigPending = !hasRequiredConfig({
+    turma: statusData?.config?.turma,
+    instituicao: statusData?.config?.instituicao,
+    groupName: statusData?.settings?.groupName,
+    to: statusData?.settings?.to,
+    scheduleCount: Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary.length : 0,
+  })
+  const disableManualSend = !statusData?.cycle?.active || !isSystemReady || hasConfigPending
+  const showSessionCard = activeItem === "session"
+  const showShortcutsCard = shortcutsOpen
+
+  async function runShortcut(id: string, action: () => Promise<void> | void) {
+    setShortcutLoading(id)
+    try {
+      await action()
+    } finally {
+      setShortcutLoading("")
+    }
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
@@ -271,6 +298,8 @@ export default function DashboardPage() {
           onOpenSchedule={() => setScheduleOpen(true)}
           activeItem={activeItem}
           setActiveItem={setActiveItem}
+          shortcutsOpen={shortcutsOpen}
+          onToggleShortcuts={() => setShortcutsOpen((prev) => !prev)}
         />
 
         <main className="flex-1 overflow-y-auto p-6">
@@ -293,49 +322,72 @@ export default function DashboardPage() {
                 {statusError}
               </div>
             ) : null}
-
+            {hasConfigPending ? (
+              <div className="rounded-xl border border-status-warn/40 bg-yellow-50 px-4 py-3 text-sm text-amber-700">
+                Pendências obrigatórias: revise Destino, Configuração e Agenda (mínimo 1 aula) antes do envio.
+              </div>
+            ) : null}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              <div className="lg:h-[520px]">
-                <SessionStatusCard
-                  statusRows={statusRows}
-                  disableManualSend={!statusData?.cycle?.active}
-                  onSendTest={() => runAction("/api/send-test", "Teste enviado.")}
-                  onSendNow={() => runAction("/api/send-now", "Envio imediato executado.")}
-                  onSendForced={() => runAction("/api/send-now-forced", "Envio forçado executado.")}
-                />
-              </div>
+              {showSessionCard ? (
+                <div className="lg:h-[520px]">
+                  <SessionStatusCard
+                    statusRows={statusRows}
+                    disableManualSend={disableManualSend}
+                    onSendTest={() => runAction("/api/send-test", "Teste enviado.")}
+                    onSendNow={() => runAction("/api/send-now", "Envio imediato executado.")}
+                    onSendForced={() => runAction("/api/send-now-forced", "Envio forçado executado.")}
+                    onClose={() => setActiveItem("")}
+                  />
+                </div>
+              ) : null}
 
-              <div className="lg:h-[520px]">
-                <UpcomingGreetingsCard items={greetingItems} />
+              <div className={`lg:h-[520px] ${showSessionCard ? "" : "lg:col-span-2"}`}>
+                <UpcomingGreetingsCard items={greetingItems} onOpenAll={() => setAllSchedulesOpen(true)} />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <QuickCard
-                title="Destino"
-                description="Configurar destinatários das saudações"
-                color="bg-green-soft"
-                textColor="text-green-deep"
-                onClick={() => setDestinationOpen(true)}
-              />
-              <QuickCard
-                title="Configurações"
-                description="Parâmetros de operação do bot"
-                color="bg-gold-light"
-                textColor="text-accent-foreground"
-                onClick={() => setConfigOpen(true)}
-              />
-              <QuickCard
-                title="Agenda"
-                description="Alunos e horários de aulas"
-                color="bg-secondary"
-                textColor="text-secondary-foreground"
-                onClick={() => setScheduleOpen(true)}
-              />
-            </div>
           </div>
         </main>
       </div>
+
+      {showShortcutsCard ? (
+        <aside className="fixed right-3 top-[86px] bottom-4 z-40 w-[90px] rounded-2xl bg-transparent px-2 py-3 flex flex-col">
+          <div className="mt-1 flex flex-col gap-2">
+            <button
+              onClick={() => runShortcut("refresh", refreshStatus)}
+              disabled={shortcutLoading === "refresh"}
+              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40 disabled:opacity-60"
+              title="Atualizar painel"
+              aria-label="Atualizar painel"
+            >
+              <span className="inline-flex w-full items-center justify-center">
+                <RefreshCw size={18} className={shortcutLoading === "refresh" ? "animate-spin text-primary" : "text-primary"} />
+              </span>
+            </button>
+            <button
+              onClick={() => setDestinationOpen(true)}
+              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              title="Destino"
+              aria-label="Destino"
+            >
+              <span className="inline-flex w-full items-center justify-center">
+                <Send size={18} className="text-primary" />
+              </span>
+            </button>
+            <button
+              onClick={() => runShortcut("test", async () => { await runAction("/api/send-test", "Teste enviado.") })}
+              disabled={shortcutLoading === "test"}
+              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40 disabled:opacity-60"
+              title="Enviar teste"
+              aria-label="Enviar teste"
+            >
+              <span className="inline-flex w-full items-center justify-center">
+                <TestTube2 size={18} className={`text-primary ${shortcutLoading === "test" ? "animate-pulse" : ""}`} />
+              </span>
+            </button>
+          </div>
+        </aside>
+      ) : null}
 
       <DestinationModal
         open={destinationOpen}
@@ -353,30 +405,12 @@ export default function DashboardPage() {
         onSaved={refreshStatus}
       />
       <ScheduleModal open={scheduleOpen} onClose={() => setScheduleOpen(false)} onSaved={refreshStatus} />
+      <AllSchedulesModal
+        open={allSchedulesOpen}
+        onClose={() => setAllSchedulesOpen(false)}
+        items={allGreetingItems}
+        onRefresh={refreshStatus}
+      />
     </div>
-  )
-}
-
-function QuickCard({
-  title,
-  description,
-  color,
-  textColor,
-  onClick,
-}: {
-  title: string
-  description: string
-  color: string
-  textColor: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`text-left p-5 rounded-2xl border border-border ${color} hover:brightness-95 active:scale-[0.98] transition-all focus-visible:ring-2 focus-visible:ring-ring outline-none`}
-    >
-      <p className={`text-base font-semibold ${textColor} mb-1`}>{title}</p>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </button>
   )
 }

@@ -2,7 +2,7 @@
   "idxAluno": 7,
   "idxAula": 0,
   "dataInicio": "2026-03-11",
-  "updatedAt": "2026-03-17T13:00:04.269Z",
+  "updatedAt": "2026-03-17T16:20:31.012Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
     "Juan Ferreira",
@@ -21,7 +21,8 @@
     "Clara Helena",
     "Daniel Lucas",
     "Enzo Duarte",
-    "Felipe Moreira"
+    "Felipe Moreira",
+    "Jaynni Nascimento"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,

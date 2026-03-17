@@ -1,8 +1,6 @@
 {
-  "type": "scheduled",
+  "type": "test",
   "skipped": false,
-  "aluno": "Jaynni Nascimento",
-  "materia": "Soft Skills",
-  "messageId": "true_120363407433046278@g.us_3EB0BCA1B74C8E059BEE27_138469896626257@lid",
-  "sentAt": "2026-03-17T13:00:04.269Z"
+  "messageId": "true_120363423174718536@g.us_3EB0409B0C183078B66613_138469896626257@lid",
+  "sentAt": "2026-03-17T14:57:38.454Z"
 }
