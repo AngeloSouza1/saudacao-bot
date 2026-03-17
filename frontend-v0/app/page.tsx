@@ -154,6 +154,7 @@ export default function DashboardPage() {
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [allSchedulesOpen, setAllSchedulesOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(true)
+  const [todayLabel, setTodayLabel] = useState("")
   const [statusData, setStatusData] = useState<DashboardStatusResponse | null>(null)
   const [statusError, setStatusError] = useState<string>("")
   const [shortcutLoading, setShortcutLoading] = useState<string>("")
@@ -166,6 +167,17 @@ export default function DashboardPage() {
     } catch (error) {
       setStatusError(String((error as Error)?.message || "Falha ao atualizar status."))
     }
+  }, [])
+
+  useEffect(() => {
+    setTodayLabel(
+      new Date().toLocaleDateString("pt-BR", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    )
   }, [])
 
   useEffect(() => {
@@ -254,12 +266,6 @@ export default function DashboardPage() {
     (statusData?.whatsapp?.sender ? `+${statusData.whatsapp.sender}` : "Sem sessão")
   const userInitials = getUserInitials(userName)
   const userAvatar = String(statusData?.whatsapp?.userAvatar || "").trim() || undefined
-  const todayLabel = new Date().toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  })
   const whatsappPhase = String(statusData?.whatsapp?.phase || "")
   const isSystemReady = whatsappPhase === "ready" || whatsappPhase === "authenticated" || Boolean(statusData?.whatsapp?.sender)
   const hasConfigPending = !hasRequiredConfig({
@@ -307,7 +313,9 @@ export default function DashboardPage() {
             <div className="flex items-baseline justify-between gap-4 flex-wrap">
               <div>
                 <h1 className="text-3xl font-bold text-foreground tracking-tight text-balance">Painel Operacional</h1>
-                <p className="text-muted-foreground mt-1 text-sm">Ciclo ativo · {todayLabel}</p>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Ciclo ativo{todayLabel ? ` · ${todayLabel}` : ""}
+                </p>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span

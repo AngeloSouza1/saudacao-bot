@@ -1,17 +1,6 @@
 import type { Metadata } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-})
-const _geistMono = Geist_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-})
 
 export const metadata: Metadata = {
   title: 'Saudação Bot — Painel Operacional',
@@ -25,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${_geistMono.variable}`} suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         {children}
         <Analytics />
