@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Calendar, GraduationCap, Pencil, Trash2, Plus } from "lucide-react"
+import { Calendar, GraduationCap, Pencil, Search, Trash2, Plus, X } from "lucide-react"
 import { ModalShell, UnderlineInput } from "./ModalShell"
 import { cn } from "@/lib/utils"
 import { isNullWord, isValidStudentName, normalizeHourInput, normalizeText } from "@/lib/validation"
@@ -103,6 +103,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   const [studentName, setStudentName] = useState("")
   const [studentWhatsapp, setStudentWhatsapp] = useState("")
   const [studentImage, setStudentImage] = useState("")
+  const [studentFilter, setStudentFilter] = useState("")
   const [students, setStudents] = useState<Student[]>([])
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null)
   const [showStudentForm, setShowStudentForm] = useState(false)
@@ -172,6 +173,19 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
       !isNullWord(professor)
     )
   }, [lessonForm])
+
+  const filteredStudents = useMemo(() => {
+    const query = normalizeText(studentFilter).toLocaleLowerCase("pt-BR")
+    if (!query) return students
+
+    return students.filter((student) => {
+      const name = normalizeText(student.name).toLocaleLowerCase("pt-BR")
+      const whatsapp = normalizeText(student.whatsapp).toLocaleLowerCase("pt-BR")
+      return name.includes(query) || whatsapp.includes(query)
+    })
+  }, [studentFilter, students])
+
+  const safeStudentFilter = studentFilter && studentFilter.toLocaleLowerCase("pt-BR") !== "null" ? studentFilter : ""
 
   useEffect(() => {
     if (!open) return
@@ -469,8 +483,8 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
 
         <div className="flex-1 min-h-0">
           {activeSection === "students" ? (
-          <div className="mx-auto flex h-full min-h-0 w-full max-w-[1220px] flex-col gap-3 overflow-hidden">
-            <div className="mt-2 px-5 py-4">
+          <div className="mx-auto flex h-full min-h-0 w-full max-w-[1220px] flex-col gap-1 overflow-hidden">
+            <div className="-mt-3 px-5 py-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Resumo da turma</p>
@@ -515,12 +529,32 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
             </div>
 
             <div className="min-h-0 max-h-[calc(90vh-260px)] self-start overflow-hidden rounded-[1.6rem] border border-border bg-card/90 p-4 shadow-sm">
+              <div className="mb-3 flex items-center gap-3 rounded-[1.25rem] border border-border bg-muted/20 px-4 py-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/10 bg-primary/10 text-primary">
+                  <Search size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <label htmlFor="student-filter" className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+                    Filtrar alunos
+                  </label>
+                  <input
+                    id="student-filter"
+                    value={safeStudentFilter}
+                    onChange={(e) => setStudentFilter(String(e.target.value || ""))}
+                    placeholder="Buscar por aluno ou WhatsApp"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="mt-1 w-full border-0 bg-transparent p-0 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
               <div
                 id="modal-students"
                 className="h-[calc(90vh-300px)] min-h-0 overflow-y-auto overflow-x-hidden rounded-[1.4rem] border border-border bg-muted/15 p-3"
               >
+                {filteredStudents.length ? (
                 <div className="space-y-3">
-                  {students.map((student, idx) => (
+                  {filteredStudents.map((student, idx) => (
                     <div
                       key={student.id}
                       className={cn(
@@ -566,6 +600,16 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                     </div>
                   ))}
                 </div>
+                ) : (
+                <div className="flex h-full min-h-[220px] items-center justify-center rounded-[1.4rem] border border-dashed border-border bg-card/70 px-6 text-center">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Nenhum aluno encontrado</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      Ajuste o filtro para buscar por nome do aluno ou número de WhatsApp.
+                    </p>
+                  </div>
+                </div>
+                )}
               </div>
             </div>
             </div>
@@ -797,9 +841,10 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
               </div>
               <button
                 onClick={resetStudentForm}
-                className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
+                aria-label="Fechar"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:bg-muted"
               >
-                Fechar
+                <X size={16} />
               </button>
             </div>
             <div className="space-y-4 rounded-[1.5rem] border border-primary/15 bg-muted/20 p-4">

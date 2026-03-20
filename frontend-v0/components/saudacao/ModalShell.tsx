@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ReactNode, useEffect } from "react"
+import { ReactNode } from "react"
 
 interface ModalShellProps {
   open: boolean
@@ -27,16 +27,6 @@ export function ModalShell({
   bodyClassName,
   headerActions,
 }: ModalShellProps) {
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [open, onClose])
-
   if (!open) return null
 
   const sizeClasses = {
