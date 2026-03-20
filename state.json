@@ -2,7 +2,7 @@
   "idxAluno": 10,
   "idxAula": 1,
   "dataInicio": "2026-03-11",
-  "updatedAt": "2026-03-18T13:00:03.498Z",
+  "updatedAt": "2026-03-20T19:49:25.577Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
     "Kaio Vieira Nunes",
@@ -21,7 +21,8 @@
     "Daniel Lucas",
     "Enzo Duarte",
     "Felipe Moreira",
-    "Jaynni Nascimento"
+    "Jaynni Nascimento",
+    "Juan Ferreira"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,
@@ -62,11 +63,5 @@
     "Matheus Leonardo",
     "Matheus Marques"
   ],
-  "efetivadosCiclo": [
-    "Daniel Lucas",
-    "Enzo Duarte",
-    "Felipe Moreira",
-    "Jaynni Nascimento",
-    "Juan Ferreira"
-  ]
+  "efetivadosCiclo": []
 }

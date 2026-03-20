@@ -10,7 +10,7 @@ import { ConfigModal } from "@/components/saudacao/ConfigModal"
 import { ScheduleModal } from "@/components/saudacao/ScheduleModal"
 import { AllSchedulesModal } from "@/components/saudacao/AllSchedulesModal"
 import { hasRequiredConfig } from "@/lib/validation"
-import { RefreshCw, Send, TestTube2 } from "lucide-react"
+import { Calendar, GraduationCap, RefreshCw } from "lucide-react"
 
 type DashboardStatusResponse = {
   settings?: {
@@ -26,6 +26,7 @@ type DashboardStatusResponse = {
     lockTimeoutMin?: number
     lockConfigured?: boolean
     alunos?: string[]
+    alunoDetalhes?: Array<{ nome?: string; whatsapp?: string; imagem?: string }>
   }
   scheduleSummary?: Array<{ dia?: string | number; horario?: string; materia?: string }>
   schedulerStarted?: boolean
@@ -112,6 +113,12 @@ function dayName(dia: string | number | undefined) {
 
 function mapGreetingItems(data: DashboardStatusResponse | null, limit = 12): GreetingItem[] {
   const preview = Array.isArray(data?.schedulePreview) ? data!.schedulePreview : []
+  const details = Array.isArray(data?.config?.alunoDetalhes) ? data!.config!.alunoDetalhes! : []
+  const imageByStudent = new Map(
+    details
+      .map((item) => [String(item?.nome || "").trim().toLocaleLowerCase("pt-BR"), String(item?.imagem || "").trim()] as const)
+      .filter(([name, image]) => Boolean(name) && Boolean(image))
+  )
   const reverted = new Set(
     Array.isArray(data?.state?.revertidosEfetivados) ? data!.state!.revertidosEfetivados!.map(String) : []
   )
@@ -135,10 +142,12 @@ function mapGreetingItems(data: DashboardStatusResponse | null, limit = 12): Gre
     const professor = String(item?.professor || "").trim()
     const classInfo = [title ? `Título: ${title}` : "", materia, professor].filter(Boolean).join(" | ")
     const studentName = String(item?.alunoPrevisto || "").trim() || "Aluno não definido"
+    const studentImage = imageByStudent.get(studentName.toLocaleLowerCase("pt-BR")) || undefined
 
     return {
       id: `${date}-${item?.horario || "--:--"}-${index}`,
       studentName,
+      studentImage,
       date: formatDatePtBr(date),
       time: String(item?.horario || "--:--"),
       classInfo: classInfo || "Sem dados da aula",
@@ -155,6 +164,7 @@ export default function DashboardPage() {
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [scheduleInitialSection, setScheduleInitialSection] = useState<"students" | "lessons" | null>(null)
   const [allSchedulesOpen, setAllSchedulesOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(true)
   const [todayLabel, setTodayLabel] = useState("")
@@ -385,7 +395,10 @@ export default function DashboardPage() {
         <AppSidebar
           onOpenDestination={() => setDestinationOpen(true)}
           onOpenConfig={() => setConfigOpen(true)}
-          onOpenSchedule={() => setScheduleOpen(true)}
+          onOpenSchedule={() => {
+            setScheduleInitialSection(null)
+            setScheduleOpen(true)
+          }}
           activeItem={activeItem}
           setActiveItem={setActiveItem}
           shortcutsOpen={shortcutsOpen}
@@ -460,24 +473,29 @@ export default function DashboardPage() {
               </span>
             </button>
             <button
-              onClick={() => setDestinationOpen(true)}
+              onClick={() => {
+                setScheduleInitialSection("students")
+                setScheduleOpen(true)
+              }}
               className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
-              title="Destino"
-              aria-label="Destino"
+              title="Aluno"
+              aria-label="Aluno"
             >
               <span className="inline-flex w-full items-center justify-center">
-                <Send size={18} className="text-primary" />
+                <GraduationCap size={18} className="text-primary" />
               </span>
             </button>
             <button
-              onClick={() => runShortcut("test", async () => { await runAction("/api/send-test", "Teste enviado.") })}
-              disabled={shortcutLoading === "test"}
-              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40 disabled:opacity-60"
-              title="Enviar teste"
-              aria-label="Enviar teste"
+              onClick={() => {
+                setScheduleInitialSection("lessons")
+                setScheduleOpen(true)
+              }}
+              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              title="Aula"
+              aria-label="Aula"
             >
               <span className="inline-flex w-full items-center justify-center">
-                <TestTube2 size={18} className={`text-primary ${shortcutLoading === "test" ? "animate-pulse" : ""}`} />
+                <Calendar size={18} className="text-primary" />
               </span>
             </button>
           </div>
@@ -499,7 +517,15 @@ export default function DashboardPage() {
         scheduleSummary={Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary : []}
         onSaved={refreshStatus}
       />
-      <ScheduleModal open={scheduleOpen} onClose={() => setScheduleOpen(false)} onSaved={refreshStatus} />
+      <ScheduleModal
+        open={scheduleOpen}
+        onClose={() => {
+          setScheduleOpen(false)
+          setScheduleInitialSection(null)
+        }}
+        onSaved={refreshStatus}
+        initialSection={scheduleInitialSection}
+      />
       <AllSchedulesModal
         open={allSchedulesOpen}
         onClose={() => setAllSchedulesOpen(false)}

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 export interface GreetingItem {
   id: string
   studentName: string
+  studentImage?: string
   date: string
   time: string
   classInfo: string
@@ -93,6 +94,18 @@ function GreetingRow({ item, isEven }: { item: GreetingItem; isEven: boolean }) 
             Próx
           </span>
         )}
+        {item.studentImage ? (
+          <img
+            src={item.studentImage}
+            alt={`Foto de ${item.studentName}`}
+            className="h-10 w-10 shrink-0 rounded-xl border border-primary/15 object-cover shadow-sm"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.style.display = "none"
+            }}
+          />
+        ) : null}
         <span
           className={cn(
             "text-lg font-semibold truncate",

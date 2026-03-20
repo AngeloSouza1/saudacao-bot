@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Calendar, GraduationCap, Pencil, Search, Trash2, Plus, X } from "lucide-react"
 import { ModalShell, UnderlineInput } from "./ModalShell"
 import { cn } from "@/lib/utils"
@@ -26,6 +26,7 @@ interface ScheduleModalProps {
   open: boolean
   onClose: () => void
   onSaved?: () => Promise<void> | void
+  initialSection?: AgendaSection
 }
 
 type DeleteTarget =
@@ -98,7 +99,24 @@ function sortStudentsByName(list: Student[]): Student[] {
   )
 }
 
-export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
+function sanitizeFilterValue(value: unknown) {
+  const text = String(value ?? "").trim()
+  const normalized = text.toLocaleLowerCase("pt-BR")
+  if (!text || normalized === "null" || normalized === "undefined") return ""
+  return text
+}
+
+function forceCleanFilterInput(input: HTMLInputElement | null, nextValue = "") {
+  if (!input) return
+  const sanitized = sanitizeFilterValue(nextValue)
+  input.value = sanitized
+  requestAnimationFrame(() => {
+    if (input.value !== sanitized) input.value = sanitized
+  })
+}
+
+export function ScheduleModal({ open, onClose, onSaved, initialSection = null }: ScheduleModalProps) {
+  const studentFilterInputRef = useRef<HTMLInputElement | null>(null)
   const [activeSection, setActiveSection] = useState<AgendaSection>(null)
   const [studentName, setStudentName] = useState("")
   const [studentWhatsapp, setStudentWhatsapp] = useState("")
@@ -175,7 +193,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   }, [lessonForm])
 
   const filteredStudents = useMemo(() => {
-    const query = normalizeText(studentFilter).toLocaleLowerCase("pt-BR")
+    const query = normalizeText(sanitizeFilterValue(studentFilter)).toLocaleLowerCase("pt-BR")
     if (!query) return students
 
     return students.filter((student) => {
@@ -185,7 +203,17 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     })
   }, [studentFilter, students])
 
-  const safeStudentFilter = studentFilter && studentFilter.toLocaleLowerCase("pt-BR") !== "null" ? studentFilter : ""
+  const safeStudentFilter = sanitizeFilterValue(studentFilter)
+
+  useEffect(() => {
+    const input = studentFilterInputRef.current
+    forceCleanFilterInput(input, safeStudentFilter)
+  }, [safeStudentFilter])
+
+  useEffect(() => {
+    if (!open) return
+    setActiveSection(initialSection)
+  }, [open, initialSection])
 
   useEffect(() => {
     if (!open) return
@@ -219,7 +247,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
         setLessons(agendaToLessons(data?.agendaSemanal))
         setStudentError("")
         setLessonErrors({})
-        setActiveSection(null)
+        setActiveSection(initialSection)
         setEditingStudentId(null)
         setShowStudentForm(false)
         setEditingLessonId(null)
@@ -235,7 +263,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     return () => {
       active = false
     }
-  }, [open])
+  }, [open, initialSection])
 
   function resetStudentForm() {
     setEditingStudentId(null)
@@ -252,31 +280,41 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setActiveSection("students")
   }
 
-  function addStudent() {
+  async function addStudent() {
     const name = studentName.trim()
     if (!isValidStudentName(name)) {
       setStudentError("Nome de aluno inválido.")
       return
     }
-    const alreadyExists = students.some((s) => normalizeText(s.name).toLowerCase() === name.toLowerCase())
+    const normalizedName = normalizeText(name).toLowerCase()
+    const alreadyExists = students.some((s) => {
+      if (editingStudentId && s.id === editingStudentId) return false
+      return normalizeText(s.name).toLowerCase() === normalizedName
+    })
     if (alreadyExists) {
       setStudentError("Este aluno já está cadastrado.")
       return
     }
-    if (editingStudentId) {
-      setStudents((prev) =>
-        sortStudentsByName(
-          prev.map((s) => (s.id === editingStudentId
-            ? { ...s, name, whatsapp: studentWhatsapp.trim(), image: studentImage.trim() }
-            : s))
+
+    const nextStudents = editingStudentId
+      ? sortStudentsByName(
+          students.map((s) =>
+            s.id === editingStudentId
+              ? { ...s, name, whatsapp: studentWhatsapp.trim(), image: studentImage.trim() }
+              : s
+          )
         )
-      )
+      : sortStudentsByName([
+          ...students,
+          { id: `s${Date.now()}`, name, whatsapp: studentWhatsapp.trim(), image: studentImage.trim() },
+        ])
+
+    const saved = await persistAgendaChanges(nextStudents, lessons)
+    if (!saved) return
+
+    setStudents(nextStudents)
+    if (editingStudentId) {
       setEditingStudentId(null)
-    } else {
-      setStudents((prev) => sortStudentsByName([
-        ...prev,
-        { id: `s${Date.now()}`, name, whatsapp: studentWhatsapp.trim(), image: studentImage.trim() },
-      ]))
     }
     setStudentName("")
     setStudentWhatsapp("")
@@ -296,8 +334,11 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     })
   }
 
-  function confirmRemoveStudent(id: string) {
-    setStudents((prev) => prev.filter((s) => s.id !== id))
+  async function confirmRemoveStudent(id: string) {
+    const nextStudents = students.filter((s) => s.id !== id)
+    const saved = await persistAgendaChanges(nextStudents, lessons)
+    if (!saved) return
+    setStudents(nextStudents)
     if (editingStudentId === id) {
       resetStudentForm()
     }
@@ -313,7 +354,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setShowStudentForm(true)
   }
 
-  function addLesson() {
+  async function addLesson() {
     const nextErrors: Record<string, string> = {}
     const hora = normalizeHourInput(lessonForm.hora)
     const titulo = normalizeText(lessonForm.titulo)
@@ -327,27 +368,30 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setLessonErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0 || !isLessonValid) return
 
-    if (editingLessonId) {
-      setLessons((prev) =>
-        prev.map((l) =>
+    const nextLessons = editingLessonId
+      ? lessons.map((l) =>
           l.id === editingLessonId
             ? { ...l, dia: lessonForm.dia, hora, titulo, materia, professor }
             : l
         )
-      )
+      : [
+          ...lessons,
+          {
+            id: `l${Date.now()}`,
+            dia: lessonForm.dia,
+            hora,
+            titulo,
+            materia,
+            professor,
+          },
+        ]
+
+    const saved = await persistAgendaChanges(students, nextLessons)
+    if (!saved) return
+
+    setLessons(nextLessons)
+    if (editingLessonId) {
       setEditingLessonId(null)
-    } else {
-      setLessons((prev) => [
-        ...prev,
-        {
-          id: `l${Date.now()}`,
-          dia: lessonForm.dia,
-          hora,
-          titulo,
-          materia,
-          professor,
-        },
-      ])
     }
     setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
     setLessonErrors({})
@@ -364,8 +408,11 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     })
   }
 
-  function confirmRemoveLesson(id: string) {
-    setLessons((prev) => prev.filter((l) => l.id !== id))
+  async function confirmRemoveLesson(id: string) {
+    const nextLessons = lessons.filter((l) => l.id !== id)
+    const saved = await persistAgendaChanges(students, nextLessons)
+    if (!saved) return
+    setLessons(nextLessons)
     if (editingLessonId === id) {
       setEditingLessonId(null)
       setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
@@ -373,12 +420,12 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     }
   }
 
-  function confirmDeleteTarget() {
+  async function confirmDeleteTarget() {
     if (!deleteTarget) return
     if (deleteTarget.kind === "student") {
-      confirmRemoveStudent(deleteTarget.id)
+      await confirmRemoveStudent(deleteTarget.id)
     } else {
-      confirmRemoveLesson(deleteTarget.id)
+      await confirmRemoveLesson(deleteTarget.id)
     }
     setDeleteTarget(null)
   }
@@ -397,38 +444,53 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setShowLessonForm(true)
   }
 
-  async function handleSaveAgenda() {
-    if (!students.length) {
+  function buildAgendaPayload(studentList: Student[], lessonList: Lesson[]) {
+    const alunos = studentList.map((s) => String(s.name || "").trim()).filter(Boolean)
+    const alunoDetalhes = studentList.map((s) => ({
+      nome: String(s.name || "").trim(),
+      whatsapp: String(s.whatsapp || "").trim(),
+      imagem: String(s.image || "").trim(),
+    }))
+    const agendaSemanal = lessonsToAgenda(lessonList)
+    return { alunos, alunoDetalhes, agendaSemanal }
+  }
+
+  async function persistAgendaChanges(
+    nextStudents: Student[],
+    nextLessons: Lesson[],
+    options?: { closeOnSuccess?: boolean }
+  ) {
+    if (!nextStudents.length) {
       setFeedback("Cadastre ao menos 1 aluno antes de salvar.")
-      return
+      return false
     }
-    if (!lessons.length) {
+    if (!nextLessons.length) {
       setFeedback("Cadastre ao menos 1 item de aula antes de salvar.")
-      return
+      return false
     }
 
     setSaving(true)
     setFeedback("")
     try {
-      const alunos = students.map((s) => String(s.name || "").trim()).filter(Boolean)
-      const alunoDetalhes = students.map((s) => ({
-        nome: String(s.name || "").trim(),
-        whatsapp: String(s.whatsapp || "").trim(),
-        imagem: String(s.image || "").trim(),
-      }))
-      const agendaSemanal = lessonsToAgenda(lessons)
+      const { alunos, alunoDetalhes, agendaSemanal } = buildAgendaPayload(nextStudents, nextLessons)
       await fetchJson("/api/agenda-json", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ alunos, alunoDetalhes, agendaSemanal }),
       })
       if (onSaved) await onSaved()
-      onClose()
+      if (options?.closeOnSuccess) onClose()
+      return true
     } catch (error) {
       setFeedback(String((error as Error)?.message || "Falha ao salvar agenda."))
+      return false
     } finally {
       setSaving(false)
     }
+  }
+
+  async function handleSaveAgenda() {
+    await persistAgendaChanges(students, lessons, { closeOnSuccess: true })
   }
 
   return (
@@ -538,9 +600,34 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                     Filtrar alunos
                   </label>
                   <input
+                    ref={studentFilterInputRef}
                     id="student-filter"
                     value={safeStudentFilter}
-                    onChange={(e) => setStudentFilter(String(e.target.value || ""))}
+                    onChange={(e) => {
+                      const sanitized = sanitizeFilterValue(e.target.value)
+                      forceCleanFilterInput(e.currentTarget, sanitized)
+                      setStudentFilter(sanitized)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        forceCleanFilterInput(e.currentTarget, "")
+                        setStudentFilter("")
+                        e.currentTarget.blur()
+                      }
+                    }}
+                    onKeyUp={(e) => {
+                      forceCleanFilterInput(e.currentTarget, e.currentTarget.value)
+                    }}
+                    onFocus={(e) => {
+                      forceCleanFilterInput(e.currentTarget, e.currentTarget.value)
+                    }}
+                    onBlur={(e) => {
+                      const sanitized = sanitizeFilterValue(e.currentTarget.value)
+                      forceCleanFilterInput(e.currentTarget, sanitized)
+                      if (studentFilter !== sanitized) setStudentFilter(sanitized)
+                    }}
                     placeholder="Buscar por aluno ou WhatsApp"
                     autoComplete="off"
                     spellCheck={false}
@@ -568,13 +655,27 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                             {String(idx + 1).padStart(2, "0")}
                           </span>
                           <div className="min-w-0">
-                            <p className="student-name truncate text-[1.12rem] font-semibold leading-tight text-foreground">
-                              {student.name}
-                            </p>
+                            <div className="flex items-center gap-3">
+                              {student.image ? (
+                                <img
+                                  src={student.image}
+                                  alt={`Foto de ${student.name}`}
+                                  className="h-11 w-11 shrink-0 rounded-2xl border border-primary/15 object-cover shadow-sm"
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none"
+                                  }}
+                                />
+                              ) : null}
+                              <p className="student-name truncate text-[1.12rem] font-semibold leading-tight text-foreground">
+                                {student.name}
+                              </p>
+                            </div>
                             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                               <p className="uppercase tracking-[0.14em]">Registro de aluno</p>
                               {student.whatsapp ? <p>WhatsApp: {student.whatsapp}</p> : null}
-                              {student.image ? <p className="truncate">Imagem: {student.image}</p> : null}
+                              {student.image ? <p>Imagem cadastrada</p> : null}
                             </div>
                           </div>
                         </div>

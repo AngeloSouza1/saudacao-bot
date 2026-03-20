@@ -93,5 +93,97 @@
   "imageStyle": "banner",
   "updatedAt": "2026-03-04T15:00:00.000Z",
   "lockTimeoutMin": 1,
-  "lockPassword": "1234"
+  "lockPassword": "1234",
+  "alunoDetalhes": [
+    {
+      "nome": "Angelo Souza",
+      "whatsapp": "",
+      "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/491868804_1359586415373484_5192037315334297051_n.jpg?ccb=11-4&oh=01_Q5Aa4AFSSSUvy6fQERgYc9WKqUeqXjLBw4Ra4f1Z58zi0q1yOw&oe=69CACA36&_nc_sid=5e03e0&_nc_cat=102"
+    },
+    {
+      "nome": "Bruna Alves",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Clara Helena",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Daniel Lucas",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Enzo Duarte",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Felipe Moreira",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Jaynni Nascimento",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "João Marcos Basilio Sales",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "João Vitor Gomes Oliveira Rodrigues Resende",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Juan Ferreira",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Kaio Vieira Nunes",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Luana Costa",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Matheus Leonardo",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Matheus Marques",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Rai Colares",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Rallenson Silva",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Thalita Nascimento",
+      "whatsapp": "",
+      "imagem": ""
+    },
+    {
+      "nome": "Wanuta Santos",
+      "whatsapp": "",
+      "imagem": ""
+    }
+  ]
 }
