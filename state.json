@@ -1,11 +1,10 @@
 {
-  "idxAluno": 7,
-  "idxAula": 0,
+  "idxAluno": 10,
+  "idxAula": 1,
   "dataInicio": "2026-03-11",
-  "updatedAt": "2026-03-17T16:20:31.012Z",
+  "updatedAt": "2026-03-18T13:00:03.498Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
-    "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Luana Costa",
     "Matheus Leonardo",
@@ -46,6 +45,10 @@
     {
       "itemKey": "cycle_1773228644490_oc6fjf|2026-03-17T23:00:00.000Z|Soft Skills|Prof. Flávia|20:00",
       "aluno": "Jaynni Nascimento"
+    },
+    {
+      "itemKey": "cycle_1773228644490_oc6fjf|2026-03-18T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
+      "aluno": "Juan Ferreira"
     }
   ],
   "ordemVinculadaCiclo": [
@@ -63,6 +66,7 @@
     "Daniel Lucas",
     "Enzo Duarte",
     "Felipe Moreira",
-    "Jaynni Nascimento"
+    "Jaynni Nascimento",
+    "Juan Ferreira"
   ]
 }

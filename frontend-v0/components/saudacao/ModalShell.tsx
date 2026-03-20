@@ -13,6 +13,7 @@ interface ModalShellProps {
   size?: "sm" | "md" | "lg" | "xl" | "xxl"
   icon?: ReactNode
   bodyClassName?: string
+  headerActions?: ReactNode
 }
 
 export function ModalShell({
@@ -24,6 +25,7 @@ export function ModalShell({
   size = "md",
   icon,
   bodyClassName,
+  headerActions,
 }: ModalShellProps) {
   // Close on Escape
   useEffect(() => {
@@ -54,7 +56,7 @@ export function ModalShell({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
+        className="absolute inset-0 bg-transparent"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -62,12 +64,12 @@ export function ModalShell({
       {/* Panel */}
       <div
         className={cn(
-          "relative w-full bg-card rounded-2xl border border-border shadow-2xl flex flex-col max-h-[90vh]",
+          "relative mt-10 w-full bg-card rounded-2xl border border-border shadow-2xl flex flex-col max-h-[90vh]",
           sizeClasses[size]
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 py-5 border-b border-border shrink-0">
+        <div className="flex items-start justify-between px-6 py-3 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
             {icon && (
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -86,13 +88,16 @@ export function ModalShell({
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Fechar"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-3">
+            {headerActions ? <div className="flex items-center gap-2">{headerActions}</div> : null}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Fechar"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Body */}

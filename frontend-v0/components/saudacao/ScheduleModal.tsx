@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Calendar, Pencil, Trash2, Plus } from "lucide-react"
+import { Calendar, GraduationCap, Pencil, Trash2, Plus } from "lucide-react"
 import { ModalShell, ModalActions, UnderlineInput } from "./ModalShell"
 import { cn } from "@/lib/utils"
 import { isNullWord, isValidStudentName, normalizeHourInput, normalizeText } from "@/lib/validation"
@@ -29,6 +29,8 @@ interface ScheduleModalProps {
 type DeleteTarget =
   | { kind: "student"; id: string; label: string }
   | { kind: "lesson"; id: string; label: string }
+
+type AgendaSection = "students" | "lessons" | null
 
 const DAY_OPTIONS = [
   { value: "", label: "Selecione o dia" },
@@ -94,6 +96,7 @@ function sortStudentsByName(list: Student[]): Student[] {
 }
 
 export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
+  const [activeSection, setActiveSection] = useState<AgendaSection>(null)
   const [studentName, setStudentName] = useState("")
   const [students, setStudents] = useState<Student[]>([])
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null)
@@ -115,6 +118,36 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   const [lessonErrors, setLessonErrors] = useState<Record<string, string>>({})
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const isLessonFormVisible = showLessonForm || Boolean(editingLessonId)
+  const headerActions = activeSection ? (
+    <>
+      <button
+        onClick={() => setActiveSection((current) => (current === "students" ? null : "students"))}
+        aria-label="Abrir card de alunos"
+        title="Abrir card de alunos"
+        className={cn(
+          "inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-colors",
+          activeSection === "students"
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-border bg-card text-foreground hover:bg-muted"
+        )}
+      >
+        <GraduationCap size={18} />
+      </button>
+      <button
+        onClick={() => setActiveSection((current) => (current === "lessons" ? null : "lessons"))}
+        aria-label="Abrir card de aulas da semana"
+        title="Abrir card de aulas da semana"
+        className={cn(
+          "inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-colors",
+          activeSection === "lessons"
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-border bg-card text-foreground hover:bg-muted"
+        )}
+      >
+        <Calendar size={18} />
+      </button>
+    </>
+  ) : null
 
   const isLessonValid = useMemo(() => {
     const titulo = normalizeText(lessonForm.titulo)
@@ -149,6 +182,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
         setLessons(agendaToLessons(data?.agendaSemanal))
         setStudentError("")
         setLessonErrors({})
+        setActiveSection(null)
         setEditingStudentId(null)
         setShowStudentForm(false)
         setEditingLessonId(null)
@@ -188,6 +222,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setStudentName("")
     setStudentError("")
     setShowStudentForm(false)
+    setActiveSection("students")
   }
 
   function removeStudent(id: string) {
@@ -209,6 +244,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   }
 
   function startEditStudent(student: Student) {
+    setActiveSection("students")
     setEditingStudentId(student.id)
     setStudentName(student.name)
     setStudentError("")
@@ -254,6 +290,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
     setLessonErrors({})
     setShowLessonForm(false)
+    setActiveSection("lessons")
   }
 
   function removeLesson(id: string) {
@@ -285,6 +322,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   }
 
   function startEditLesson(lesson: Lesson) {
+    setActiveSection("lessons")
     setEditingLessonId(lesson.id)
     setLessonForm({
       dia: lesson.dia,
@@ -333,106 +371,199 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
       title="Editor de Agenda"
       subtitle="Aulas, histórico e acompanhamento"
       icon={<Calendar size={16} className="text-primary" />}
-      size="xxl"
+      size={activeSection ? "xxl" : "md"}
       bodyClassName="overflow-hidden"
+      headerActions={headerActions}
     >
-      <div className="h-full px-6 py-5 flex flex-col min-h-0">
-        <div className="grid grid-cols-1 xl:grid-cols-[0.82fr_1.18fr] gap-5 flex-1 min-h-0">
-          <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0">
-            <h3 className="text-[2rem] font-black tracking-tight text-foreground">Alunos</h3>
-            {showStudentForm || editingStudentId ? (
-              <div className="mt-3 flex items-end justify-between gap-3">
-                <div className="w-full max-w-[640px]">
-                  <UnderlineInput
-                    label="Nome do aluno"
-                    value={studentName}
-                    onChange={(v) => {
-                      setStudentName(v)
-                      if (studentError) setStudentError("")
-                    }}
-                    placeholder="Ex.: Angelo"
-                    error={studentError || undefined}
-                    required
-                    inputClassName={showStudentForm || editingStudentId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
-                  />
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <button
-                    onClick={addStudent}
-                    className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
-                  >
-                    <Plus size={14} /> {editingStudentId ? "Salvar Aluno" : "Adicionar Aluno"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingStudentId(null)
-                      setStudentName("")
-                      setStudentError("")
-                      setShowStudentForm(false)
-                    }}
-                    className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-sm font-semibold hover:bg-muted"
-                  >
-                    Cancelar edição
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-3 flex justify-start">
+      <div className="max-h-[calc(90vh-96px)] px-6 pt-6 pb-5 flex flex-col min-h-0">
+        <div className={cn("shrink-0", activeSection ? "mb-0" : "flex flex-1 items-center justify-center py-2")}>
+          {!activeSection ? (
+            <div className="mx-auto inline-flex min-h-[160px] w-auto items-center justify-center rounded-[2rem] border border-border bg-card/90 px-10 py-8 shadow-lg">
+              <div className="flex items-center justify-center gap-6">
                 <button
-                  onClick={() => {
-                    setEditingStudentId(null)
-                    setStudentName("")
-                    setStudentError("")
-                    setShowStudentForm(true)
-                  }}
-                  className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+                  onClick={() => setActiveSection((current) => (current === "students" ? null : "students"))}
+                  aria-label="Abrir card de alunos"
+                  title="Abrir card de alunos"
+                  className="inline-flex h-[112px] w-[112px] flex-col items-center justify-center gap-2 rounded-[1.9rem] border border-border bg-card px-3 text-center shadow-sm transition-colors hover:bg-muted"
                 >
-                  <Plus size={14} /> Adicionar Aluno
+                  <GraduationCap size={34} />
+                  <span className="text-xs font-semibold leading-none">Alunos</span>
+                </button>
+                <button
+                  onClick={() => setActiveSection((current) => (current === "lessons" ? null : "lessons"))}
+                  aria-label="Abrir card de aulas da semana"
+                  title="Abrir card de aulas da semana"
+                  className="inline-flex h-[112px] w-[112px] flex-col items-center justify-center gap-2 rounded-[1.9rem] border border-border bg-card px-3 text-center shadow-sm transition-colors hover:bg-muted"
+                >
+                  <Calendar size={34} />
+                  <span className="text-xs font-semibold leading-none">Aulas</span>
                 </button>
               </div>
-            )}
-            <p className="mt-3 text-sm text-muted-foreground">Para adicionar aluno, preencha corretamente o nome do aluno.</p>
+            </div>
+          ) : null}
+        </div>
 
-            <div
-              id="modal-students"
-              className="mt-3 min-h-0 overflow-auto rounded-xl border border-border p-2"
-              style={{ maxHeight: "455px" }}
-            >
-              <div className="space-y-2">
-                {students.map((student, idx) => (
-                  <div
-                    key={student.id}
-                    className={cn(
-                      "student-item flex items-center justify-between rounded-2xl border border-primary/15 bg-green-soft px-4 py-3",
-                      idx % 2 === 1 && "bg-green-soft/70"
-                    )}
-                  >
-                    <span className="student-name text-[1.1rem] font-semibold text-foreground leading-tight">{student.name}</span>
-                    <div className="student-actions flex items-center gap-2">
-                      <button
-                        className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2 text-sm"
-                        title="Editar aluno"
-                        aria-label="Editar aluno"
-                        onClick={() => startEditStudent(student)}
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2 text-sm"
-                        title="Excluir aluno"
-                        aria-label="Excluir aluno"
-                        onClick={() => removeStudent(student.id)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {!activeSection ? (
+          <div className="sr-only">
+            <div className="max-w-xl">
+              <h3 className="text-2xl font-black tracking-tight text-foreground">Escolha uma seção do editor</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Use os botões acima para abrir o card de alunos ou o card de aulas da semana.
+              </p>
             </div>
           </div>
+        ) : null}
 
-          <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0">
+        <div className="flex-1 min-h-0">
+          {activeSection === "students" ? (
+          <div className="mx-auto flex h-full min-h-0 w-full max-w-[1220px] flex-col gap-3 overflow-hidden">
+            <div className="mt-2 rounded-[1.6rem] border border-border bg-card/95 px-5 py-4 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Resumo da turma</p>
+                  <h3 className="mt-2 text-[2rem] font-black tracking-tight text-foreground">Alunos</h3>
+                </div>
+                <span className="w-fit rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                  {students.length} cadastrados
+                </span>
+              </div>
+            </div>
+
+            <div className="grid h-full min-h-0 gap-4 overflow-hidden xl:grid-cols-[280px_minmax(0,1fr)]">
+            <div className="flex h-full min-h-0 max-h-[calc(90vh-260px)] flex-col gap-4 self-start rounded-[1.6rem] border border-border bg-card/90 p-5 shadow-sm">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Organize a lista de alunos do ciclo. Você pode adicionar novos nomes, editar cadastros existentes e remover entradas sem perder clareza na fila.
+                  </p>
+                </div>
+
+                {!showStudentForm && !editingStudentId ? (
+                  <div className="flex justify-start">
+                    <button
+                      onClick={() => {
+                        setEditingStudentId(null)
+                        setStudentName("")
+                        setStudentError("")
+                        setShowStudentForm(true)
+                      }}
+                      className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+                    >
+                      <Plus size={15} /> Adicionar Aluno
+                    </button>
+                  </div>
+                ) : null}
+
+                {showStudentForm || editingStudentId ? (
+                  <div className="rounded-[1.5rem] border border-primary/15 bg-muted/30 p-4">
+                    <div className="mb-3 space-y-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        {editingStudentId ? "Editar aluno selecionado" : "Novo aluno"}
+                      </p>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Nome completo ou nome usado na turma
+                      </span>
+                    </div>
+                    <div className="space-y-4">
+                      <UnderlineInput
+                        label="Nome do aluno"
+                        value={studentName}
+                        onChange={(v) => {
+                          setStudentName(v)
+                          if (studentError) setStudentError("")
+                        }}
+                        placeholder="Ex.: Angelo"
+                        error={studentError || undefined}
+                        required
+                        inputClassName={showStudentForm || editingStudentId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+                      />
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={addStudent}
+                          className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+                        >
+                          <Plus size={15} /> {editingStudentId ? "Salvar Aluno" : "Adicionar Aluno"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingStudentId(null)
+                            setStudentName("")
+                            setStudentError("")
+                            setShowStudentForm(false)
+                          }}
+                          className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-semibold hover:bg-muted"
+                        >
+                          Cancelar edição
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-[1.5rem] border border-dashed border-border bg-muted/15 p-4 text-sm leading-6 text-muted-foreground">
+                    Selecione um aluno para editar ou use o botão acima para cadastrar um novo nome.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="min-h-0 max-h-[calc(90vh-260px)] self-start overflow-hidden rounded-[1.6rem] border border-border bg-card/90 p-4 shadow-sm">
+              <div
+                id="modal-students"
+                className="h-[calc(90vh-300px)] min-h-0 overflow-y-auto overflow-x-hidden rounded-[1.4rem] border border-border bg-muted/15 p-3"
+              >
+                <div className="space-y-3">
+                  {students.map((student, idx) => (
+                    <div
+                      key={student.id}
+                      className={cn(
+                        "student-item flex items-center justify-between gap-4 rounded-[1.4rem] border border-primary/15 px-4 py-3 shadow-[0_10px_24px_rgba(20,54,34,0.04)]",
+                        idx % 2 === 1 ? "bg-green-soft/70" : "bg-green-soft"
+                      )}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-3">
+                          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-card/80 text-sm font-bold text-primary">
+                            {String(idx + 1).padStart(2, "0")}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="student-name truncate text-[1.12rem] font-semibold leading-tight text-foreground">
+                              {student.name}
+                            </p>
+                            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                              Registro de aluno
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="student-actions flex items-center gap-2">
+                        <button
+                          className="secondary icon-btn rounded-2xl border border-border bg-card px-3 py-2.5 text-sm"
+                          title="Editar aluno"
+                          aria-label="Editar aluno"
+                          onClick={() => startEditStudent(student)}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          className="secondary icon-btn rounded-2xl border border-border bg-card px-3 py-2.5 text-sm"
+                          title="Excluir aluno"
+                          aria-label="Excluir aluno"
+                          onClick={() => removeStudent(student.id)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+          ) : null}
+
+          {activeSection === "lessons" ? (
+          <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0 h-full">
             <h3 className="text-[2rem] font-black tracking-tight text-foreground">Aulas da Semana</h3>
             {isLessonFormVisible ? (
               <>
@@ -598,6 +729,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
               </table>
             </div>
           </div>
+          ) : null}
         </div>
         {loading ? <p className="pt-3 text-sm text-muted-foreground shrink-0">Carregando agenda...</p> : null}
         {feedback ? <p className="pt-3 text-sm text-destructive shrink-0">{feedback}</p> : null}

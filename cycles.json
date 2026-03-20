@@ -1,22 +1,20 @@
 {
-  "activeCycleId": "cycle_1773228644490_oc6fjf",
+  "activeCycleId": "cycle_1774027212623_3ss328",
   "cycles": [
     {
-      "id": "cycle_1773228644490_oc6fjf",
-      "name": "Aulas periodo (01/03 - 30/03)",
+      "id": "cycle_1774027212623_3ss328",
+      "name": "Ciclo recuperado",
       "status": "active",
-      "reason": "manual",
-      "createdAt": "2026-03-11T11:30:44.490Z",
+      "reason": "bootstrap",
+      "createdAt": "2026-03-20T17:20:12.623Z",
       "completedAt": null,
       "start": {
-        "idxAluno": 7,
-        "idxAula": 0,
+        "idxAluno": 10,
+        "idxAula": 1,
         "dataInicio": "2026-03-11"
       },
-      "sentCount": 4,
-      "totalAlunos": 9,
-      "updatedAt": "2026-03-17T16:20:31.012Z",
-      "lastMessageAt": "2026-03-17T13:00:04.269Z"
+      "sentCount": 0,
+      "totalAlunos": 9
     }
   ]
 }

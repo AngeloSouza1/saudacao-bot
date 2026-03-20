@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import cron from "node-cron";
 import dotenv from "dotenv";
 import { getWhatsAppStatus, initWhatsApp, listGroups, sendText } from "./whatsapp.js";
@@ -72,7 +73,7 @@ function bootstrapSettings() {
     groupName: process.env.WHATSAPP_GROUP_NAME || ""
   };
 
-  fs.writeFileSync(settingsPath, JSON.stringify(initialSettings, null, 2));
+  writeJson(settingsPath, initialSettings);
 }
 
 function readJson(path) {
@@ -80,7 +81,31 @@ function readJson(path) {
 }
 
 function writeJson(path, data) {
-  fs.writeFileSync(path, JSON.stringify(data, null, 2));
+  const resolvedPath = String(path || "").trim();
+  if (!resolvedPath) {
+    throw new Error("Caminho de escrita JSON não informado.");
+  }
+
+  const dir = pathModuleDirname(resolvedPath);
+  if (dir && dir !== ".") {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const tempPath = `${resolvedPath}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(tempPath, JSON.stringify(data, null, 2));
+  fs.renameSync(tempPath, resolvedPath);
+}
+
+function pathModuleDirname(filePath) {
+  return path.dirname(filePath);
+}
+
+function backupCorruptedJson(filePath, reason = "") {
+  if (!fs.existsSync(filePath)) return "";
+  const suffix = `${Date.now()}.corrupted${reason ? `-${reason}` : ""}.bak`;
+  const backupPath = `${filePath}.${suffix}`;
+  fs.renameSync(filePath, backupPath);
+  return backupPath;
 }
 
 function loadConfig() {
@@ -180,7 +205,23 @@ function bootstrapCycles() {
 
 function loadCycles() {
   bootstrapCycles();
-  const raw = readJson(cyclesPath);
+  let raw;
+  try {
+    raw = readJson(cyclesPath);
+  } catch (error) {
+    const backupPath = backupCorruptedJson(cyclesPath, "invalid-json");
+    console.error(
+      `[cycles] Arquivo inválido detectado em ${cyclesPath}. Backup salvo em ${backupPath || "indisponível"}.`,
+      error
+    );
+
+    const cycle = createCycleSnapshotFromCurrentState("bootstrap", "Ciclo recuperado");
+    const recovered = defaultCycleStore();
+    recovered.activeCycleId = cycle.id;
+    recovered.cycles.push(cycle);
+    writeJson(cyclesPath, recovered);
+    raw = recovered;
+  }
   const safe = {
     activeCycleId: typeof raw?.activeCycleId === "string" ? raw.activeCycleId : "",
     cycles: Array.isArray(raw?.cycles) ? raw.cycles : []

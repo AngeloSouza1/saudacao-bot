@@ -1,6 +1,7 @@
 {
-  "type": "test",
+  "type": "scheduled",
   "skipped": false,
-  "messageId": "true_120363423174718536@g.us_3EB0409B0C183078B66613_138469896626257@lid",
-  "sentAt": "2026-03-17T14:57:38.454Z"
+  "reason": "sem_aula_no_dia",
+  "messageId": "true_120363407433046278@g.us_3EB07FE30D65BD5A79143D_138469896626257@lid",
+  "sentAt": "2026-03-19T14:00:03.131Z"
 }
