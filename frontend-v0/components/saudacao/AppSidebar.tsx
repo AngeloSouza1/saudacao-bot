@@ -6,7 +6,7 @@ import {
   Send,
   Settings,
   Calendar,
-  Zap,
+  Sparkles,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
@@ -43,10 +43,11 @@ export function AppSidebar({
 
   const items: SidebarItem[] = [
     {
-      id: "session",
-      icon: <MessageSquare size={18} />,
-      title: "Sessão",
-      subtitle: "Status da conexão",
+      id: "schedule",
+      icon: <Calendar size={18} />,
+      title: "Agenda",
+      subtitle: "Horários e turmas",
+      onClick: onOpenSchedule,
     },
     {
       id: "destination",
@@ -63,15 +64,14 @@ export function AppSidebar({
       onClick: onOpenConfig,
     },
     {
-      id: "schedule",
-      icon: <Calendar size={18} />,
-      title: "Agenda",
-      subtitle: "Horários e turmas",
-      onClick: onOpenSchedule,
+      id: "session",
+      icon: <MessageSquare size={18} />,
+      title: "Sessão",
+      subtitle: "Status da conexão",
     },
     {
       id: "shortcuts",
-      icon: <Zap size={18} />,
+      icon: <Sparkles size={18} />,
       title: "Atalhos",
       subtitle: "Ações rápidas",
     },
@@ -123,6 +123,8 @@ export function AppSidebar({
               "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group",
               isActive && !isShortcuts
                 ? "bg-primary text-primary-foreground shadow-sm"
+                : isActive && isShortcuts
+                  ? "bg-amber-100 text-amber-950 ring-1 ring-amber-300 shadow-sm hover:bg-amber-100 hover:text-amber-950"
                 : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             )}
             title={collapsed ? item.title : undefined}
@@ -131,7 +133,11 @@ export function AppSidebar({
             <span
               className={cn(
                 "flex-shrink-0 transition-colors",
-                isActive && !isShortcuts ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary"
+                isActive && !isShortcuts
+                  ? "text-primary-foreground"
+                  : isActive && isShortcuts
+                    ? "text-amber-700"
+                    : "text-muted-foreground group-hover:text-primary"
               )}
             >
               {item.icon}
@@ -142,7 +148,11 @@ export function AppSidebar({
                 <span
                   className={cn(
                     "block text-[11px] leading-tight truncate",
-                    isActive && !isShortcuts ? "text-primary-foreground/70" : "text-muted-foreground"
+                    isActive && !isShortcuts
+                      ? "text-primary-foreground/70"
+                      : isActive && isShortcuts
+                        ? "text-amber-800/80"
+                        : "text-muted-foreground"
                   )}
                 >
                   {item.subtitle}
