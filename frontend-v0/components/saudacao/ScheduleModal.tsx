@@ -280,6 +280,19 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
     setActiveSection("students")
   }
 
+  function resetLessonForm() {
+    setEditingLessonId(null)
+    setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
+    setLessonErrors({})
+    setShowLessonForm(false)
+  }
+
+  function openCreateLessonModal() {
+    resetLessonForm()
+    setShowLessonForm(true)
+    setActiveSection("lessons")
+  }
+
   async function addStudent() {
     const name = studentName.trim()
     if (!isValidStudentName(name)) {
@@ -393,9 +406,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
     if (editingLessonId) {
       setEditingLessonId(null)
     }
-    setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
-    setLessonErrors({})
-    setShowLessonForm(false)
+    resetLessonForm()
     setActiveSection("lessons")
   }
 
@@ -414,9 +425,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
     if (!saved) return
     setLessons(nextLessons)
     if (editingLessonId === id) {
-      setEditingLessonId(null)
-      setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
-      setShowLessonForm(false)
+      resetLessonForm()
     }
   }
 
@@ -645,8 +654,8 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
                     <div
                       key={student.id}
                       className={cn(
-                        "student-item flex items-center justify-between gap-4 rounded-[1.4rem] border border-primary/15 px-4 py-3 shadow-[0_10px_24px_rgba(20,54,34,0.04)]",
-                        idx % 2 === 1 ? "bg-green-soft/70" : "bg-green-soft"
+                        "student-item flex items-center justify-between gap-4 rounded-[1.4rem] border border-primary/12 px-4 py-3 shadow-[0_10px_24px_rgba(20,54,34,0.04)] transition-colors hover:bg-primary/8",
+                        idx % 2 === 1 ? "bg-muted/18" : "bg-primary/6"
                       )}
                     >
                       <div className="min-w-0 flex-1">
@@ -720,120 +729,20 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
           {activeSection === "lessons" ? (
           <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0 h-full">
             <h3 className="text-[2rem] font-black tracking-tight text-foreground">Aulas da Semana</h3>
-            {isLessonFormVisible ? (
-              <>
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dia</label>
-                    <select
-                      value={lessonForm.dia}
-                      onChange={(e) => {
-                        setLessonForm((p) => ({ ...p, dia: e.target.value }))
-                        setLessonErrors((prev) => ({ ...prev, dia: "" }))
-                      }}
-                      className={`${editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : "bg-transparent"} border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
-                        lessonErrors.dia ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
-                      }`}
-                    >
-                      {DAY_OPTIONS.map((d) => (
-                        <option key={d.value || "ph"} value={d.value} disabled={!d.value}>
-                          {d.label}
-                        </option>
-                      ))}
-                    </select>
-                    {lessonErrors.dia ? <p className="text-[11px] text-status-err">{lessonErrors.dia}</p> : null}
-                  </div>
-                  <UnderlineInput
-                    label="Hora"
-                    value={lessonForm.hora}
-                    onChange={(v) => {
-                      setLessonForm((p) => ({ ...p, hora: v }))
-                      setLessonErrors((prev) => ({ ...prev, hora: "" }))
-                    }}
-                    type="time"
-                    required
-                    error={lessonErrors.hora}
-                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
-                  />
-                  <UnderlineInput
-                    label="Título da aula"
-                    value={lessonForm.titulo}
-                    onChange={(v) => {
-                      setLessonForm((p) => ({ ...p, titulo: v }))
-                      setLessonErrors((prev) => ({ ...prev, titulo: "" }))
-                    }}
-                    error={lessonErrors.titulo}
-                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
-                  />
-                  <UnderlineInput
-                    label="Matéria"
-                    value={lessonForm.materia}
-                    onChange={(v) => {
-                      setLessonForm((p) => ({ ...p, materia: v }))
-                      setLessonErrors((prev) => ({ ...prev, materia: "" }))
-                    }}
-                    required
-                    error={lessonErrors.materia}
-                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
-                  />
-                  <UnderlineInput
-                    label="Professor(a)"
-                    value={lessonForm.professor}
-                    onChange={(v) => {
-                      setLessonForm((p) => ({ ...p, professor: v }))
-                      setLessonErrors((prev) => ({ ...prev, professor: "" }))
-                    }}
-                    required
-                    error={lessonErrors.professor}
-                    inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
-                  />
-                  <div className="flex items-end justify-start md:justify-end gap-2">
-                    <button
-                      onClick={addLesson}
-                      disabled={!isLessonValid}
-                      className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep disabled:opacity-50"
-                    >
-                      <Plus size={14} /> {editingLessonId ? "Salvar Aula" : "Adicionar Aula"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingLessonId(null)
-                        setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
-                        setLessonErrors({})
-                        setShowLessonForm(false)
-                      }}
-                      className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-sm font-semibold hover:bg-muted"
-                    >
-                      Cancelar edição
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center gap-3">
-                  <p className="text-sm text-muted-foreground">Preencha dia, hora, título, matéria e professor.</p>
-                </div>
-              </>
-            ) : (
-              <div className="mt-3 flex justify-start">
-                <button
-                  onClick={() => {
-                    setEditingLessonId(null)
-                    setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
-                    setLessonErrors({})
-                    setShowLessonForm(true)
-                  }}
-                  className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
-                >
-                  <Plus size={14} /> Adicionar Aula
-                </button>
-              </div>
-            )}
+            <div className="mt-3 flex justify-start">
+              <button
+                onClick={openCreateLessonModal}
+                className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+              >
+                <Plus size={14} /> Adicionar Aula
+              </button>
+            </div>
 
             <div
               id="modal-lessons"
               className={cn(
-                "agenda-list mt-7 min-h-0 overflow-x-auto overflow-y-auto rounded-xl border border-border",
-                isLessonFormVisible ? "flex-none max-h-[264px]" : "flex-1"
+                "agenda-list mt-7 min-h-0 max-h-[430px] overflow-x-auto overflow-y-auto rounded-xl border border-border",
+                "flex-1"
               )}
             >
               <table className="table w-full text-sm">
@@ -850,7 +759,13 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
                 </thead>
                 <tbody>
                   {lessons.map((lesson, idx) => (
-                    <tr key={lesson.id} className={idx % 2 ? "bg-green-soft/60" : "bg-green-soft"}>
+                    <tr
+                      key={lesson.id}
+                      className={cn(
+                        "border-b border-border/60 transition-colors hover:bg-primary/8 last:border-b-0",
+                        idx % 2 ? "bg-muted/18" : "bg-primary/6"
+                      )}
+                    >
                       <td className="px-3 py-2 text-[15px]">
                         {(DAY_OPTIONS.find((d) => d.value === String(lesson.dia))?.label || lesson.dia).replace(/^\d+\s-\s/, "").slice(0, 3)}
                       </td>
@@ -988,6 +903,120 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
                 className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
               >
                 <Plus size={15} /> {editingStudentId ? "Salvar Aluno" : "Adicionar Aluno"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {isLessonFormVisible ? (
+        <div className="fixed inset-0 z-[72] flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-transparent"
+            onClick={resetLessonForm}
+            aria-label="Fechar edição de aula"
+          />
+          <div className="relative w-full max-w-2xl rounded-[1.75rem] border border-border bg-card p-5 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                  {editingLessonId ? "Editar aula" : "Nova aula"}
+                </p>
+                <h4 className="mt-2 text-2xl font-black tracking-tight text-foreground">
+                  {editingLessonId ? "Atualizar aula" : "Cadastrar aula"}
+                </h4>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Preencha dia, hora, título, matéria e professor da aula.
+                </p>
+              </div>
+              <button
+                onClick={resetLessonForm}
+                aria-label="Fechar"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:bg-muted"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 rounded-[1.5rem] border border-primary/15 bg-muted/20 p-4 md:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dia</label>
+                <select
+                  value={lessonForm.dia}
+                  onChange={(e) => {
+                    setLessonForm((p) => ({ ...p, dia: e.target.value }))
+                    setLessonErrors((prev) => ({ ...prev, dia: "" }))
+                  }}
+                  className={`border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
+                    lessonErrors.dia ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
+                  } ${editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : "bg-transparent"}`}
+                >
+                  {DAY_OPTIONS.map((d) => (
+                    <option key={d.value || "ph"} value={d.value} disabled={!d.value}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+                {lessonErrors.dia ? <p className="text-[11px] text-status-err">{lessonErrors.dia}</p> : null}
+              </div>
+              <UnderlineInput
+                label="Hora"
+                value={lessonForm.hora}
+                onChange={(v) => {
+                  setLessonForm((p) => ({ ...p, hora: v }))
+                  setLessonErrors((prev) => ({ ...prev, hora: "" }))
+                }}
+                type="time"
+                required
+                error={lessonErrors.hora}
+                inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+              />
+              <UnderlineInput
+                label="Título da aula"
+                value={lessonForm.titulo}
+                onChange={(v) => {
+                  setLessonForm((p) => ({ ...p, titulo: v }))
+                  setLessonErrors((prev) => ({ ...prev, titulo: "" }))
+                }}
+                error={lessonErrors.titulo}
+                inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+              />
+              <UnderlineInput
+                label="Matéria"
+                value={lessonForm.materia}
+                onChange={(v) => {
+                  setLessonForm((p) => ({ ...p, materia: v }))
+                  setLessonErrors((prev) => ({ ...prev, materia: "" }))
+                }}
+                required
+                error={lessonErrors.materia}
+                inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+              />
+              <div className="md:col-span-2">
+                <UnderlineInput
+                  label="Professor(a)"
+                  value={lessonForm.professor}
+                  onChange={(v) => {
+                    setLessonForm((p) => ({ ...p, professor: v }))
+                    setLessonErrors((prev) => ({ ...prev, professor: "" }))
+                  }}
+                  required
+                  error={lessonErrors.professor}
+                  inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+              <button
+                onClick={resetLessonForm}
+                className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-semibold hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={addLesson}
+                disabled={!isLessonValid}
+                className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-green-deep disabled:opacity-50"
+              >
+                <Plus size={15} /> {editingLessonId ? "Salvar Aula" : "Adicionar Aula"}
               </button>
             </div>
           </div>

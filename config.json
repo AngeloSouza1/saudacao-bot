@@ -22,6 +22,18 @@
         "materia": "Soft Skills",
         "professor": "Prof. Flávia",
         "hora": "20:00"
+      },
+      {
+        "titulo": "csc",
+        "materia": "dc",
+        "professor": "sdc",
+        "hora": "20:00"
+      },
+      {
+        "titulo": "sfdas",
+        "materia": "dsfsd",
+        "professor": "dfsd",
+        "hora": "20:00"
       }
     ],
     "3": [
@@ -97,7 +109,7 @@
   "alunoDetalhes": [
     {
       "nome": "Angelo Souza",
-      "whatsapp": "",
+      "whatsapp": "12988457147",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/491868804_1359586415373484_5192037315334297051_n.jpg?ccb=11-4&oh=01_Q5Aa4AFSSSUvy6fQERgYc9WKqUeqXjLBw4Ra4f1Z58zi0q1yOw&oe=69CACA36&_nc_sid=5e03e0&_nc_cat=102"
     },
     {
