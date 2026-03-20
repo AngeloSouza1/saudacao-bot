@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Calendar, GraduationCap, Pencil, Search, Trash2, Plus, X } from "lucide-react"
+import { BookOpen, Calendar, Clock3, GraduationCap, NotebookText, Pencil, Search, Trash2, UserRound, Plus, X } from "lucide-react"
 import { ModalShell, UnderlineInput } from "./ModalShell"
 import { cn } from "@/lib/utils"
 import { isNullWord, isValidStudentName, normalizeHourInput, normalizeText } from "@/lib/validation"
@@ -122,6 +122,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
   const [studentWhatsapp, setStudentWhatsapp] = useState("")
   const [studentImage, setStudentImage] = useState("")
   const [studentFilter, setStudentFilter] = useState("")
+  const [lessonFilter, setLessonFilter] = useState("")
   const [students, setStudents] = useState<Student[]>([])
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null)
   const [showStudentForm, setShowStudentForm] = useState(false)
@@ -202,6 +203,18 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
       return name.includes(query) || whatsapp.includes(query)
     })
   }, [studentFilter, students])
+
+  const filteredLessons = useMemo(() => {
+    const query = normalizeText(sanitizeFilterValue(lessonFilter)).toLocaleLowerCase("pt-BR")
+    if (!query) return lessons
+
+    return lessons.filter((lesson) => {
+      const titulo = normalizeText(lesson.titulo).toLocaleLowerCase("pt-BR")
+      const materia = normalizeText(lesson.materia).toLocaleLowerCase("pt-BR")
+      const professor = normalizeText(lesson.professor).toLocaleLowerCase("pt-BR")
+      return titulo.includes(query) || materia.includes(query) || professor.includes(query)
+    })
+  }, [lessonFilter, lessons])
 
   const safeStudentFilter = sanitizeFilterValue(studentFilter)
 
@@ -729,51 +742,102 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
           {activeSection === "lessons" ? (
           <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0 h-full">
             <h3 className="text-[2rem] font-black tracking-tight text-foreground">Aulas da Semana</h3>
-            <div className="mt-3 flex justify-start">
+            <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <button
                 onClick={openCreateLessonModal}
                 className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
               >
                 <Plus size={14} /> Adicionar Aula
               </button>
+              <div className="flex w-full max-w-[500px] items-center gap-3 rounded-[1.25rem] border border-border bg-muted/20 px-4 py-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/10 bg-primary/10 text-primary">
+                  <Search size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+                    Filtrar aulas
+                  </label>
+                  <input
+                    value={sanitizeFilterValue(lessonFilter)}
+                    onChange={(e) => setLessonFilter(sanitizeFilterValue(e.target.value))}
+                    placeholder="Buscar por título, matéria ou professor"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="mt-1 w-full border-0 bg-transparent p-0 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
             </div>
 
             <div
               id="modal-lessons"
               className={cn(
-                "agenda-list mt-7 min-h-0 max-h-[430px] overflow-x-auto overflow-y-auto rounded-xl border border-border",
-                "flex-1"
+                "agenda-list mt-7 h-[430px] min-h-0 shrink-0 overflow-x-auto overflow-y-auto rounded-xl border border-border"
               )}
             >
-              <table className="table w-full text-sm">
-                <thead className="sticky top-0 z-10 bg-muted/60">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">Dia</th>
-                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">Hora</th>
-                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">Título</th>
-                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">Matéria</th>
-                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">Professor</th>
+              <table className="table w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-[8%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[36%]" />
+                  <col className="w-[17%]" />
+                  <col className="w-[17%]" />
+                  <col className="w-[6%]" />
+                  <col className="w-[6%]" />
+                </colgroup>
+                <thead className="sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/92">
+                  <tr className="h-10">
+                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-2">
+                        <Calendar size={13} className="text-primary" />
+                        Dia
+                      </span>
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-2">
+                        <Clock3 size={13} className="text-primary" />
+                        Hora
+                      </span>
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-2">
+                        <NotebookText size={13} className="text-primary" />
+                        Título
+                      </span>
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-2">
+                        <BookOpen size={13} className="text-primary" />
+                        Matéria
+                      </span>
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-2">
+                        <UserRound size={13} className="text-primary" />
+                        Professor
+                      </span>
+                    </th>
                     <th className="px-3 py-2" />
                     <th className="px-3 py-2" />
                   </tr>
                 </thead>
                 <tbody>
-                  {lessons.map((lesson, idx) => (
+                  {filteredLessons.map((lesson, idx) => (
                     <tr
                       key={lesson.id}
                       className={cn(
-                        "border-b border-border/60 transition-colors hover:bg-primary/8 last:border-b-0",
+                        "h-14 border-b border-border/60 transition-colors hover:bg-primary/8 last:border-b-0",
                         idx % 2 ? "bg-muted/18" : "bg-primary/6"
                       )}
                     >
-                      <td className="px-3 py-2 text-[15px]">
+                      <td className="px-3 py-2 align-middle text-[15px]">
                         {(DAY_OPTIONS.find((d) => d.value === String(lesson.dia))?.label || lesson.dia).replace(/^\d+\s-\s/, "").slice(0, 3)}
                       </td>
-                      <td className="px-3 py-2 text-[15px] tabular-nums">{lesson.hora}</td>
-                      <td className="px-3 py-2 text-[15px]">{lesson.titulo}</td>
-                      <td className="px-3 py-2 text-[15px]">{lesson.materia}</td>
-                      <td className="px-3 py-2 text-[15px]">{lesson.professor}</td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 align-middle text-[15px] tabular-nums">{lesson.hora}</td>
+                      <td className="px-3 py-2 align-middle text-[15px]">{lesson.titulo}</td>
+                      <td className="px-3 py-2 align-middle text-[15px]">{lesson.materia}</td>
+                      <td className="px-3 py-2 align-middle text-[15px]">{lesson.professor}</td>
+                      <td className="px-3 py-2 align-middle">
                         <button
                           className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2"
                           title="Editar aula"
@@ -783,7 +847,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
                           <Pencil size={14} />
                         </button>
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 align-middle">
                         <button
                           className="secondary icon-btn rounded-xl border border-border bg-card px-3 py-2"
                           title="Excluir aula"
@@ -797,6 +861,16 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
                   ))}
                 </tbody>
               </table>
+              {!filteredLessons.length ? (
+                <div className="flex min-h-[180px] items-center justify-center px-6 text-center">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Nenhuma aula encontrada</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      Ajuste o filtro para pesquisar por título, matéria ou professor.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
           ) : null}
