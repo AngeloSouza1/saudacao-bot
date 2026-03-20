@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { Calendar, GraduationCap, Pencil, Trash2, Plus } from "lucide-react"
-import { ModalShell, ModalActions, UnderlineInput } from "./ModalShell"
+import { ModalShell, UnderlineInput } from "./ModalShell"
 import { cn } from "@/lib/utils"
 import { isNullWord, isValidStudentName, normalizeHourInput, normalizeText } from "@/lib/validation"
 
 interface Student {
   id: string
   name: string
+  whatsapp: string
+  image: string
 }
 
 interface Lesson {
@@ -45,6 +47,7 @@ const DAY_OPTIONS = [
 
 type AgendaJsonPayload = {
   alunos?: string[]
+  alunoDetalhes?: Array<{ nome?: string; whatsapp?: string; imagem?: string }>
   agendaSemanal?: Record<string, Array<{ hora?: string; titulo?: string; materia?: string; professor?: string }>>
 }
 
@@ -98,6 +101,8 @@ function sortStudentsByName(list: Student[]): Student[] {
 export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   const [activeSection, setActiveSection] = useState<AgendaSection>(null)
   const [studentName, setStudentName] = useState("")
+  const [studentWhatsapp, setStudentWhatsapp] = useState("")
+  const [studentImage, setStudentImage] = useState("")
   const [students, setStudents] = useState<Student[]>([])
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null)
   const [showStudentForm, setShowStudentForm] = useState(false)
@@ -118,6 +123,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   const [lessonErrors, setLessonErrors] = useState<Record<string, string>>({})
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const isLessonFormVisible = showLessonForm || Boolean(editingLessonId)
+  const isStudentModalOpen = showStudentForm || Boolean(editingStudentId)
   const headerActions = activeSection ? (
     <>
       <button
@@ -176,8 +182,25 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
       .then((data) => {
         if (!active) return
         const rawStudents = Array.isArray(data?.alunos) ? data.alunos : []
+        const rawDetails = Array.isArray(data?.alunoDetalhes) ? data.alunoDetalhes : []
+        const detailMap = new Map(
+          rawDetails
+            .map((item) => [String(item?.nome || "").trim(), item] as const)
+            .filter(([name]) => Boolean(name))
+        )
         setStudents(
-          sortStudentsByName(rawStudents.map((name, idx) => ({ id: `s-${idx}-${name}`, name: String(name) })))
+          sortStudentsByName(
+            rawStudents.map((name, idx) => {
+              const normalizedName = String(name)
+              const detail = detailMap.get(normalizedName)
+              return {
+                id: `s-${idx}-${normalizedName}`,
+                name: normalizedName,
+                whatsapp: String(detail?.whatsapp || "").trim(),
+                image: String(detail?.imagem || "").trim(),
+              }
+            })
+          )
         )
         setLessons(agendaToLessons(data?.agendaSemanal))
         setStudentError("")
@@ -200,6 +223,21 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     }
   }, [open])
 
+  function resetStudentForm() {
+    setEditingStudentId(null)
+    setStudentName("")
+    setStudentWhatsapp("")
+    setStudentImage("")
+    setStudentError("")
+    setShowStudentForm(false)
+  }
+
+  function openCreateStudentModal() {
+    resetStudentForm()
+    setShowStudentForm(true)
+    setActiveSection("students")
+  }
+
   function addStudent() {
     const name = studentName.trim()
     if (!isValidStudentName(name)) {
@@ -213,15 +251,25 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     }
     if (editingStudentId) {
       setStudents((prev) =>
-        sortStudentsByName(prev.map((s) => (s.id === editingStudentId ? { ...s, name } : s)))
+        sortStudentsByName(
+          prev.map((s) => (s.id === editingStudentId
+            ? { ...s, name, whatsapp: studentWhatsapp.trim(), image: studentImage.trim() }
+            : s))
+        )
       )
       setEditingStudentId(null)
     } else {
-      setStudents((prev) => sortStudentsByName([...prev, { id: `s${Date.now()}`, name }]))
+      setStudents((prev) => sortStudentsByName([
+        ...prev,
+        { id: `s${Date.now()}`, name, whatsapp: studentWhatsapp.trim(), image: studentImage.trim() },
+      ]))
     }
     setStudentName("")
+    setStudentWhatsapp("")
+    setStudentImage("")
     setStudentError("")
     setShowStudentForm(false)
+    setEditingStudentId(null)
     setActiveSection("students")
   }
 
@@ -237,9 +285,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
   function confirmRemoveStudent(id: string) {
     setStudents((prev) => prev.filter((s) => s.id !== id))
     if (editingStudentId === id) {
-      setEditingStudentId(null)
-      setStudentName("")
-      setShowStudentForm(false)
+      resetStudentForm()
     }
   }
 
@@ -247,6 +293,8 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setActiveSection("students")
     setEditingStudentId(student.id)
     setStudentName(student.name)
+    setStudentWhatsapp(student.whatsapp || "")
+    setStudentImage(student.image || "")
     setStudentError("")
     setShowStudentForm(true)
   }
@@ -349,11 +397,16 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
     setFeedback("")
     try {
       const alunos = students.map((s) => String(s.name || "").trim()).filter(Boolean)
+      const alunoDetalhes = students.map((s) => ({
+        nome: String(s.name || "").trim(),
+        whatsapp: String(s.whatsapp || "").trim(),
+        imagem: String(s.image || "").trim(),
+      }))
       const agendaSemanal = lessonsToAgenda(lessons)
       await fetchJson("/api/agenda-json", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alunos, agendaSemanal }),
+        body: JSON.stringify({ alunos, alunoDetalhes, agendaSemanal }),
       })
       if (onSaved) await onSaved()
       onClose()
@@ -375,27 +428,27 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
       bodyClassName="overflow-hidden"
       headerActions={headerActions}
     >
-      <div className="max-h-[calc(90vh-96px)] px-6 pt-6 pb-5 flex flex-col min-h-0">
+      <div className="max-h-[calc(90vh-96px)] bg-background px-6 pt-6 pb-5 flex flex-col min-h-0">
         <div className={cn("shrink-0", activeSection ? "mb-0" : "flex flex-1 items-center justify-center py-2")}>
           {!activeSection ? (
-            <div className="mx-auto inline-flex min-h-[160px] w-auto items-center justify-center rounded-[2rem] border border-border bg-card/90 px-10 py-8 shadow-lg">
+            <div className="mx-auto inline-flex min-h-[160px] w-auto items-center justify-center rounded-[2rem] border border-border bg-card px-10 py-8 shadow-lg">
               <div className="flex items-center justify-center gap-6">
                 <button
                   onClick={() => setActiveSection((current) => (current === "students" ? null : "students"))}
                   aria-label="Abrir card de alunos"
                   title="Abrir card de alunos"
-                  className="inline-flex h-[112px] w-[112px] flex-col items-center justify-center gap-2 rounded-[1.9rem] border border-border bg-card px-3 text-center shadow-sm transition-colors hover:bg-muted"
+                  className="inline-flex h-[112px] w-[112px] flex-col items-center justify-center gap-2 rounded-[1.9rem] border border-primary/15 bg-primary/5 px-3 text-center text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10"
                 >
-                  <GraduationCap size={34} />
+                  <GraduationCap size={34} className="text-primary" />
                   <span className="text-xs font-semibold leading-none">Alunos</span>
                 </button>
                 <button
                   onClick={() => setActiveSection((current) => (current === "lessons" ? null : "lessons"))}
                   aria-label="Abrir card de aulas da semana"
                   title="Abrir card de aulas da semana"
-                  className="inline-flex h-[112px] w-[112px] flex-col items-center justify-center gap-2 rounded-[1.9rem] border border-border bg-card px-3 text-center shadow-sm transition-colors hover:bg-muted"
+                  className="inline-flex h-[112px] w-[112px] flex-col items-center justify-center gap-2 rounded-[1.9rem] border border-border bg-muted/30 px-3 text-center text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted"
                 >
-                  <Calendar size={34} />
+                  <Calendar size={34} className="text-primary" />
                   <span className="text-xs font-semibold leading-none">Aulas</span>
                 </button>
               </div>
@@ -417,7 +470,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
         <div className="flex-1 min-h-0">
           {activeSection === "students" ? (
           <div className="mx-auto flex h-full min-h-0 w-full max-w-[1220px] flex-col gap-3 overflow-hidden">
-            <div className="mt-2 rounded-[1.6rem] border border-border bg-card/95 px-5 py-4 shadow-sm">
+            <div className="mt-2 px-5 py-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Resumo da turma</p>
@@ -432,77 +485,32 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
             <div className="grid h-full min-h-0 gap-4 overflow-hidden xl:grid-cols-[280px_minmax(0,1fr)]">
             <div className="flex h-full min-h-0 max-h-[calc(90vh-260px)] flex-col gap-4 self-start rounded-[1.6rem] border border-border bg-card/90 p-5 shadow-sm">
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                    Gestão de alunos
+                  </p>
+                  <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
                     Organize a lista de alunos do ciclo. Você pode adicionar novos nomes, editar cadastros existentes e remover entradas sem perder clareza na fila.
                   </p>
                 </div>
 
                 {!showStudentForm && !editingStudentId ? (
-                  <div className="flex justify-start">
+                  <div className="flex justify-center">
                     <button
-                      onClick={() => {
-                        setEditingStudentId(null)
-                        setStudentName("")
-                        setStudentError("")
-                        setShowStudentForm(true)
-                      }}
-                      className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+                      onClick={openCreateStudentModal}
+                      className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-green-deep"
                     >
                       <Plus size={15} /> Adicionar Aluno
                     </button>
                   </div>
                 ) : null}
 
-                {showStudentForm || editingStudentId ? (
-                  <div className="rounded-[1.5rem] border border-primary/15 bg-muted/30 p-4">
-                    <div className="mb-3 space-y-1">
-                      <p className="text-sm font-semibold text-foreground">
-                        {editingStudentId ? "Editar aluno selecionado" : "Novo aluno"}
-                      </p>
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Nome completo ou nome usado na turma
-                      </span>
-                    </div>
-                    <div className="space-y-4">
-                      <UnderlineInput
-                        label="Nome do aluno"
-                        value={studentName}
-                        onChange={(v) => {
-                          setStudentName(v)
-                          if (studentError) setStudentError("")
-                        }}
-                        placeholder="Ex.: Angelo"
-                        error={studentError || undefined}
-                        required
-                        inputClassName={showStudentForm || editingStudentId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
-                      />
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={addStudent}
-                          className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
-                        >
-                          <Plus size={15} /> {editingStudentId ? "Salvar Aluno" : "Adicionar Aluno"}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditingStudentId(null)
-                            setStudentName("")
-                            setStudentError("")
-                            setShowStudentForm(false)
-                          }}
-                          className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-semibold hover:bg-muted"
-                        >
-                          Cancelar edição
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-[1.5rem] border border-dashed border-border bg-muted/15 p-4 text-sm leading-6 text-muted-foreground">
-                    Selecione um aluno para editar ou use o botão acima para cadastrar um novo nome.
-                  </div>
-                )}
+                <div className="rounded-[1.5rem] border border-dashed border-border bg-muted/15 p-5 text-center">
+                  <p className="text-sm font-semibold text-foreground">Próximo passo</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Selecione um aluno na lista para editar os dados ou use o botão acima para cadastrar um novo nome.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -529,9 +537,11 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                             <p className="student-name truncate text-[1.12rem] font-semibold leading-tight text-foreground">
                               {student.name}
                             </p>
-                            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                              Registro de aluno
-                            </p>
+                            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                              <p className="uppercase tracking-[0.14em]">Registro de aluno</p>
+                              {student.whatsapp ? <p>WhatsApp: {student.whatsapp}</p> : null}
+                              {student.image ? <p className="truncate">Imagem: {student.image}</p> : null}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -737,7 +747,7 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
       {deleteTarget ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <button
-            className="absolute inset-0 bg-foreground/30 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-transparent"
             onClick={() => setDeleteTarget(null)}
             aria-label="Fechar confirmação de exclusão"
           />
@@ -760,6 +770,78 @@ export function ScheduleModal({ open, onClose, onSaved }: ScheduleModalProps) {
                 className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-status-err hover:bg-destructive/20"
               >
                 Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {isStudentModalOpen ? (
+        <div className="fixed inset-0 z-[72] flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-transparent"
+            onClick={resetStudentForm}
+            aria-label="Fechar edição de aluno"
+          />
+          <div className="relative w-full max-w-xl rounded-[1.75rem] border border-border bg-card p-5 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                  {editingStudentId ? "Editar aluno" : "Novo aluno"}
+                </p>
+                <h4 className="mt-2 text-2xl font-black tracking-tight text-foreground">
+                  {editingStudentId ? "Atualizar cadastro" : "Cadastrar aluno"}
+                </h4>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Preencha nome, WhatsApp e imagem do aluno. Os campos extras são opcionais.
+                </p>
+              </div>
+              <button
+                onClick={resetStudentForm}
+                className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
+              >
+                Fechar
+              </button>
+            </div>
+            <div className="space-y-4 rounded-[1.5rem] border border-primary/15 bg-muted/20 p-4">
+              <UnderlineInput
+                label="Nome do aluno"
+                value={studentName}
+                onChange={(v) => {
+                  setStudentName(v)
+                  if (studentError) setStudentError("")
+                }}
+                placeholder="Ex.: Angelo"
+                error={studentError || undefined}
+                required
+                inputClassName="bg-amber-100/70 rounded-t-md px-2"
+              />
+              <UnderlineInput
+                label="WhatsApp"
+                value={studentWhatsapp}
+                onChange={(v) => setStudentWhatsapp(v)}
+                placeholder="Ex.: 5581999999999"
+                inputClassName="bg-amber-100/70 rounded-t-md px-2"
+              />
+              <UnderlineInput
+                label="Imagem"
+                value={studentImage}
+                onChange={(v) => setStudentImage(v)}
+                placeholder="URL ou caminho da imagem"
+                inputClassName="bg-amber-100/70 rounded-t-md px-2"
+              />
+            </div>
+            <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+              <button
+                onClick={resetStudentForm}
+                className="inline-flex w-fit items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-semibold hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={addStudent}
+                className="inline-flex w-fit items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-green-deep"
+              >
+                <Plus size={15} /> {editingStudentId ? "Salvar Aluno" : "Adicionar Aluno"}
               </button>
             </div>
           </div>

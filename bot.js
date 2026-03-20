@@ -701,6 +701,47 @@ function normalizeAgendaItemKey(rawKey) {
   return key;
 }
 
+function normalizeStudentDetails(details, alunos = []) {
+  const validNames = new Set(
+    (Array.isArray(alunos) ? alunos : [])
+      .map((item) => String(item || "").trim())
+      .filter(Boolean)
+  );
+  const list = Array.isArray(details) ? details : [];
+  const normalized = [];
+  const seen = new Set();
+
+  for (const item of list) {
+    const nome = String(item?.nome || item?.name || "").trim();
+    if (!nome || !validNames.has(nome) || seen.has(nome)) continue;
+    seen.add(nome);
+    normalized.push({
+      nome,
+      whatsapp: String(item?.whatsapp || "").trim(),
+      imagem: String(item?.imagem || item?.image || "").trim()
+    });
+  }
+
+  return normalized;
+}
+
+function buildStudentDetailsForEditor(config) {
+  const alunos = Array.isArray(config?.alunos)
+    ? config.alunos.map((item) => String(item || "").trim()).filter(Boolean)
+    : [];
+  const details = normalizeStudentDetails(config?.alunoDetalhes, alunos);
+  const detailMap = new Map(details.map((item) => [item.nome, item]));
+
+  return alunos.map((nome) => {
+    const detail = detailMap.get(nome);
+    return {
+      nome,
+      whatsapp: String(detail?.whatsapp || "").trim(),
+      imagem: String(detail?.imagem || "").trim()
+    };
+  });
+}
+
 function resolveAgendaItemDate(item) {
   if (item?.scheduledDateISO) {
     const parsed = new Date(item.scheduledDateISO);
@@ -2042,6 +2083,7 @@ export function getAgendaEditorJson() {
 
   return {
     alunos: config.alunos || [],
+    alunoDetalhes: buildStudentDetailsForEditor(config),
     agendaSemanal: config.agendaSemanal || {}
   };
 }
@@ -2061,9 +2103,11 @@ export function updateAgendaEditorJson(payload) {
 
   validateAgendaSemanal(payload.agendaSemanal);
   const agendaSemanalNormalized = normalizeAgendaSemanal(payload.agendaSemanal);
+  const alunoDetalhes = normalizeStudentDetails(payload?.alunoDetalhes, alunos);
 
   const config = loadConfig();
   config.alunos = alunos;
+  config.alunoDetalhes = alunoDetalhes;
   config.agendaSemanal = agendaSemanalNormalized;
   saveConfig(config);
   const state = getStateNormalized();

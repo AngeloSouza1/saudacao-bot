@@ -64,15 +64,15 @@ export function ModalShell({
       {/* Panel */}
       <div
         className={cn(
-          "relative mt-10 w-full bg-card rounded-2xl border border-border shadow-2xl flex flex-col max-h-[90vh]",
+          "relative mt-10 w-full overflow-hidden rounded-2xl border border-border bg-card shadow-2xl flex flex-col max-h-[90vh]",
           sizeClasses[size]
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-6 py-3 border-b border-border shrink-0">
+        <div className="flex items-start justify-between border-b border-border bg-card px-6 py-3 shrink-0">
           <div className="flex items-center gap-3">
             {icon && (
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl border border-primary/10 bg-primary/10 flex items-center justify-center">
                 {icon}
               </div>
             )}
