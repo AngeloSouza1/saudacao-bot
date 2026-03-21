@@ -31,15 +31,23 @@ type DashboardStatusResponse = {
     imagePath?: string
     mediaFileName?: string
     bannerTitle?: string
+    backgroundColor?: string
+    backgroundImagePath?: string
     greetingImagePath?: string
     greetingMediaFileName?: string
     greetingBannerTitle?: string
+    greetingBackgroundColor?: string
+    greetingBackgroundImagePath?: string
     noClassImagePath?: string
     noClassMediaFileName?: string
     noClassBannerTitle?: string
+    noClassBackgroundColor?: string
+    noClassBackgroundImagePath?: string
     customImagePath?: string
     customMediaFileName?: string
     customBannerTitle?: string
+    customBackgroundColor?: string
+    customBackgroundImagePath?: string
     lockTimeoutMin?: number
     lockConfigured?: boolean
     alunos?: string[]
@@ -560,12 +568,18 @@ export default function DashboardPage() {
         initialGreetingImagePath={String(statusData?.config?.greetingImagePath || "")}
         initialGreetingMediaFileName={String(statusData?.config?.greetingMediaFileName || "")}
         initialGreetingBannerTitle={String(statusData?.config?.greetingBannerTitle || "")}
+        initialGreetingBackgroundColor={String(statusData?.config?.greetingBackgroundColor || statusData?.config?.backgroundColor || "")}
+        initialGreetingBackgroundImagePath={String(statusData?.config?.greetingBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
         initialNoClassImagePath={String(statusData?.config?.noClassImagePath || "")}
         initialNoClassMediaFileName={String(statusData?.config?.noClassMediaFileName || "")}
         initialNoClassBannerTitle={String(statusData?.config?.noClassBannerTitle || "")}
+        initialNoClassBackgroundColor={String(statusData?.config?.noClassBackgroundColor || statusData?.config?.backgroundColor || "")}
+        initialNoClassBackgroundImagePath={String(statusData?.config?.noClassBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
         initialCustomImagePath={String(statusData?.config?.customImagePath || "")}
         initialCustomMediaFileName={String(statusData?.config?.customMediaFileName || "")}
         initialCustomBannerTitle={String(statusData?.config?.customBannerTitle || "")}
+        initialCustomBackgroundColor={String(statusData?.config?.customBackgroundColor || statusData?.config?.backgroundColor || "")}
+        initialCustomBackgroundImagePath={String(statusData?.config?.customBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
         onSaved={refreshStatus}
       />
       <HistoryModal

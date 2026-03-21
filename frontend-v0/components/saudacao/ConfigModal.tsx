@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Settings } from "lucide-react"
 import { ModalShell, ModalActions, UnderlineInput } from "./ModalShell"
 import { isNullWord, isValidDateOnly, normalizeText } from "@/lib/validation"
@@ -60,6 +60,7 @@ export function ConfigModal({
   scheduleSummary = [],
   onSaved,
 }: ConfigModalProps) {
+  const wasOpenRef = useRef(false)
   const [turma, setTurma] = useState("RiseCode")
   const [instituicao, setInstituicao] = useState("AlphaTech")
   const [antecedenciaMin, setAntecedenciaMin] = useState("600")
@@ -76,19 +77,21 @@ export function ConfigModal({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (!open) return
-    setTurma(String(initialConfig?.turma || ""))
-    setInstituicao(String(initialConfig?.instituicao || ""))
-    setAntecedenciaMin(String(Number(initialConfig?.antecedenciaMin ?? 0)))
-    setDiasUteisApenas(String(Boolean(initialConfig?.diasUteisApenas)))
-    setLockPassword("")
-    setLockTimeoutMin(String(Number(initialConfig?.lockTimeoutMin ?? 15)))
-    setStartAluno(String(Number(initialState?.idxAluno ?? 0)))
-    setStartAula(String(Number(initialState?.idxAula ?? 0)))
-    setStartDate(String(initialState?.dataInicio || ""))
-    setFeedback("")
-    setFieldErrors({})
-    setCancelCycleConfirmOpen(false)
+    if (open && !wasOpenRef.current) {
+      setTurma(String(initialConfig?.turma || ""))
+      setInstituicao(String(initialConfig?.instituicao || ""))
+      setAntecedenciaMin(String(Number(initialConfig?.antecedenciaMin ?? 0)))
+      setDiasUteisApenas(String(Boolean(initialConfig?.diasUteisApenas)))
+      setLockPassword("")
+      setLockTimeoutMin(String(Number(initialConfig?.lockTimeoutMin ?? 15)))
+      setStartAluno(String(Number(initialState?.idxAluno ?? 0)))
+      setStartAula(String(Number(initialState?.idxAula ?? 0)))
+      setStartDate(String(initialState?.dataInicio || ""))
+      setFeedback("")
+      setFieldErrors({})
+      setCancelCycleConfirmOpen(false)
+    }
+    wasOpenRef.current = open
   }, [open, initialConfig, initialState])
 
   async function handleCancelCycleConfirmed() {
@@ -188,115 +191,117 @@ export function ConfigModal({
   }
 
   return (
-    <ModalShell
-      open={open}
-      onClose={onClose}
-      title="Configuração"
-      subtitle="Ciclo, regras e segurança"
-      icon={<Settings size={16} className="text-primary" />}
-      size="xl"
-    >
-      <div className="px-6 py-6 flex flex-col gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <UnderlineInput label="Turma" value={turma} onChange={setTurma} required error={fieldErrors.turma} />
-          <UnderlineInput label="Instituição" value={instituicao} onChange={setInstituicao} required error={fieldErrors.instituicao} />
-          <UnderlineInput
-            label="Antecedência (min)"
-            value={antecedenciaMin}
-            onChange={setAntecedenciaMin}
-            type="number"
-            error={fieldErrors.antecedenciaMin}
-          />
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dias úteis apenas</label>
-            <select
-              value={diasUteisApenas}
-              onChange={(e) => setDiasUteisApenas(e.target.value)}
-              className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
-            >
-              <option value="true">Sim</option>
-              <option value="false">Não</option>
-            </select>
-          </div>
-          <UnderlineInput
-            label="Senha de bloqueio"
-            value={lockPassword}
-            onChange={setLockPassword}
-            type="password"
-            placeholder="Digite para definir/alterar"
-            error={fieldErrors.lockPassword}
-          />
-          <UnderlineInput
-            label="Tempo para bloqueio (min)"
-            value={lockTimeoutMin}
-            onChange={setLockTimeoutMin}
-            type="number"
-            error={fieldErrors.lockTimeoutMin}
-          />
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aluno inicial dos envios</label>
-            <select
-              value={startAluno}
-              onChange={(e) => setStartAluno(e.target.value)}
-              className={`bg-transparent border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
-                fieldErrors.startAluno ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
-              }`}
-            >
-              {(students || []).map((student, idx) => (
-                <option key={`${student}-${idx}`} value={String(idx)}>
-                  {idx + 1} - {student}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.startAluno ? <p className="text-[11px] text-status-err">{fieldErrors.startAluno}</p> : null}
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aula inicial dos envios</label>
-            <select
-              value={startAula}
-              onChange={(e) => setStartAula(e.target.value)}
-              className={`bg-transparent border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
-                fieldErrors.startAula ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
-              }`}
-            >
-              {aulasOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.startAula ? <p className="text-[11px] text-status-err">{fieldErrors.startAula}</p> : null}
-          </div>
-          <UnderlineInput label="Data de início" value={startDate} onChange={setStartDate} type="date" required error={fieldErrors.startDate} />
-        </div>
-
-        <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Ciclo ativo
-              </p>
-              <p className="mt-1 text-sm text-foreground">
-                {cycleActive ? (cycleName || "Ciclo em andamento") : "Nenhum ciclo ativo no momento."}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Ao cancelar, o ciclo atual é encerrado e deixa de contar como ciclo ativo.
-              </p>
+    <>
+      <ModalShell
+        open={open}
+        onClose={onClose}
+        title="Configuração"
+        subtitle="Ciclo, regras e segurança"
+        icon={<Settings size={16} className="text-primary" />}
+        size="xl"
+      >
+        <div className="px-6 py-6 flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <UnderlineInput label="Turma" value={turma} onChange={setTurma} required error={fieldErrors.turma} />
+            <UnderlineInput label="Instituição" value={instituicao} onChange={setInstituicao} required error={fieldErrors.instituicao} />
+            <UnderlineInput
+              label="Antecedência (min)"
+              value={antecedenciaMin}
+              onChange={setAntecedenciaMin}
+              type="number"
+              error={fieldErrors.antecedenciaMin}
+            />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dias úteis apenas</label>
+              <select
+                value={diasUteisApenas}
+                onChange={(e) => setDiasUteisApenas(e.target.value)}
+                className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
+              >
+                <option value="true">Sim</option>
+                <option value="false">Não</option>
+              </select>
             </div>
-            <button
-              type="button"
-              onClick={() => setCancelCycleConfirmOpen(true)}
-              disabled={!cycleActive || cancelCycleLoading}
-              className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-status-err transition-colors hover:bg-destructive/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {cancelCycleLoading ? "Cancelando..." : "Cancelar ciclo ativo"}
-            </button>
+            <UnderlineInput
+              label="Senha de bloqueio"
+              value={lockPassword}
+              onChange={setLockPassword}
+              type="password"
+              placeholder="Digite para definir/alterar"
+              error={fieldErrors.lockPassword}
+            />
+            <UnderlineInput
+              label="Tempo para bloqueio (min)"
+              value={lockTimeoutMin}
+              onChange={setLockTimeoutMin}
+              type="number"
+              error={fieldErrors.lockTimeoutMin}
+            />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aluno inicial dos envios</label>
+              <select
+                value={startAluno}
+                onChange={(e) => setStartAluno(e.target.value)}
+                className={`bg-transparent border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
+                  fieldErrors.startAluno ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
+                }`}
+              >
+                {(students || []).map((student, idx) => (
+                  <option key={`${student}-${idx}`} value={String(idx)}>
+                    {idx + 1} - {student}
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.startAluno ? <p className="text-[11px] text-status-err">{fieldErrors.startAluno}</p> : null}
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aula inicial dos envios</label>
+              <select
+                value={startAula}
+                onChange={(e) => setStartAula(e.target.value)}
+                className={`bg-transparent border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
+                  fieldErrors.startAula ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
+                }`}
+              >
+                {aulasOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              {fieldErrors.startAula ? <p className="text-[11px] text-status-err">{fieldErrors.startAula}</p> : null}
+            </div>
+            <UnderlineInput label="Data de início" value={startDate} onChange={setStartDate} type="date" required error={fieldErrors.startDate} />
+          </div>
+
+          <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Ciclo ativo
+                </p>
+                <p className="mt-1 text-sm text-foreground">
+                  {cycleActive ? (cycleName || "Ciclo em andamento") : "Nenhum ciclo ativo no momento."}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Ao cancelar, o ciclo atual é encerrado e deixa de contar como ciclo ativo.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCancelCycleConfirmOpen(true)}
+                disabled={!cycleActive || cancelCycleLoading}
+                className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-status-err transition-colors hover:bg-destructive/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {cancelCycleLoading ? "Cancelando..." : "Cancelar ciclo ativo"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {feedback ? <p className="px-6 pb-3 text-sm text-destructive">{feedback}</p> : null}
-      <ModalActions onCancel={onClose} onConfirm={handleSave} confirmLabel="Salvar Configuração" loading={loading} />
+        {feedback ? <p className="px-6 pb-3 text-sm text-destructive">{feedback}</p> : null}
+        <ModalActions onCancel={onClose} onConfirm={handleSave} confirmLabel="Salvar Configuração" loading={loading} />
+      </ModalShell>
 
       <ModalShell
         open={cancelCycleConfirmOpen}
@@ -325,6 +330,6 @@ export function ConfigModal({
           loading={cancelCycleLoading}
         />
       </ModalShell>
-    </ModalShell>
+    </>
   )
 }

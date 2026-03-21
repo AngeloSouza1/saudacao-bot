@@ -464,6 +464,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1200);
   const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 460);
   const title = escapeXml(String(bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "🤖 Saudação de hoje").trim() || "🤖 Saudação de hoje");
+  const backgroundColor = String(cardData?.backgroundColor || process.env.WHATSAPP_BANNER_BG_COLOR || "#123d37").trim() || "#123d37";
+  const backgroundImagePath = String(cardData?.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
 
   const logoBuffer = await sharp(imageInput)
     .rotate()
@@ -476,13 +478,28 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
       <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#0f2230"/>
-          <stop offset="100%" stop-color="#123d37"/>
+          <stop offset="100%" stop-color="${escapeXml(backgroundColor)}"/>
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>
       <text x="470" y="240" fill="#ffffff" font-size="66" font-family="Georgia, serif" font-weight="700">${title}</text>
     </svg>
   `;
+
+  const composites = [];
+  if (backgroundImagePath) {
+    const bgIsRemote = isRemoteMediaUrl(backgroundImagePath);
+    const bgInput = bgIsRemote ? await fetchRemoteMediaBuffer(backgroundImagePath) : resolveMediaPath(backgroundImagePath);
+    if (!bgIsRemote && !fs.existsSync(String(bgInput || ""))) {
+      throw new Error(`Imagem de fundo não encontrada: ${String(bgInput || "")}`);
+    }
+    const backgroundBuffer = await sharp(bgInput)
+      .rotate()
+      .resize({ width, height, fit: "cover", position: "centre" })
+      .jpeg({ quality: 72, mozjpeg: true })
+      .toBuffer();
+    composites.push({ input: backgroundBuffer, top: 0, left: 0 });
+  }
 
   const bannerBuffer = await sharp({
     create: {
@@ -493,6 +510,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     }
   })
     .composite([
+      ...composites,
       { input: Buffer.from(svgText), top: 0, left: 0 },
       { input: logoBuffer, top: Math.max(0, Math.floor((height - 380) / 2)), left: 48 }
     ])
@@ -545,6 +563,8 @@ export async function sendText({
   mediaFileName,
   bannerTitle,
   imageStyle,
+  backgroundColor,
+  backgroundImagePath,
   cardData
 }) {
   const client = await initWhatsApp();
@@ -568,7 +588,11 @@ export async function sendText({
         : mediaFullPath;
       const style = String(imageStyle || "").toLowerCase();
       if (style === "banner") {
-        media = await buildBannerMediaFromInput(mediaInput, cardData || {}, bannerTitle);
+        media = await buildBannerMediaFromInput(
+          mediaInput,
+          { ...(cardData || {}), backgroundColor, backgroundImagePath },
+          bannerTitle
+        );
         console.log("🖼️ Banner personalizado gerado para envio.");
       } else {
         media = await buildOptimizedMediaFromInput(mediaInput);

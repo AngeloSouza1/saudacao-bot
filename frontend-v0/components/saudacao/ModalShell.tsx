@@ -34,7 +34,7 @@ export function ModalShell({
     sm: "max-w-sm",
     md: "max-w-lg",
     lg: "max-w-2xl",
-    xl: "max-w-4xl",
+    xl: "max-w-[88rem]",
     xxl: "max-w-[96vw]",
   }
 
@@ -144,23 +144,34 @@ export function UnderlineInput({
 export function ModalActions({
   onCancel,
   onConfirm,
+  onSecondaryConfirm,
   confirmLabel = "Salvar",
+  secondaryConfirmLabel,
   cancelLabel = "Cancelar",
   confirmVariant = "primary",
+  secondaryConfirmVariant = "secondary",
   loading = false,
 }: {
   onCancel: () => void
   onConfirm: () => void
+  onSecondaryConfirm?: () => void
   confirmLabel?: string
+  secondaryConfirmLabel?: string
   cancelLabel?: string
   confirmVariant?: "primary" | "danger"
+  secondaryConfirmVariant?: "secondary" | "danger"
   loading?: boolean
 }) {
   const confirmCls =
     confirmVariant === "danger"
       ? "bg-destructive/10 text-status-err border border-destructive/30 hover:bg-destructive/20"
       : "bg-primary text-primary-foreground hover:bg-green-deep"
+  const secondaryConfirmCls =
+    secondaryConfirmVariant === "danger"
+      ? "bg-destructive/10 text-status-err border border-destructive/30 hover:bg-destructive/20"
+      : "border border-border bg-background text-foreground hover:border-primary hover:text-primary"
   const hasCancel = Boolean(String(cancelLabel || "").trim())
+  const hasSecondaryConfirm = Boolean(String(secondaryConfirmLabel || "").trim()) && Boolean(onSecondaryConfirm)
 
   return (
     <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border bg-muted/20 shrink-0">
@@ -170,6 +181,18 @@ export function ModalActions({
           className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring outline-none"
         >
           {cancelLabel}
+        </button>
+      ) : null}
+      {hasSecondaryConfirm ? (
+        <button
+          onClick={onSecondaryConfirm}
+          disabled={loading}
+          className={cn(
+            "px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-ring outline-none disabled:opacity-60",
+            secondaryConfirmCls
+          )}
+        >
+          {secondaryConfirmLabel}
         </button>
       ) : null}
       <button
