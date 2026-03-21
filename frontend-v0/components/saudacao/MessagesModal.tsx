@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { CircleHelp, Eye, MessagesSquare, Megaphone, MessageCircleMore, Pencil } from "lucide-react"
+import { CircleHelp, Eye, FileText, MessagesSquare, Megaphone, MessageCircleMore, Pencil } from "lucide-react"
 import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
 
 interface MessagesModalProps {
@@ -93,7 +93,48 @@ Matéria: *{{materia}}*
 Professor: *{{professor}}*
 Horário: *{{horario}}*`
 
+const DEFAULT_MODEL_BY_EDITOR = {
+  default: `Turma: *{{turmaLinha}}*
+Matéria: *{{materia}}*
+Título: *{{titulo}}*
+Professor: *{{professor}}*
+Aluno: *{{alunoNome}}*
+Horário: *{{horario}}*
+
+Olá, *{{alunoNome}}*!
+
+Sua saudação de hoje será para a aula de *{{materia}}*.
+Se desejar, você pode iniciar com:
+_{{exemploPronto}}_
+
+Bom envio!`,
+  "no-class": `*📢 Aviso da turma*
+
+Turma: *{{turmaLinha}}*
+
+{{cumprimento}}, pessoal.
+
+Informamos que *não haverá aula hoje*.
+
+Use este período para revisar o conteúdo, organizar suas atividades e reforçar os pontos mais importantes.
+
+*Mensagem da turma:*
+{{aulaContexto}}`,
+  custom: `Olá, *{{alunoNome}}*!
+
+Segue uma mensagem personalizada da turma *{{turmaLinha}}*.
+
+Matéria: *{{materia}}*
+Professor: *{{professor}}*
+Horário: *{{horario}}*
+
+Mensagem:
+{{aulaContexto}}`,
+} as const
+
 const PREVIEW_SAMPLE = {
+  turma: "RiseCode",
+  instituicao: "AlphaTech",
   turmaLinha: "RiseCode — AlphaTech",
   materia: "Redes e Internet",
   titulo: "DNS (Domain Name System)",
@@ -108,6 +149,8 @@ const PREVIEW_SAMPLE = {
 }
 
 const AVAILABLE_VARIABLES = [
+  { token: "{{turma}}", description: "Nome da turma definido na configuração." },
+  { token: "{{instituicao}}", description: "Nome da instituição definida na configuração." },
   { token: "{{turmaLinha}}", description: "Nome completo da turma com instituição." },
   { token: "{{materia}}", description: "Matéria da aula." },
   { token: "{{titulo}}", description: "Título do conteúdo da aula." },
@@ -214,6 +257,7 @@ export function MessagesModal({
   const [customBannerTitle, setCustomBannerTitle] = useState("")
   const [customBackgroundColor, setCustomBackgroundColor] = useState("#123d37")
   const [customBackgroundImagePath, setCustomBackgroundImagePath] = useState("")
+  const [modelHelpOpen, setModelHelpOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [variablesHelpOpen, setVariablesHelpOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -248,6 +292,7 @@ export function MessagesModal({
       setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
       setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
       setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
+      setModelHelpOpen(false)
       setPreviewOpen(false)
       setVariablesHelpOpen(false)
     }
@@ -573,6 +618,7 @@ export function MessagesModal({
           setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
           setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
           setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
+          setModelHelpOpen(false)
           setPreviewOpen(false)
           setVariablesHelpOpen(false)
         }}
@@ -646,6 +692,14 @@ export function MessagesModal({
                 <p className="text-xs text-muted-foreground">
                   Edite o conteúdo que será enviado aos alunos.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setModelHelpOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <FileText size={15} />
+                  Modelo
+                </button>
                 <button
                   type="button"
                   onClick={() => setVariablesHelpOpen(true)}
@@ -774,6 +828,7 @@ export function MessagesModal({
             setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
             setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
             setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
+            setModelHelpOpen(false)
             setPreviewOpen(false)
             setVariablesHelpOpen(false)
           }}
@@ -783,6 +838,37 @@ export function MessagesModal({
           confirmLabel="Salvar e fechar"
           cancelLabel="Cancelar"
           loading={loading}
+        />
+      </ModalShell>
+
+      <ModalShell
+        open={modelHelpOpen}
+        onClose={() => setModelHelpOpen(false)}
+        title="Modelo de mensagem"
+        subtitle="Use este exemplo como base e adapte o texto com as variáveis"
+        icon={<FileText size={16} className="text-primary" />}
+        size="lg"
+      >
+        <div className="px-6 py-6">
+          <div className="rounded-2xl border border-border bg-muted/20 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Modelo sugerido
+            </p>
+            <textarea
+              readOnly
+              value={DEFAULT_MODEL_BY_EDITOR[editorType]}
+              className="mt-3 min-h-[260px] w-full rounded-2xl border border-input bg-background px-4 py-4 font-mono text-[15px] leading-7 text-foreground outline-none"
+            />
+          </div>
+        </div>
+        <ModalActions
+          onCancel={() => setModelHelpOpen(false)}
+          onConfirm={() => {
+            setCurrentMessage(DEFAULT_MODEL_BY_EDITOR[editorType])
+            setModelHelpOpen(false)
+          }}
+          confirmLabel="Usar modelo"
+          cancelLabel="Fechar"
         />
       </ModalShell>
 

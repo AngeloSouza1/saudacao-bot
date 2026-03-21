@@ -521,8 +521,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
 
   const mediaFrameWidth = 224;
   const mediaFrameHeight = 224;
-  const mediaContentWidth = 188;
-  const mediaContentHeight = 188;
+  const mediaContentWidth = 212;
+  const mediaContentHeight = 212;
   const mediaLeft = 64;
   const mediaTop = Math.max(0, Math.floor((height - mediaFrameHeight) / 2));
   const mediaRadius = 28;
@@ -536,8 +536,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="mediaInner" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="rgba(255,255,255,0.96)"/>
-          <stop offset="100%" stop-color="rgba(231,239,245,0.92)"/>
+          <stop offset="0%" stop-color="rgba(255,255,255,0.14)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
         </linearGradient>
       </defs>
       <rect
@@ -545,20 +545,19 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
         y="${mediaContentTop}"
         width="${mediaContentWidth}"
         height="${mediaContentHeight}"
-        rx="22"
+        rx="24"
         fill="url(#mediaInner)"
-        stroke="rgba(255,255,255,0.10)"
+        stroke="rgba(255,255,255,0.12)"
         stroke-width="1.5"
       />
     </svg>
   `);
   const logoInnerBuffer = await sharp(imageInput)
     .rotate()
-    .flatten({ background: { r: 245, g: 248, b: 251 } })
     .resize({
       width: mediaContentWidth,
       height: mediaContentHeight,
-      fit: "contain",
+      fit: "cover",
       position: "centre",
       background: { r: 0, g: 0, b: 0, alpha: 0 }
     })
