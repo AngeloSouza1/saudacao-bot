@@ -460,29 +460,147 @@ function escapeXml(value) {
     .replace(/'/g, "&apos;");
 }
 
+function wrapBannerTitle(rawTitle, maxLineLength = 22, maxLines = 3) {
+  const words = String(rawTitle || "").trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return ["🤖 Saudação de hoje"];
+
+  const lines = [];
+  let current = "";
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length <= maxLineLength) {
+      current = next;
+      continue;
+    }
+
+    if (current) {
+      lines.push(current);
+      current = word;
+    } else {
+      lines.push(word.slice(0, maxLineLength));
+      current = word.slice(maxLineLength);
+    }
+
+    if (lines.length >= maxLines - 1) break;
+  }
+
+  if (lines.length < maxLines && current) {
+    lines.push(current);
+  }
+
+  if (words.length > 0 && lines.length === maxLines) {
+    const consumed = lines.join(" ").trim();
+    const original = words.join(" ").trim();
+    if (consumed.length < original.length) {
+      lines[maxLines - 1] = `${lines[maxLines - 1].slice(0, Math.max(0, maxLineLength - 1)).trim()}…`;
+    }
+  }
+
+  return lines.slice(0, maxLines);
+}
+
 async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1200);
   const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 460);
-  const title = escapeXml(String(bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "🤖 Saudação de hoje").trim() || "🤖 Saudação de hoje");
+  const titleLines = wrapBannerTitle(
+    String(bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "🤖 Saudação de hoje").trim() || "🤖 Saudação de hoje"
+  );
   const backgroundColor = String(cardData?.backgroundColor || process.env.WHATSAPP_BANNER_BG_COLOR || "#123d37").trim() || "#123d37";
   const backgroundImagePath = String(cardData?.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
+  const hasBackgroundImage = Boolean(backgroundImagePath);
+  const titleFontSize = titleLines.length > 2 ? 52 : titleLines.length > 1 ? 58 : 66;
+  const titleStartY = titleLines.length > 1 ? 192 : 244;
+  const titleLineHeight = titleFontSize + 12;
+  const titleTspans = titleLines
+    .map((line, index) => {
+      const dy = index === 0 ? 0 : titleLineHeight;
+      return `<tspan x="448" dy="${dy}">${escapeXml(line)}</tspan>`;
+    })
+    .join("");
 
-  const logoBuffer = await sharp(imageInput)
+  const avatarSize = 240;
+  const avatarContentSize = 188;
+  const avatarLeft = 76;
+  const avatarTop = Math.max(0, Math.floor((height - avatarSize) / 2));
+  const avatarRadius = Math.floor(avatarSize / 2);
+  const shadowSize = avatarSize + 34;
+  const shadowLeft = avatarLeft - 17;
+  const shadowTop = avatarTop - 12;
+  const logoMask = Buffer.from(`
+    <svg width="${avatarSize}" height="${avatarSize}" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${avatarRadius}" cy="${avatarRadius}" r="${avatarRadius}" fill="#ffffff"/>
+    </svg>
+  `);
+  const logoInnerBuffer = await sharp(imageInput)
     .rotate()
-    .resize({ width: 380, height: 380, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize({
+      width: avatarContentSize,
+      height: avatarContentSize,
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 }
+    })
     .png()
     .toBuffer();
+  const logoBuffer = await sharp({
+    create: {
+      width: avatarSize,
+      height: avatarSize,
+      channels: 4,
+      background: { r: 255, g: 255, b: 255, alpha: 0.06 }
+    }
+  })
+    .composite([{
+      input: logoInnerBuffer,
+      top: Math.floor((avatarSize - avatarContentSize) / 2),
+      left: Math.floor((avatarSize - avatarContentSize) / 2)
+    }])
+    .composite([{ input: logoMask, blend: "dest-in" }])
+    .png()
+    .toBuffer();
+  const avatarShadowBuffer = await sharp({
+    create: {
+      width: shadowSize,
+      height: shadowSize,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 }
+    }
+  })
+    .composite([{
+      input: Buffer.from(`
+        <svg width="${shadowSize}" height="${shadowSize}" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="${Math.floor(shadowSize / 2)}" cy="${Math.floor(shadowSize / 2)}" r="${avatarRadius}" fill="rgba(0,0,0,0.42)"/>
+        </svg>
+      `),
+      top: 0,
+      left: 0
+    }])
+    .blur(18)
+    .png()
+    .toBuffer();
+  const avatarRingBuffer = Buffer.from(`
+    <svg width="${avatarSize}" height="${avatarSize}" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${avatarRadius}" cy="${avatarRadius}" r="${avatarRadius - 4}" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="8"/>
+      <circle cx="${avatarRadius}" cy="${avatarRadius}" r="${avatarRadius - 18}" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+    </svg>
+  `);
 
   const svgText = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#0f2230"/>
-          <stop offset="100%" stop-color="${escapeXml(backgroundColor)}"/>
+          <stop offset="0%" stop-color="${hasBackgroundImage ? "rgba(15,34,48,0.22)" : "#0f2230"}"/>
+          <stop offset="100%" stop-color="${hasBackgroundImage ? "rgba(18,61,55,0.18)" : escapeXml(backgroundColor)}"/>
+        </linearGradient>
+        <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${hasBackgroundImage ? "rgba(8,24,34,0.26)" : "rgba(8,24,34,0.46)"}"/>
+          <stop offset="100%" stop-color="${hasBackgroundImage ? "rgba(8,24,34,0.06)" : "rgba(8,24,34,0.10)"}"/>
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>
-      <text x="470" y="240" fill="#ffffff" font-size="66" font-family="Georgia, serif" font-weight="700">${title}</text>
+      <rect x="22" y="22" width="${width - 44}" height="${height - 44}" rx="18" fill="url(#panel)" stroke="rgba(125,255,210,0.24)" stroke-width="3"/>
+      <rect x="396" y="58" width="${width - 454}" height="${height - 116}" rx="24" fill="${hasBackgroundImage ? "rgba(6,18,26,0.08)" : "rgba(6,18,26,0.14)"}"/>
+      <text x="448" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
     </svg>
   `;
 
@@ -496,6 +614,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     const backgroundBuffer = await sharp(bgInput)
       .rotate()
       .resize({ width, height, fit: "cover", position: "centre" })
+      .modulate({ brightness: 0.9, saturation: 1.02 })
+      .blur(1)
       .jpeg({ quality: 72, mozjpeg: true })
       .toBuffer();
     composites.push({ input: backgroundBuffer, top: 0, left: 0 });
@@ -512,7 +632,9 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     .composite([
       ...composites,
       { input: Buffer.from(svgText), top: 0, left: 0 },
-      { input: logoBuffer, top: Math.max(0, Math.floor((height - 380) / 2)), left: 48 }
+      { input: avatarShadowBuffer, top: shadowTop, left: shadowLeft },
+      { input: logoBuffer, top: avatarTop, left: avatarLeft },
+      { input: avatarRingBuffer, top: avatarTop, left: avatarLeft }
     ])
     .jpeg({ quality: 68, mozjpeg: true })
     .toBuffer();
@@ -545,7 +667,24 @@ async function buildOptimizedMediaFromInput(imageInput) {
 }
 
 async function fetchRemoteMediaBuffer(imageUrl) {
-  const response = await fetch(String(imageUrl || "").trim(), { cache: "no-store" });
+  const rawUrl = String(imageUrl || "").trim();
+  const headers = {
+    "User-Agent":
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
+  };
+
+  if (/^https?:\/\/images\.unsplash\.com\//i.test(rawUrl)) {
+    headers.Referer = "https://unsplash.com/";
+  } else if (/^https?:\/\/cdn\.pixabay\.com\//i.test(rawUrl)) {
+    headers.Referer = "https://pixabay.com/";
+  }
+
+  const response = await fetch(rawUrl, {
+    cache: "no-store",
+    headers
+  });
   if (!response.ok) {
     throw new Error(`Falha ao baixar imagem remota (${response.status}).`);
   }

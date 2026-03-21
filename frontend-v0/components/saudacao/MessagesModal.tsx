@@ -230,7 +230,7 @@ export function MessagesModal({
       setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
       setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
       setCustomTargetType("student")
-      setCustomRecipient(String(students?.[0]?.nome || "").trim())
+      setCustomRecipient("")
       setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
       setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
       setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
@@ -270,47 +270,43 @@ export function MessagesModal({
       .catch(() => setGroups([]))
   }, [open])
 
+  async function persistMessagesConfig() {
+    const res = await fetch("/api/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        defaultGreetingMessage: defaultMessage,
+        defaultNoClassMessage: noClassMessage,
+        customMessageTemplate: customMessage,
+        greetingImagePath,
+        greetingMediaFileName,
+        greetingBannerTitle,
+        greetingBackgroundColor,
+        greetingBackgroundImagePath,
+        noClassImagePath,
+        noClassMediaFileName,
+        noClassBannerTitle,
+        noClassBackgroundColor,
+        noClassBackgroundImagePath,
+        customImagePath,
+        customMediaFileName,
+        customBannerTitle,
+        customBackgroundColor,
+        customBackgroundImagePath,
+      }),
+    })
+    const payload = await res.json()
+    if (!res.ok) {
+      throw new Error(String(payload?.error || "Falha ao salvar mensagem."))
+    }
+    return payload
+  }
+
   async function handleSaveDefaultMessage(closeAfterSave = true) {
     setLoading(true)
     setFeedback("")
     try {
-      const res = await fetch("/api/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          defaultGreetingMessage:
-            editorType === "default"
-              ? defaultMessage
-              : String(initialDefaultMessage || "").trim(),
-          defaultNoClassMessage:
-            editorType === "no-class"
-              ? noClassMessage
-              : String(initialNoClassMessage || "").trim(),
-          customMessageTemplate:
-            editorType === "custom"
-              ? customMessage
-              : String(initialCustomMessage || "").trim(),
-          greetingImagePath,
-          greetingMediaFileName,
-          greetingBannerTitle,
-          greetingBackgroundColor,
-          greetingBackgroundImagePath,
-          noClassImagePath,
-          noClassMediaFileName,
-          noClassBannerTitle,
-          noClassBackgroundColor,
-          noClassBackgroundImagePath,
-          customImagePath,
-          customMediaFileName,
-          customBannerTitle,
-          customBackgroundColor,
-          customBackgroundImagePath,
-        }),
-      })
-      const payload = await res.json()
-      if (!res.ok) {
-        throw new Error(String(payload?.error || "Falha ao salvar mensagem."))
-      }
+      const payload = await persistMessagesConfig()
       if (onSaved) await onSaved()
       if (closeAfterSave) {
         setEditorOpen(false)
@@ -331,6 +327,8 @@ export function MessagesModal({
     setSendCustomLoading(true)
     setFeedback("")
     try {
+      await persistMessagesConfig()
+      if (onSaved) await onSaved()
       const res = await fetch("/api/send-custom-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -411,6 +409,10 @@ export function MessagesModal({
     noClassBackgroundImagePath,
     customBackgroundImagePath
   )
+  const hasBackgroundColor = Boolean(String(currentBackgroundColor || "").trim())
+  const colorPickerValue = currentBackgroundColor || "#123d37"
+  const currentImageIsRemote = /^https?:\/\//i.test(String(currentImagePath || "").trim())
+  const currentBackgroundImageIsRemote = /^https?:\/\//i.test(String(currentBackgroundImagePath || "").trim())
   const setCurrentImagePath = (value: string) => {
     if (editorType === "default") setGreetingImagePath(value)
     else if (editorType === "no-class") setNoClassImagePath(value)
@@ -572,14 +574,14 @@ export function MessagesModal({
                 label="Banner / imagem"
                 value={currentImagePath}
                 onChange={setCurrentImagePath}
-                placeholder="Ex.: risecode.png, /caminho/banner.png ou https://site/imagem.jpg"
+                placeholder="https://site/imagem.jpg"
                 hint="Aceita arquivo local ou link. Se não alterar, o banner atual continua sendo usado."
               />
               <UnderlineInput
                 label="Imagem de fundo"
                 value={currentBackgroundImagePath}
                 onChange={setCurrentBackgroundImagePath}
-                placeholder="Ex.: /caminho/fundo.png ou https://site/fundo.jpg"
+                placeholder="https://site/fundo.jpg"
                 hint="Opcional. Usa esta imagem no fundo do banner."
               />
               <UnderlineInput
@@ -597,21 +599,44 @@ export function MessagesModal({
                 hint="Opcional. Define o nome do arquivo quando a mídia for enviada."
               />
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Cor de fundo
-                </label>
-                <button
-                  type="button"
-                  className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2 text-left transition-colors hover:border-primary"
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Cor de fundo
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentBackgroundColor(
+                        hasBackgroundColor ? "" : colorPickerValue || "#123d37"
+                      )
+                    }
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                      hasBackgroundColor
+                        ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/15"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {hasBackgroundColor ? "Desabilitar" : "Usar cor"}
+                  </button>
+                </div>
+                <div
+                  className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${
+                    hasBackgroundColor
+                      ? "border-input bg-background hover:border-primary"
+                      : "border-border/70 bg-muted/20 opacity-60"
+                  }`}
                 >
                   <input
                     type="color"
-                    value={currentBackgroundColor}
+                    value={colorPickerValue}
                     onChange={(e) => setCurrentBackgroundColor(e.target.value)}
-                    className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                    disabled={!hasBackgroundColor}
+                    className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0 disabled:cursor-not-allowed"
                   />
-                  <span className="font-mono text-sm text-foreground">{currentBackgroundColor}</span>
-                </button>
+                  <span className={`font-mono text-sm ${hasBackgroundColor ? "text-foreground" : "text-muted-foreground"}`}>
+                    {hasBackgroundColor ? currentBackgroundColor : "desabilitada"}
+                  </span>
+                </div>
                 <p className="text-[11px] text-muted-foreground">
                   Define a cor do fundo do banner desta mensagem.
                 </p>
@@ -670,11 +695,7 @@ export function MessagesModal({
                       onChange={(e) => {
                         const nextType = e.target.value as "student" | "group"
                         setCustomTargetType(nextType)
-                        setCustomRecipient(
-                          nextType === "student"
-                            ? String(students?.[0]?.nome || "").trim()
-                            : String(groups?.[0]?.name || "").trim()
-                        )
+                        setCustomRecipient("")
                       }}
                       className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
                     >
@@ -744,7 +765,7 @@ export function MessagesModal({
             setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
             setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
             setCustomTargetType("student")
-            setCustomRecipient(String(students?.[0]?.nome || "").trim())
+            setCustomRecipient("")
             setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
             setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
             setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
@@ -835,24 +856,53 @@ export function MessagesModal({
               </div>
 
               <div className="ml-auto max-w-[88%] rounded-[18px] rounded-tr-md bg-[#d9fdd3] px-4 py-3 text-[#111b21] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
+                <div
+                  className="mb-3 overflow-hidden rounded-2xl border border-emerald-300/50"
+                  style={{
+                    backgroundColor: currentBackgroundColor || "#123d37",
+                    backgroundImage: currentBackgroundImageIsRemote
+                      ? `linear-gradient(rgba(7, 25, 33, 0.58), rgba(7, 25, 33, 0.38)), url(${currentBackgroundImagePath})`
+                      : `linear-gradient(135deg, rgba(7, 25, 33, 0.10), rgba(7, 25, 33, 0.28))`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  <div className="flex items-center gap-4 rounded-2xl bg-[#071921]/25 px-4 py-4 backdrop-blur-[1px]">
+                    <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white/80 bg-white/10 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
+                      {currentImageIsRemote ? (
+                        <img
+                          src={currentImagePath}
+                          alt="Banner"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-white/10 text-lg font-semibold text-white">
+                          SB
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-3 font-serif text-[28px] font-bold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
+                        {currentBannerTitle || "🤖 Saudação de hoje"}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/80">
+                        <span>{currentMediaFileName || "nome automático"}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className="inline-block h-3.5 w-3.5 rounded-full border border-white/60"
+                            style={{ backgroundColor: currentBackgroundColor }}
+                          />
+                          {currentBackgroundColor}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="mb-3 rounded-2xl border border-emerald-200/80 bg-white/55 px-3 py-2 text-xs text-slate-600">
                   <p>
                     Banner: <span className="font-medium text-slate-800">{currentImagePath || "padrão atual"}</span>
                   </p>
-                  <p className="mt-1">
-                    Título: <span className="font-medium text-slate-800">{currentBannerTitle || "🤖 Saudação de hoje"}</span>
-                  </p>
-                  <p className="mt-1">
-                    Arquivo: <span className="font-medium text-slate-800">{currentMediaFileName || "nome automático"}</span>
-                  </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-slate-600">Cor:</span>
-                    <span
-                      className="inline-block h-4 w-4 rounded-full border border-slate-300"
-                      style={{ backgroundColor: currentBackgroundColor }}
-                    />
-                    <span className="font-medium text-slate-800">{currentBackgroundColor}</span>
-                  </div>
                   <p className="mt-1">
                     Fundo: <span className="font-medium text-slate-800">{currentBackgroundImagePath || "sem imagem"}</span>
                   </p>
