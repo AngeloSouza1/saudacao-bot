@@ -9,6 +9,7 @@ import whatsappWeb from "whatsapp-web.js";
 dotenv.config();
 
 const { Client, LocalAuth, MessageMedia } = whatsappWeb;
+const dataRootDir = path.resolve(process.env.SAUDACAO_DATA_DIR || process.cwd());
 
 let clientPromise;
 let currentClient;
@@ -35,7 +36,7 @@ function getSessionName() {
 }
 
 function getSessionDir() {
-  return `.wwebjs_auth/session-${getSessionName()}`;
+  return path.join(dataRootDir, ".wwebjs_auth", `session-${getSessionName()}`);
 }
 
 function hasSavedSession() {
@@ -221,7 +222,8 @@ function createClient() {
 
   const client = new Client({
     authStrategy: new LocalAuth({
-      clientId: getSessionName()
+      clientId: getSessionName(),
+      dataPath: path.join(dataRootDir, ".wwebjs_auth")
     }),
     puppeteer: {
       headless: isHeadlessMode(),

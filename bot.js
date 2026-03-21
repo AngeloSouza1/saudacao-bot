@@ -7,11 +7,13 @@ import { getWhatsAppStatus, initWhatsApp, listGroups, sendText } from "./whatsap
 dotenv.config();
 
 const TZ = process.env.TZ || "America/Sao_Paulo";
-const configPath = "./config.json";
-const statePath = "./state.json";
-const settingsPath = "./settings.json";
-const cyclesPath = "./cycles.json";
-const lastRunPath = "./last-run.json";
+const appRootDir = process.cwd();
+const dataRootDir = path.resolve(process.env.SAUDACAO_DATA_DIR || appRootDir);
+const configPath = resolveDataPath("config.json");
+const statePath = resolveDataPath("state.json");
+const settingsPath = resolveDataPath("settings.json");
+const cyclesPath = resolveDataPath("cycles.json");
+const lastRunPath = resolveDataPath("last-run.json");
 const weekdayMap = {
   Sun: 0,
   Mon: 1,
@@ -100,6 +102,25 @@ function pathModuleDirname(filePath) {
   return path.dirname(filePath);
 }
 
+function resolveDataPath(fileName) {
+  return path.join(dataRootDir, fileName);
+}
+
+function resolveBundledPath(fileName) {
+  return path.join(appRootDir, fileName);
+}
+
+function ensureSeedFile(targetPath, seedPath) {
+  if (targetPath === seedPath) return;
+  if (fs.existsSync(targetPath) || !fs.existsSync(seedPath)) return;
+
+  const dir = pathModuleDirname(targetPath);
+  if (dir && dir !== ".") {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.copyFileSync(seedPath, targetPath);
+}
+
 function backupCorruptedJson(filePath, reason = "") {
   if (!fs.existsSync(filePath)) return "";
   const suffix = `${Date.now()}.corrupted${reason ? `-${reason}` : ""}.bak`;
@@ -109,6 +130,7 @@ function backupCorruptedJson(filePath, reason = "") {
 }
 
 function loadConfig() {
+  ensureSeedFile(configPath, resolveBundledPath("config.json"));
   return readJson(configPath);
 }
 

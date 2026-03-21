@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: saudacao-bot
+    runtime: node
+    plan: starter
+    buildCommand: npm run render-build
+    startCommand: node index.js
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: SAUDACAO_DATA_DIR
+        value: /var/data
+      - key: TZ
+        value: America/Sao_Paulo
+      - key: WHATSAPP_HEADLESS
+        value: "true"
+      - key: DASHBOARD_AUTH_USER
+        sync: false
+      - key: DASHBOARD_AUTH_PASSWORD
+        sync: false
+      - key: WHATSAPP_SESSION_NAME
+        value: saudacao-bot
+    disk:
+      name: saudacao-bot-data
+      mountPath: /var/data
+      sizeGB: 1
