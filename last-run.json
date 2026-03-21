@@ -1,6 +1,7 @@
 {
-  "type": "test",
+  "type": "agenda_list",
   "skipped": false,
-  "messageId": "true_120363423174718536@g.us_3EB04CC261C3D75F679C77_138469896626257@lid",
-  "sentAt": "2026-03-21T17:56:48.706Z"
+  "destination": "grupo teste",
+  "messageId": "true_120363423174718536@g.us_3EB08D60E19B67A84704B7_167435021877452@lid",
+  "sentAt": "2026-03-21T22:58:59.325Z"
 }

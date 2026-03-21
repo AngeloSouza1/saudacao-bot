@@ -65,6 +65,7 @@
     "Bruna Alves",
     "Clara Helena",
     "Daniel Lucas",
+    "Denis Junior",
     "Enzo Duarte",
     "Felipe Moreira",
     "Jaynni Nascimento",
@@ -72,9 +73,12 @@
     "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
+    "Kauã Henrique",
+    "Laís Oliveira",
     "Luana Costa",
     "Matheus Leonardo",
     "Matheus Marques",
+    "Pollyana Santos",
     "Rai Colares",
     "Rallenson Silva",
     "Thalita Nascimento",
@@ -109,6 +113,11 @@
     {
       "nome": "Daniel Lucas",
       "whatsapp": "3175126569",
+      "imagem": ""
+    },
+    {
+      "nome": "Denis Junior",
+      "whatsapp": "5512996436291",
       "imagem": ""
     },
     {
@@ -147,6 +156,16 @@
       "imagem": "https://pps.whatsapp.net/v/t61.24694-24/534418649_1994555627938729_2601632303388099686_n.jpg?ccb=11-4&oh=01_Q5Aa4AGdG2_UKAwYfWx7MRudd-cX3od6QgoTlQqU77MiKNaR7A&oe=69CBBBD9&_nc_sid=5e03e0&_nc_cat=109"
     },
     {
+      "nome": "Kauã Henrique",
+      "whatsapp": "+558396096718",
+      "imagem": ""
+    },
+    {
+      "nome": "Laís Oliveira",
+      "whatsapp": "558599205382",
+      "imagem": ""
+    },
+    {
       "nome": "Luana Costa",
       "whatsapp": "21967257356",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/620182412_1403519001028875_7301529586722824532_n.jpg?ccb=11-4&oh=01_Q5Aa4AGzWtDt3KRXo1csWlqr6LJh8rzImcI12-mM4ohoEcXr8w&oe=69CBAB82&_nc_sid=5e03e0&_nc_cat=108"
@@ -160,6 +179,11 @@
       "nome": "Matheus Marques",
       "whatsapp": "12997440538",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/586509528_849202884273481_8260390511792983222_n.jpg?ccb=11-4&oh=01_Q5Aa4AHjt6Pl8I6KITRdMaVzRCDGeIkWosRYT8pkBYCZJuT97g&oe=69CBCE74&_nc_sid=5e03e0&_nc_cat=104"
+    },
+    {
+      "nome": "Pollyana Santos",
+      "whatsapp": "558187967645",
+      "imagem": ""
     },
     {
       "nome": "Rai Colares",

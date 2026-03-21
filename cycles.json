@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "cycle_1774128632372_5c3ys4",
+  "activeCycleId": "cycle_1774134764092_56cdcq",
   "cycles": [
     {
       "id": "cycle_1774027212623_3ss328",
@@ -437,10 +437,10 @@
     {
       "id": "cycle_1774128632372_5c3ys4",
       "name": "Novo ciclo 21/03/2026, 18:30 · início 23/03/2026",
-      "status": "active",
+      "status": "completed",
       "reason": "manual",
       "createdAt": "2026-03-21T21:30:32.372Z",
-      "completedAt": null,
+      "completedAt": "2026-03-21T22:57:00.705Z",
       "start": {
         "idxAluno": 10,
         "idxAula": 0,
@@ -448,7 +448,61 @@
       },
       "sentCount": 0,
       "totalAlunos": 7,
-      "updatedAt": "2026-03-21T21:30:32.375Z"
+      "updatedAt": "2026-03-21T22:57:00.276Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774133821043_jn4o53",
+      "name": "Novo ciclo 21/03/2026, 18:30 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T22:57:01.043Z",
+      "completedAt": "2026-03-21T23:12:11.970Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T22:57:01.049Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774134736613_gpa9nx",
+      "name": "Novo ciclo 21/03/2026, 20:12 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T23:12:16.614Z",
+      "completedAt": "2026-03-21T23:12:44.049Z",
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T23:12:44.010Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774134764092_56cdcq",
+      "name": "Novo ciclo 21/03/2026, 20:12 · início 23/03/2026",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-21T23:12:44.092Z",
+      "completedAt": null,
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T23:12:44.095Z"
     }
   ]
 }

@@ -1,14 +1,20 @@
 {
-  "idxAluno": 10,
+  "idxAluno": 8,
   "idxAula": 0,
   "dataInicio": "2026-03-23",
-  "updatedAt": "2026-03-21T21:30:32.374Z",
+  "updatedAt": "2026-03-21T23:12:44.094Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
+    "João Marcos Basilio Sales",
+    "João Vitor Gomes Oliveira Rodrigues Resende",
+    "Juan Ferreira",
     "Kaio Vieira Nunes",
+    "Kauã Henrique",
+    "Laís Oliveira",
     "Luana Costa",
     "Matheus Leonardo",
     "Matheus Marques",
+    "Pollyana Santos",
     "Rai Colares",
     "Rallenson Silva",
     "Thalita Nascimento",
@@ -17,12 +23,10 @@
     "Bruna Alves",
     "Clara Helena",
     "Daniel Lucas",
+    "Denis Junior",
     "Enzo Duarte",
     "Felipe Moreira",
-    "Jaynni Nascimento",
-    "João Marcos Basilio Sales",
-    "João Vitor Gomes Oliveira Rodrigues Resende",
-    "Juan Ferreira"
+    "Jaynni Nascimento"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,
@@ -32,13 +36,13 @@
   "revertidosEfetivados": [],
   "efetivacoesManuais": [],
   "ordemVinculadaCiclo": [
+    "João Marcos Basilio Sales",
+    "João Vitor Gomes Oliveira Rodrigues Resende",
+    "Juan Ferreira",
     "Kaio Vieira Nunes",
-    "Luana Costa",
-    "Matheus Leonardo",
-    "Matheus Marques",
-    "Rai Colares",
-    "Rallenson Silva",
-    "Thalita Nascimento"
+    "Kauã Henrique",
+    "Laís Oliveira",
+    "Luana Costa"
   ],
   "efetivadosCiclo": []
 }
