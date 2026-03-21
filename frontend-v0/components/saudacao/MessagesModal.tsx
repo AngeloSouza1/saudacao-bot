@@ -8,6 +8,8 @@ interface MessagesModalProps {
   open: boolean
   onClose: () => void
   initialEditorType?: "default" | "no-class" | "custom"
+  initialTurma?: string
+  initialInstituicao?: string
   initialDefaultMessage?: string
   initialNoClassMessage?: string
   initialCustomMessage?: string
@@ -132,10 +134,9 @@ Mensagem:
 {{aulaContexto}}`,
 } as const
 
-const PREVIEW_SAMPLE = {
+const PREVIEW_SAMPLE_DEFAULT = {
   turma: "RiseCode",
   instituicao: "AlphaTech",
-  turmaLinha: "RiseCode — AlphaTech",
   materia: "Redes e Internet",
   titulo: "DNS (Domain Name System)",
   professor: "Prof. Kenji",
@@ -146,7 +147,7 @@ const PREVIEW_SAMPLE = {
   exemploPronto:
     "Boa noite, professor(a) Prof. Kenji. Aqui é a turma RiseCode. Hoje nossa saudação é para a aula *DNS (Domain Name System)*, da matéria Redes e Internet. Hoje estamos com a maioria presente. A turma está pronta, pode começar quando quiser.",
   chatTime: "20:01",
-}
+} as const
 
 const AVAILABLE_VARIABLES = [
   { token: "{{turma}}", description: "Nome da turma definido na configuração." },
@@ -162,8 +163,8 @@ const AVAILABLE_VARIABLES = [
   { token: "{{exemploPronto}}", description: "Exemplo pronto de saudação preenchido." },
 ]
 
-function renderPreviewTemplate(template: string) {
-  return Object.entries(PREVIEW_SAMPLE).reduce(
+function renderPreviewTemplate(template: string, previewSample: Record<string, string>) {
+  return Object.entries(previewSample).reduce(
     (text, [token, value]) => text.split(`{{${token}}}`).join(value),
     String(template || "")
   )
@@ -211,6 +212,8 @@ export function MessagesModal({
   open,
   onClose,
   initialEditorType = "default",
+  initialTurma,
+  initialInstituicao,
   initialDefaultMessage,
   initialNoClassMessage,
   initialCustomMessage,
@@ -509,6 +512,14 @@ export function MessagesModal({
     Boolean(String(customTargetType || "").trim()) &&
     Boolean(String(customRecipient || "").trim()) &&
     Boolean(String(customMessage || "").trim())
+  const previewTurma = String(initialTurma || "").trim() || PREVIEW_SAMPLE_DEFAULT.turma
+  const previewInstituicao = String(initialInstituicao || "").trim() || PREVIEW_SAMPLE_DEFAULT.instituicao
+  const previewSample = {
+    ...PREVIEW_SAMPLE_DEFAULT,
+    turma: previewTurma,
+    instituicao: previewInstituicao,
+    turmaLinha: [previewTurma, previewInstituicao].filter(Boolean).join(" — "),
+  }
 
   return (
     <>
@@ -914,11 +925,11 @@ export function MessagesModal({
                 </div>
                 <div>
                   <p className="text-sm font-semibold">Saudação Bot</p>
-                  <p className="text-xs text-white/70">Prévia da mensagem para {PREVIEW_SAMPLE.alunoNome}</p>
+                  <p className="text-xs text-white/70">Prévia da mensagem para {previewSample.alunoNome}</p>
                 </div>
               </div>
               <div className="text-right text-[11px] text-white/65">
-                <p>{PREVIEW_SAMPLE.chatTime}</p>
+                <p>{previewSample.chatTime}</p>
               </div>
             </div>
 
@@ -988,11 +999,11 @@ export function MessagesModal({
                 </div>
 
                 <pre className="whitespace-pre-wrap break-words bg-transparent p-0 text-sm leading-6 text-[#111b21]">
-                  {renderPreviewTemplate(currentMessage)}
+                  {renderPreviewTemplate(currentMessage, previewSample)}
                 </pre>
 
                 <div className="mt-2 text-right text-[11px] text-slate-500">
-                  {PREVIEW_SAMPLE.chatTime}
+                  {previewSample.chatTime}
                 </div>
               </div>
             </div>

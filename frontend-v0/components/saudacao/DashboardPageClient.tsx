@@ -606,6 +606,8 @@ export default function DashboardPageClient() {
           setMessagesInitialEditorType("default")
         }}
         initialEditorType={messagesInitialEditorType}
+        initialTurma={String(statusData?.config?.turma || "")}
+        initialInstituicao={String(statusData?.config?.instituicao || "")}
         initialDefaultMessage={String(statusData?.config?.defaultGreetingMessage || "")}
         initialNoClassMessage={String(statusData?.config?.defaultNoClassMessage || "")}
         initialCustomMessage={String(statusData?.config?.customMessageTemplate || "")}
