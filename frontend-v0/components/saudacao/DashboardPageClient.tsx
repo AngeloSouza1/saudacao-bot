@@ -399,27 +399,28 @@ export default function DashboardPageClient() {
           userAvatar={userAvatar}
         />
 
-        <main className="flex flex-1 items-center justify-center overflow-y-auto p-6">
-          <div className="w-full max-w-5xl">
-            <div className="mb-6 text-center">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">Autenticação do WhatsApp</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
+        <main className="flex flex-1 overflow-y-auto px-8 py-6">
+          <div className="mx-auto flex w-full max-w-[1720px] items-center justify-center">
+            <div className="w-full">
+            <div className="mb-5 text-center">
+              <h1 className="text-[2rem] font-bold tracking-tight text-foreground">Autenticação do WhatsApp</h1>
+              <p className="mt-1.5 text-sm text-muted-foreground">
                 Conecte a sessão para liberar o painel operacional e os envios automáticos da aplicação.
               </p>
             </div>
 
-            <div className="grid items-stretch gap-6 lg:grid-cols-[0.95fr_1.25fr]">
-              <section className="rounded-3xl border border-border bg-card/90 p-8 shadow-sm">
+            <div className="mx-auto grid items-stretch gap-8 lg:grid-cols-2">
+              <section className="flex min-h-[460px] h-full flex-col justify-center rounded-3xl border border-border bg-card/90 p-7 shadow-sm">
                 <span className="inline-flex rounded-full border border-green-soft bg-green-soft px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-deep">
                   Saudação Bot
                 </span>
-                <h2 className="mt-6 text-4xl font-bold leading-tight text-foreground">
+                <h2 className="mt-4 max-w-lg text-4xl font-bold leading-tight text-foreground">
                   Conecte o WhatsApp para liberar o painel
                 </h2>
-                <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
+                <p className="mt-3 max-w-2xl text-lg leading-relaxed text-muted-foreground">
                   Sua conta do painel já foi autenticada. Agora conecte a sessão do WhatsApp para liberar os envios automáticos e o uso completo da aplicação.
                 </p>
-                <div className="mt-8 space-y-4">
+                <div className="mt-6 w-full max-w-2xl space-y-3">
                   {[
                     {
                       title: "Abra o WhatsApp no celular.",
@@ -434,14 +435,14 @@ export default function DashboardPageClient() {
                       desc: "A sessão será estabelecida em poucos segundos.",
                     },
                   ].map((step, index) => (
-                    <div key={step.title} className="flex gap-4">
+                    <div key={step.title} className="flex gap-4 rounded-2xl border border-border bg-muted/20 px-4 py-3">
                       <div className="pt-0.5">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
                           <span className="text-sm font-semibold text-primary-foreground">{index + 1}</span>
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <p className="font-medium text-foreground">{step.title}</p>
+                        <p className="text-[15px] font-medium text-foreground">{step.title}</p>
                         <p className="text-sm text-muted-foreground">{step.desc}</p>
                       </div>
                     </div>
@@ -449,7 +450,7 @@ export default function DashboardPageClient() {
                 </div>
               </section>
 
-              <div className="mx-auto h-[680px] w-full max-w-2xl">
+              <div className="flex min-h-[460px] h-full w-full items-stretch justify-center">
                 <SessionStatusCard
                   title="Login necessário"
                   subtitle="Escaneie o QR Code para liberar o uso da aplicação"
@@ -464,6 +465,7 @@ export default function DashboardPageClient() {
                   showOverallBadge={false}
                 />
               </div>
+            </div>
             </div>
           </div>
         </main>

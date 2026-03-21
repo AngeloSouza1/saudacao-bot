@@ -120,7 +120,7 @@ export function SessionStatusCard({
   if (qrMode) {
     return (
       <div className="flex h-full flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="flex items-start gap-3 border-b border-border px-6 pb-6 pt-6">
+        <div className="flex items-start gap-3 border-b border-border px-5 pb-4 pt-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
             <QrCode className="h-5 w-5 text-primary" />
           </div>
@@ -140,11 +140,11 @@ export function SessionStatusCard({
           ) : null}
         </div>
 
-        <div className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+        <div className="flex flex-1 flex-col items-center justify-center px-5 py-5">
           {qrState === "loading" ? (
             <div className="w-full space-y-4">
               <div className="flex justify-center">
-                <div className="h-48 w-48 animate-pulse rounded-lg bg-muted" />
+                <div className="h-40 w-40 animate-pulse rounded-lg bg-muted" />
               </div>
               <p className="text-center text-sm text-muted-foreground">Preparando QR Code...</p>
             </div>
@@ -165,18 +165,18 @@ export function SessionStatusCard({
 
           {(qrState === "ready" || qrState === "authenticated") ? (
             <div className="relative flex flex-col items-center gap-4">
-              <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
+              <div className="rounded-lg border border-border bg-white p-3 shadow-sm">
                 {qrImageDataUrl ? (
                   <img
                     src={qrImageDataUrl}
                     alt="QR Code para autenticar WhatsApp Web"
                     className={cn(
-                      "h-40 w-40 rounded object-contain transition-opacity",
+                      "h-32 w-32 rounded object-contain transition-opacity sm:h-36 sm:w-36",
                       qrState === "authenticated" ? "opacity-60" : "opacity-100"
                     )}
                   />
                 ) : (
-                  <div className="flex h-40 w-40 items-center justify-center rounded bg-muted text-xs text-muted-foreground">
+                  <div className="flex h-32 w-32 items-center justify-center rounded bg-muted text-xs text-muted-foreground sm:h-36 sm:w-36">
                     Gerando imagem do QR...
                   </div>
                 )}
@@ -185,7 +185,7 @@ export function SessionStatusCard({
               {qrState === "authenticated" ? (
                 <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm">
                   <div className="text-center">
-                    <CheckCircle2 className="mx-auto mb-2 h-12 w-12 text-green-mid" />
+                    <CheckCircle2 className="mx-auto mb-2 h-10 w-10 text-green-mid" />
                     <p className="text-sm font-medium text-foreground">Autenticado</p>
                   </div>
                 </div>
@@ -194,7 +194,7 @@ export function SessionStatusCard({
           ) : null}
         </div>
 
-        <div className="space-y-4 border-t border-border px-6 pb-6 pt-5">
+        <div className="space-y-3 border-t border-border px-5 pb-5 pt-4">
           <div className={cn("flex items-center gap-2 text-sm font-medium", getQrStatusColor())}>
             {qrState === "authenticated" ? (
               <CheckCircle2 className="h-5 w-5" />
