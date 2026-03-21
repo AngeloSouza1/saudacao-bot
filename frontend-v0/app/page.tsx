@@ -348,7 +348,7 @@ export default function DashboardPage() {
 
   if (!isSystemReady) {
     return (
-      <div className="flex h-screen flex-col overflow-hidden bg-background">
+      <div className="flex h-screen flex-col overflow-hidden bg-background" suppressHydrationWarning>
         <AppHeader
           cycleLabel={cycleLabel}
           userName={userName}
@@ -414,7 +414,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-background" suppressHydrationWarning>
       <AppHeader
         cycleLabel={cycleLabel}
         userName={userName}
