@@ -4,6 +4,7 @@ import { useState } from "react"
 import {
   MessageSquare,
   MessagesSquare,
+  History,
   Send,
   Settings,
   Calendar,
@@ -26,6 +27,7 @@ interface SidebarProps {
   onOpenConfig: () => void
   onOpenSchedule: () => void
   onOpenMessages: () => void
+  onOpenHistory: () => void
   activeItem: string
   setActiveItem: (id: string) => void
   shortcutsOpen: boolean
@@ -37,6 +39,7 @@ export function AppSidebar({
   onOpenConfig,
   onOpenSchedule,
   onOpenMessages,
+  onOpenHistory,
   activeItem,
   setActiveItem,
   shortcutsOpen,
@@ -78,6 +81,13 @@ export function AppSidebar({
       icon: <MessageSquare size={18} />,
       title: "Sessão",
       subtitle: "Status da conexão",
+    },
+    {
+      id: "history",
+      icon: <History size={18} />,
+      title: "Histórico",
+      subtitle: "Ciclos anteriores",
+      onClick: onOpenHistory,
     },
     {
       id: "shortcuts",

@@ -21,6 +21,8 @@ interface ConfigModalProps {
     idxAula?: number
     dataInicio?: string
   }
+  cycleActive?: boolean
+  cycleName?: string
   students?: string[]
   scheduleSummary?: Array<{ dia?: string | number; horario?: string; materia?: string }>
   onSaved?: () => Promise<void> | void
@@ -52,6 +54,8 @@ export function ConfigModal({
   onClose,
   initialConfig,
   initialState,
+  cycleActive = false,
+  cycleName = "",
   students = [],
   scheduleSummary = [],
   onSaved,
@@ -66,6 +70,8 @@ export function ConfigModal({
   const [startAula, setStartAula] = useState("0")
   const [startDate, setStartDate] = useState("")
   const [loading, setLoading] = useState(false)
+  const [cancelCycleLoading, setCancelCycleLoading] = useState(false)
+  const [cancelCycleConfirmOpen, setCancelCycleConfirmOpen] = useState(false)
   const [feedback, setFeedback] = useState("")
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
@@ -82,7 +88,25 @@ export function ConfigModal({
     setStartDate(String(initialState?.dataInicio || ""))
     setFeedback("")
     setFieldErrors({})
+    setCancelCycleConfirmOpen(false)
   }, [open, initialConfig, initialState])
+
+  async function handleCancelCycleConfirmed() {
+    if (!cycleActive) return
+
+    setCancelCycleLoading(true)
+    setFeedback("")
+    try {
+      const payload = await postJson("/api/cycle/cancel", {})
+      if (onSaved) await onSaved()
+      setCancelCycleConfirmOpen(false)
+      setFeedback(String(payload?.message || "Ciclo ativo cancelado com sucesso."))
+    } catch (error) {
+      setFeedback(String((error as Error)?.message || "Falha ao cancelar ciclo."))
+    } finally {
+      setCancelCycleLoading(false)
+    }
+  }
 
   const aulasOptions = useMemo(() => {
     return (Array.isArray(scheduleSummary) ? scheduleSummary : []).map((item, idx) => ({
@@ -245,10 +269,62 @@ export function ConfigModal({
           </div>
           <UnderlineInput label="Data de início" value={startDate} onChange={setStartDate} type="date" required error={fieldErrors.startDate} />
         </div>
+
+        <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Ciclo ativo
+              </p>
+              <p className="mt-1 text-sm text-foreground">
+                {cycleActive ? (cycleName || "Ciclo em andamento") : "Nenhum ciclo ativo no momento."}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Ao cancelar, o ciclo atual é encerrado e deixa de contar como ciclo ativo.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCancelCycleConfirmOpen(true)}
+              disabled={!cycleActive || cancelCycleLoading}
+              className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-status-err transition-colors hover:bg-destructive/20 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {cancelCycleLoading ? "Cancelando..." : "Cancelar ciclo ativo"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {feedback ? <p className="px-6 pb-3 text-sm text-destructive">{feedback}</p> : null}
       <ModalActions onCancel={onClose} onConfirm={handleSave} confirmLabel="Salvar Configuração" loading={loading} />
+
+      <ModalShell
+        open={cancelCycleConfirmOpen}
+        onClose={() => setCancelCycleConfirmOpen(false)}
+        title="Cancelar ciclo"
+        subtitle="Esta ação encerra o ciclo atual"
+        icon={<Settings size={16} className="text-status-err" />}
+        size="sm"
+      >
+        <div className="px-6 py-6">
+          <p className="text-sm text-foreground">
+            {cycleName
+              ? `Deseja cancelar o ciclo ativo "${cycleName}"?`
+              : "Deseja cancelar o ciclo ativo?"}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            O ciclo será encerrado e deixará de aparecer como ativo no painel.
+          </p>
+        </div>
+        <ModalActions
+          onCancel={() => setCancelCycleConfirmOpen(false)}
+          onConfirm={handleCancelCycleConfirmed}
+          confirmLabel={cancelCycleLoading ? "Cancelando..." : "Confirmar cancelamento"}
+          cancelLabel="Voltar"
+          confirmVariant="danger"
+          loading={cancelCycleLoading}
+        />
+      </ModalShell>
     </ModalShell>
   )
 }

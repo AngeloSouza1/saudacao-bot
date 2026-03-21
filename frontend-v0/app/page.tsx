@@ -10,6 +10,7 @@ import { ConfigModal } from "@/components/saudacao/ConfigModal"
 import { ScheduleModal } from "@/components/saudacao/ScheduleModal"
 import { AllSchedulesModal } from "@/components/saudacao/AllSchedulesModal"
 import { MessagesModal } from "@/components/saudacao/MessagesModal"
+import { HistoryModal } from "@/components/saudacao/HistoryModal"
 import { hasRequiredConfig } from "@/lib/validation"
 import { Calendar, GraduationCap, RefreshCw } from "lucide-react"
 
@@ -59,6 +60,16 @@ type DashboardStatusResponse = {
       sentCount?: number
       totalAlunos?: number
     } | null
+    history?: Array<{
+      id?: string
+      name?: string
+      status?: string
+      canceled?: boolean
+      sentCount?: number
+      totalAlunos?: number
+      createdAt?: string
+      completedAt?: string | null
+    }>
   }
   whatsapp?: {
     phase?: string
@@ -170,6 +181,7 @@ export default function DashboardPage() {
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [messagesOpen, setMessagesOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [scheduleInitialSection, setScheduleInitialSection] = useState<"students" | "lessons" | null>(null)
   const [allSchedulesOpen, setAllSchedulesOpen] = useState(false)
@@ -403,6 +415,7 @@ export default function DashboardPage() {
           onOpenDestination={() => setDestinationOpen(true)}
           onOpenMessages={() => setMessagesOpen(true)}
           onOpenConfig={() => setConfigOpen(true)}
+          onOpenHistory={() => setHistoryOpen(true)}
           onOpenSchedule={() => {
             setScheduleInitialSection(null)
             setScheduleOpen(true)
@@ -521,6 +534,8 @@ export default function DashboardPage() {
         onClose={() => setConfigOpen(false)}
         initialConfig={statusData?.config}
         initialState={statusData?.state}
+        cycleActive={Boolean(statusData?.cycle?.active)}
+        cycleName={String(statusData?.cycle?.active?.name || "")}
         students={Array.isArray(statusData?.config?.alunos) ? statusData?.config?.alunos : []}
         scheduleSummary={Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary : []}
         onSaved={refreshStatus}
@@ -534,6 +549,11 @@ export default function DashboardPage() {
         initialImagePath={String(statusData?.config?.imagePath || "")}
         initialMediaFileName={String(statusData?.config?.mediaFileName || "")}
         onSaved={refreshStatus}
+      />
+      <HistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        items={Array.isArray(statusData?.cycle?.history) ? statusData?.cycle?.history : []}
       />
       <ScheduleModal
         open={scheduleOpen}
