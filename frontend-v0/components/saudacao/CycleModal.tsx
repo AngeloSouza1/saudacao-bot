@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { RefreshCcw } from "lucide-react"
-import { ModalActions, ModalShell } from "./ModalShell"
+import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
 
 interface CycleModalProps {
   open: boolean
@@ -130,6 +130,7 @@ export function CycleModal({
   const wasOpenRef = useRef(false)
   const [startAluno, setStartAluno] = useState("0")
   const [startAula, setStartAula] = useState("0")
+  const [cycleLabel, setCycleLabel] = useState("")
   const [loading, setLoading] = useState(false)
   const [cancelCycleLoading, setCancelCycleLoading] = useState(false)
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
@@ -141,13 +142,14 @@ export function CycleModal({
     if (open && !wasOpenRef.current) {
       setStartAluno(String(Number(initialState?.idxAluno ?? 0)))
       setStartAula(String(Number(initialState?.idxAula ?? 0)))
+      setCycleLabel(String(cycleName || "").trim())
       setFeedback("")
       setFieldErrors({})
       setCancelConfirmOpen(false)
       setRestartConfirmOpen(false)
     }
     wasOpenRef.current = open
-  }, [open, initialState])
+  }, [open, initialState, cycleName])
 
   const aulasOptions = useMemo(() => {
     const agendaOptions = buildLessonOptions(initialConfig?.agendaSemanal)
@@ -175,6 +177,7 @@ export function CycleModal({
     const nextErrors: Record<string, string> = {}
     const alunoIdx = Number(startAluno || -1)
     const aulaIdx = Number(startAula || -1)
+    const cycleLabelValue = String(cycleLabel || "").trim()
 
     if (!Number.isInteger(alunoIdx) || alunoIdx < 0 || alunoIdx >= students.length) {
       nextErrors.startAluno = "Selecione um aluno inicial válido."
@@ -186,6 +189,9 @@ export function CycleModal({
     const selectedLessonDate = String(selectedAulaOption?.data || "").trim()
     if (!selectedLessonDate) {
       nextErrors.startAula = "A aula inicial precisa ter uma data válida."
+    }
+    if (cycleLabelValue && cycleLabelValue.length < 3) {
+      nextErrors.cycleLabel = "Use ao menos 3 caracteres para nomear o ciclo."
     }
 
     setFieldErrors(nextErrors)
@@ -204,7 +210,9 @@ export function CycleModal({
         await postJson("/api/cycle/cancel", {})
       }
 
-      const payload = await postJson("/api/cycle/new", {})
+      const payload = await postJson("/api/cycle/new", {
+        ...(cycleLabelValue ? { name: cycleLabelValue } : {}),
+      })
       if (onSaved) {
         await onSaved()
         await wait(250)
@@ -296,6 +304,17 @@ export function CycleModal({
                 <p className="text-[11px] text-muted-foreground">O ciclo sempre começa a partir da data da aula selecionada.</p>
               ) : null}
             </div>
+            <UnderlineInput
+              label="Nome do ciclo"
+              value={cycleLabel}
+              onChange={(value) => {
+                setCycleLabel(value)
+                setFieldErrors((prev) => ({ ...prev, cycleLabel: "" }))
+              }}
+              placeholder="Ex.: Ciclo de março"
+              hint="Opcional. Se deixar vazio, o sistema gera um nome automático."
+              error={fieldErrors.cycleLabel}
+            />
           </div>
         </div>
 
