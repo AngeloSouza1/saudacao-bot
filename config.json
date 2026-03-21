@@ -4,13 +4,15 @@
   "agendaSemanal": {
     "1": [
       {
+        "data": "2026-03-23",
         "titulo": "DNS (Domain Name System)",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
       },
       {
-        "titulo": "Segurança de Redes",
+        "data": "2026-03-30",
+        "titulo": "Segurança na Web",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
@@ -18,7 +20,8 @@
     ],
     "2": [
       {
-        "titulo": "Fundamentos da Comunicação",
+        "data": "2026-03-24",
+        "titulo": "A Comunicação Oral II",
         "materia": "Soft Skills",
         "professor": "Prof. Flávia",
         "hora": "20:00"
@@ -26,19 +29,15 @@
     ],
     "3": [
       {
-        "titulo": "Endereçamento de IP, Sub-redes",
+        "data": "2026-03-25",
+        "titulo": "Segurança de Redes",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
       },
       {
-        "titulo": "Arquitetura da Internet",
-        "materia": "Redes e Internet",
-        "professor": "Prof. Kenji",
-        "hora": "20:00"
-      },
-      {
-        "titulo": "Segurança na Web",
+        "data": "2026-04-01",
+        "titulo": "Rede de Computadores",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
@@ -46,18 +45,14 @@
     ],
     "5": [
       {
-        "titulo": "Serviços e Aplicações na Internet",
+        "data": "2026-03-27",
+        "titulo": "Arquitetura da Internet",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
       },
       {
-        "titulo": "Rede de Computadores",
-        "materia": "Redes e Internet",
-        "professor": "Prof. Kenji",
-        "hora": "20:00"
-      },
-      {
+        "data": "2026-04-03",
         "titulo": "Tendências e Desafios nas Redes Modernas",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
@@ -85,7 +80,7 @@
     "Thalita Nascimento",
     "Wanuta Santos"
   ],
-  "antecedenciaMin": 600,
+  "antecedenciaMin": 5,
   "diasUteisApenas": true,
   "imagePath": "https://cdn.pixabay.com/photo/2015/05/26/23/52/technology-785742_1280.jpg",
   "mediaAsDocument": false,

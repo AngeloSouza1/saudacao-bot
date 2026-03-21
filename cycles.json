@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "",
+  "activeCycleId": "cycle_1774128632372_5c3ys4",
   "cycles": [
     {
       "id": "cycle_1774027212623_3ss328",
@@ -19,6 +19,436 @@
       "lastMessageAt": "2026-03-21T00:55:07.570Z",
       "canceled": true,
       "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774123599543_u48nlb",
+      "name": "Novo ciclo 21/03/2026, 17:06",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:06:39.558Z",
+      "completedAt": "2026-03-21T20:13:17.168Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:06:39.561Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774124005523_903bjc",
+      "name": "Novo ciclo 21/03/2026, 17:13",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:13:25.531Z",
+      "completedAt": "2026-03-21T20:24:23.886Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-21"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:24:23.860Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774124663906_8ko1bl",
+      "name": "Novo ciclo 21/03/2026, 17:24",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:24:23.908Z",
+      "completedAt": "2026-03-21T20:25:15.153Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-21"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:24:23.912Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774124721242_33l2zo",
+      "name": "Novo ciclo 21/03/2026, 17:25",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:25:21.243Z",
+      "completedAt": "2026-03-21T20:25:53.657Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-21"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:25:21.246Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774124891095_b99hub",
+      "name": "Novo ciclo 21/03/2026, 17:28",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:28:11.097Z",
+      "completedAt": "2026-03-21T20:28:44.843Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-22"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:28:44.792Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774124924874_bvkzd5",
+      "name": "Novo ciclo 21/03/2026, 17:28",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:28:44.897Z",
+      "completedAt": "2026-03-21T20:35:00.505Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-22"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:35:00.465Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774125300560_7718qb",
+      "name": "Novo ciclo 21/03/2026, 17:35 · início 22/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:35:00.564Z",
+      "completedAt": "2026-03-21T20:35:31.105Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-22"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:35:31.070Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774125331139_82eo0y",
+      "name": "Novo ciclo 21/03/2026, 17:35 · início 22/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:35:31.139Z",
+      "completedAt": "2026-03-21T20:39:03.858Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-22"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:39:03.821Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774125543893_g1hr55",
+      "name": "Novo ciclo 21/03/2026, 17:39 · início 22/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:39:03.897Z",
+      "completedAt": "2026-03-21T20:42:54.464Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-22"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:42:54.436Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774125774494_af4wzo",
+      "name": "Novo ciclo 21/03/2026, 17:42 · início 22/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:42:54.509Z",
+      "completedAt": "2026-03-21T20:46:35.864Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T20:46:35.837Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774125995884_zhbogd",
+      "name": "Novo ciclo 21/03/2026, 17:46 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:46:35.885Z",
+      "completedAt": "2026-03-21T20:47:32.946Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 8,
+      "updatedAt": "2026-03-21T20:47:32.915Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774126052975_a8cjf9",
+      "name": "Novo ciclo 21/03/2026, 17:47 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T20:47:32.976Z",
+      "completedAt": "2026-03-21T21:00:15.046Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:00:15.000Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774126815077_9bb3et",
+      "name": "Novo ciclo 21/03/2026, 18:00 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:00:15.100Z",
+      "completedAt": "2026-03-21T21:01:16.562Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 8,
+      "updatedAt": "2026-03-21T21:01:13.520Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774126877225_ws7wf7",
+      "name": "Novo ciclo 21/03/2026, 18:01 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:01:17.279Z",
+      "completedAt": "2026-03-21T21:09:22.792Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 8,
+      "updatedAt": "2026-03-21T21:09:22.710Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774127362853_38e3x7",
+      "name": "Novo ciclo 21/03/2026, 18:09 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:09:22.856Z",
+      "completedAt": "2026-03-21T21:13:23.775Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 8,
+      "updatedAt": "2026-03-21T21:13:23.756Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774127603791_3djhuu",
+      "name": "Novo ciclo 21/03/2026, 18:13 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:13:23.792Z",
+      "completedAt": "2026-03-21T21:14:42.569Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:14:42.555Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774127682586_f7szf3",
+      "name": "Novo ciclo 21/03/2026, 18:14 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:14:42.586Z",
+      "completedAt": "2026-03-21T21:15:46.701Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 9,
+      "updatedAt": "2026-03-21T21:15:46.681Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774127746721_h53y22",
+      "name": "Novo ciclo 21/03/2026, 18:15 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:15:46.722Z",
+      "completedAt": "2026-03-21T21:19:51.710Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:19:51.685Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774127991729_9ii3ww",
+      "name": "Novo ciclo 21/03/2026, 18:19 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:19:51.730Z",
+      "completedAt": "2026-03-21T21:26:18.704Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:26:18.686Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774128378725_gcdzbp",
+      "name": "Novo ciclo 21/03/2026, 18:26 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:26:18.725Z",
+      "completedAt": "2026-03-21T21:27:14.065Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:27:14.039Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774128434086_949kbt",
+      "name": "Novo ciclo 21/03/2026, 18:27 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:27:14.087Z",
+      "completedAt": "2026-03-21T21:28:14.620Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:28:14.551Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774128494688_ib8crl",
+      "name": "Novo ciclo 21/03/2026, 18:28 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:28:14.689Z",
+      "completedAt": "2026-03-21T21:30:20.981Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:30:20.947Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774128621198_ft5aga",
+      "name": "testes",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:30:21.198Z",
+      "completedAt": "2026-03-21T21:30:32.345Z",
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:30:32.317Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774128632372_5c3ys4",
+      "name": "Novo ciclo 21/03/2026, 18:30 · início 23/03/2026",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-21T21:30:32.372Z",
+      "completedAt": null,
+      "start": {
+        "idxAluno": 10,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-21T21:30:32.375Z"
     }
   ]
 }

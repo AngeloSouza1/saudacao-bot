@@ -1,10 +1,11 @@
 {
-  "idxAluno": 11,
-  "idxAula": 3,
-  "dataInicio": "2026-03-11",
-  "updatedAt": "2026-03-21T14:11:44.926Z",
+  "idxAluno": 10,
+  "idxAula": 0,
+  "dataInicio": "2026-03-23",
+  "updatedAt": "2026-03-21T21:30:32.374Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
+    "Kaio Vieira Nunes",
     "Luana Costa",
     "Matheus Leonardo",
     "Matheus Marques",
@@ -21,8 +22,7 @@
     "Jaynni Nascimento",
     "João Marcos Basilio Sales",
     "João Vitor Gomes Oliveira Rodrigues Resende",
-    "Juan Ferreira",
-    "Kaio Vieira Nunes"
+    "Juan Ferreira"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,
@@ -30,44 +30,15 @@
     "confirmadoEm": ""
   },
   "revertidosEfetivados": [],
-  "efetivacoesManuais": [
-    {
-      "itemKey": "cycle_1773228644490_oc6fjf|2026-03-11T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "Daniel Lucas"
-    },
-    {
-      "itemKey": "cycle_1773228644490_oc6fjf|2026-03-13T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "Enzo Duarte"
-    },
-    {
-      "itemKey": "cycle_1773228644490_oc6fjf|2026-03-16T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "Felipe Moreira"
-    },
-    {
-      "itemKey": "cycle_1773228644490_oc6fjf|2026-03-17T23:00:00.000Z|Soft Skills|Prof. Flávia|20:00",
-      "aluno": "Jaynni Nascimento"
-    },
-    {
-      "itemKey": "cycle_1773228644490_oc6fjf|2026-03-18T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "Juan Ferreira"
-    },
-    {
-      "itemKey": "cycle_1774027212623_3ss328|2026-03-20T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "Kaio Vieira Nunes"
-    }
-  ],
+  "efetivacoesManuais": [],
   "ordemVinculadaCiclo": [
-    "Daniel Lucas",
-    "Enzo Duarte",
-    "Felipe Moreira",
-    "Jaynni Nascimento",
-    "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Luana Costa",
     "Matheus Leonardo",
-    "Matheus Marques"
+    "Matheus Marques",
+    "Rai Colares",
+    "Rallenson Silva",
+    "Thalita Nascimento"
   ],
-  "efetivadosCiclo": [
-    "Kaio Vieira Nunes"
-  ]
+  "efetivadosCiclo": []
 }
