@@ -19,6 +19,7 @@ import {
   runNow,
   runNowForced,
   runTest,
+  sendCustomMessageToTarget,
   sendAgendaListToDestination,
   swapPendingStudents,
   validateDestinationPassword,
@@ -227,6 +228,13 @@ async function handleApi(req, res, pathname) {
     if (req.method === "POST" && pathname === "/api/send-agenda-list") {
       await sendAgendaListToDestination();
       sendJson(res, 200, { ok: true, message: "Lista de agendamentos enviada pelo WhatsApp." });
+      return true;
+    }
+
+    if (req.method === "POST" && pathname === "/api/send-custom-message") {
+      const body = await readBody(req);
+      await sendCustomMessageToTarget(body?.targetType, body?.targetValue, body?.template);
+      sendJson(res, 200, { ok: true, message: "Mensagem personalizada enviada com sucesso." });
       return true;
     }
 

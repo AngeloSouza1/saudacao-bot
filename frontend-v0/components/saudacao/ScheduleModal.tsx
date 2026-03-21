@@ -229,6 +229,15 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
   }, [open, initialSection])
 
   useEffect(() => {
+    if (activeSection !== "students" && studentFilter) {
+      setStudentFilter("")
+    }
+    if (activeSection !== "lessons" && lessonFilter) {
+      setLessonFilter("")
+    }
+  }, [activeSection, lessonFilter, studentFilter])
+
+  useEffect(() => {
     if (!open) return
     let active = true
     setLoading(true)

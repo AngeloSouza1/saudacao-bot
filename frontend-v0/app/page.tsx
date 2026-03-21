@@ -12,7 +12,7 @@ import { AllSchedulesModal } from "@/components/saudacao/AllSchedulesModal"
 import { MessagesModal } from "@/components/saudacao/MessagesModal"
 import { HistoryModal } from "@/components/saudacao/HistoryModal"
 import { hasRequiredConfig } from "@/lib/validation"
-import { Calendar, GraduationCap, RefreshCw } from "lucide-react"
+import { Calendar, GraduationCap, MessageCirclePlus } from "lucide-react"
 
 type DashboardStatusResponse = {
   settings?: {
@@ -180,6 +180,7 @@ export default function DashboardPage() {
   const [activeItem, setActiveItem] = useState("")
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [messagesOpen, setMessagesOpen] = useState(false)
+  const [messagesInitialEditorType, setMessagesInitialEditorType] = useState<"default" | "no-class" | "custom">("default")
   const [configOpen, setConfigOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
@@ -189,7 +190,6 @@ export default function DashboardPage() {
   const [todayLabel, setTodayLabel] = useState("")
   const [statusData, setStatusData] = useState<DashboardStatusResponse | null>(null)
   const [statusError, setStatusError] = useState<string>("")
-  const [shortcutLoading, setShortcutLoading] = useState<string>("")
 
   useEffect(() => {
     setIsMounted(true)
@@ -314,15 +314,6 @@ export default function DashboardPage() {
   const disableManualSend = !statusData?.cycle?.active || !isSystemReady || hasConfigPending
   const showSessionCard = activeItem === "session"
   const showShortcutsCard = shortcutsOpen
-
-  async function runShortcut(id: string, action: () => Promise<void> | void) {
-    setShortcutLoading(id)
-    try {
-      await action()
-    } finally {
-      setShortcutLoading("")
-    }
-  }
 
   if (!isMounted) {
     return <div className="h-screen bg-background" suppressHydrationWarning />
@@ -483,14 +474,16 @@ export default function DashboardPage() {
         <aside className="fixed right-3 top-[86px] bottom-4 z-40 w-[90px] rounded-2xl bg-transparent px-2 py-3 flex flex-col">
           <div className="mt-1 flex flex-col gap-2">
             <button
-              onClick={() => runShortcut("refresh", refreshStatus)}
-              disabled={shortcutLoading === "refresh"}
-              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40 disabled:opacity-60"
-              title="Atualizar painel"
-              aria-label="Atualizar painel"
+              onClick={() => {
+                setMessagesInitialEditorType("custom")
+                setMessagesOpen(true)
+              }}
+              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              title="Mensagem personalizada"
+              aria-label="Mensagem personalizada"
             >
               <span className="inline-flex w-full items-center justify-center">
-                <RefreshCw size={18} className={shortcutLoading === "refresh" ? "animate-spin text-primary" : "text-primary"} />
+                <MessageCirclePlus size={18} className="text-primary" />
               </span>
             </button>
             <button
@@ -542,10 +535,15 @@ export default function DashboardPage() {
       />
       <MessagesModal
         open={messagesOpen}
-        onClose={() => setMessagesOpen(false)}
+        onClose={() => {
+          setMessagesOpen(false)
+          setMessagesInitialEditorType("default")
+        }}
+        initialEditorType={messagesInitialEditorType}
         initialDefaultMessage={String(statusData?.config?.defaultGreetingMessage || "")}
         initialNoClassMessage={String(statusData?.config?.defaultNoClassMessage || "")}
         initialCustomMessage={String(statusData?.config?.customMessageTemplate || "")}
+        students={Array.isArray(statusData?.config?.alunoDetalhes) ? statusData?.config?.alunoDetalhes : []}
         initialImagePath={String(statusData?.config?.imagePath || "")}
         initialMediaFileName={String(statusData?.config?.mediaFileName || "")}
         onSaved={refreshStatus}

@@ -1,18 +1,25 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Eye, MessagesSquare, Megaphone, MessageCircleMore, Pencil } from "lucide-react"
 import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
 
 interface MessagesModalProps {
   open: boolean
   onClose: () => void
+  initialEditorType?: "default" | "no-class" | "custom"
   initialDefaultMessage?: string
   initialNoClassMessage?: string
   initialCustomMessage?: string
+  students?: Array<{ nome?: string; whatsapp?: string; imagem?: string }>
   initialImagePath?: string
   initialMediaFileName?: string
   onSaved?: () => Promise<void> | void
+}
+
+interface GroupOption {
+  id: string
+  name: string
 }
 
 const DEFAULT_MESSAGE_FALLBACK = `Turma: *{{turmaLinha}}*
@@ -93,13 +100,16 @@ function renderPreviewTemplate(template: string) {
 export function MessagesModal({
   open,
   onClose,
+  initialEditorType = "default",
   initialDefaultMessage,
   initialNoClassMessage,
   initialCustomMessage,
+  students = [],
   initialImagePath,
   initialMediaFileName,
   onSaved,
 }: MessagesModalProps) {
+  const wasOpenRef = useRef(false)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editorType, setEditorType] = useState<"default" | "no-class" | "custom">("default")
   const [defaultMessage, setDefaultMessage] = useState(DEFAULT_MESSAGE_FALLBACK)
@@ -109,20 +119,46 @@ export function MessagesModal({
   const [mediaFileName, setMediaFileName] = useState("")
   const [previewOpen, setPreviewOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [sendCustomLoading, setSendCustomLoading] = useState(false)
+  const [customTargetType, setCustomTargetType] = useState<"student" | "group">("student")
+  const [customRecipient, setCustomRecipient] = useState("")
+  const [groups, setGroups] = useState<GroupOption[]>([])
   const [feedback, setFeedback] = useState("")
 
   useEffect(() => {
+    if (open && !wasOpenRef.current) {
+      setEditorOpen(initialEditorType === "custom")
+      setEditorType(initialEditorType)
+      setFeedback("")
+      setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
+      setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
+      setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
+      setCustomTargetType("student")
+      setCustomRecipient(String(students?.[0]?.nome || "").trim())
+      setImagePath(String(initialImagePath || "").trim())
+      setMediaFileName(String(initialMediaFileName || "").trim())
+      setPreviewOpen(false)
+    }
+    wasOpenRef.current = open
+  }, [open, initialEditorType, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName, students])
+
+  useEffect(() => {
     if (!open) return
-    setEditorOpen(false)
-    setEditorType("default")
-    setFeedback("")
-    setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
-    setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
-    setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
-    setImagePath(String(initialImagePath || "").trim())
-    setMediaFileName(String(initialMediaFileName || "").trim())
-    setPreviewOpen(false)
-  }, [open, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName])
+    fetch("/api/groups")
+      .then(async (res) => {
+        const payload = await res.json()
+        const list = Array.isArray(payload?.groups) ? payload.groups : []
+        setGroups(
+          list
+            .map((item: { id?: string; name?: string }) => ({
+              id: String(item?.id || ""),
+              name: String(item?.name || ""),
+            }))
+            .filter((item: GroupOption) => item.name)
+        )
+      })
+      .catch(() => setGroups([]))
+  }, [open])
 
   async function handleSaveDefaultMessage() {
     setLoading(true)
@@ -162,6 +198,36 @@ export function MessagesModal({
     }
   }
 
+  async function handleSendCustomMessage() {
+    if (!customRecipient.trim()) {
+      setFeedback("Selecione o destinatário da mensagem personalizada.")
+      return
+    }
+    setSendCustomLoading(true)
+    setFeedback("")
+    try {
+      const res = await fetch("/api/send-custom-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetType: customTargetType,
+          targetValue: customRecipient,
+          template: customMessage,
+        }),
+      })
+      const payload = await res.json()
+      if (!res.ok) {
+        throw new Error(String(payload?.error || "Falha ao enviar mensagem personalizada."))
+      }
+      if (onSaved) await onSaved()
+      setFeedback(String(payload?.message || "Mensagem personalizada enviada com sucesso."))
+    } catch (error) {
+      setFeedback(String((error as Error)?.message || "Falha ao enviar mensagem personalizada."))
+    } finally {
+      setSendCustomLoading(false)
+    }
+  }
+
   const currentEditorTitle =
     editorType === "default"
       ? "Editor da mensagem padrão"
@@ -180,86 +246,88 @@ export function MessagesModal({
     editorType === "default" ? setDefaultMessage : editorType === "no-class" ? setNoClassMessage : setCustomMessage
 
   return (
-    <ModalShell
-      open={open}
-      onClose={onClose}
-      title="Mensagens"
-      subtitle="Mensagem padrão e mensagens de avisos"
-      icon={<MessagesSquare size={16} className="text-primary" />}
-      size="lg"
-    >
-      <div className="flex flex-col gap-4 px-6 py-6">
-        <button
-          type="button"
-          onClick={() => {
-            setEditorType("default")
-            setEditorOpen(true)
-            setFeedback("")
-          }}
-          className="rounded-2xl border border-border bg-muted/20 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <MessageCircleMore size={16} className="text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">Mensagem padrão</h3>
+    <>
+      <ModalShell
+        open={open}
+        onClose={onClose}
+        title="Mensagens"
+        subtitle="Mensagem padrão e mensagens de avisos"
+        icon={<MessagesSquare size={16} className="text-primary" />}
+        size="lg"
+      >
+        <div className="flex flex-col gap-4 px-6 py-6">
+          <button
+            type="button"
+            onClick={() => {
+              setEditorType("default")
+              setEditorOpen(true)
+              setFeedback("")
+            }}
+            className="rounded-2xl border border-border bg-muted/20 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <MessageCircleMore size={16} className="text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">Mensagem padrão</h3>
+              </div>
+              <Pencil size={14} className="text-muted-foreground" />
             </div>
-            <Pencil size={14} className="text-muted-foreground" />
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Clique para abrir, editar e salvar o texto atual enviado nas saudações dos alunos.
-          </p>
-        </button>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Clique para abrir, editar e salvar o texto atual enviado nas saudações dos alunos.
+            </p>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            setEditorType("no-class")
-            setEditorOpen(true)
-            setFeedback("")
-          }}
-          className="rounded-2xl border border-border bg-muted/20 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
-        >
-          <div className="flex items-center gap-2">
-            <Megaphone size={16} className="text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Mensagem sem aula</h3>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Clique para editar a mensagem padrão usada quando não houver aula.
-          </p>
-        </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEditorType("no-class")
+              setEditorOpen(true)
+              setFeedback("")
+            }}
+            className="rounded-2xl border border-border bg-muted/20 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
+          >
+            <div className="flex items-center gap-2">
+              <Megaphone size={16} className="text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Mensagem sem aula</h3>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Clique para editar a mensagem padrão usada quando não houver aula.
+            </p>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            setEditorType("custom")
-            setEditorOpen(true)
-            setFeedback("")
-          }}
-          className="rounded-2xl border border-border bg-muted/20 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
-        >
-          <div className="flex items-center gap-2">
-            <MessagesSquare size={16} className="text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Mensagem personalizada</h3>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Clique para montar um terceiro modelo de mensagem customizada.
-          </p>
-        </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEditorType("custom")
+              setEditorOpen(true)
+              setFeedback("")
+            }}
+            className="rounded-2xl border border-border bg-muted/20 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
+          >
+            <div className="flex items-center gap-2">
+              <MessagesSquare size={16} className="text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Mensagem personalizada</h3>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Clique para montar um terceiro modelo de mensagem customizada.
+            </p>
+          </button>
 
-        {feedback ? (
-          <p className={`text-sm ${feedback.toLowerCase().includes("falha") ? "text-destructive" : "text-primary"}`}>
-            {feedback}
-          </p>
-        ) : null}
-      </div>
+          {feedback ? (
+            <p className={`text-sm ${feedback.toLowerCase().includes("falha") ? "text-destructive" : "text-primary"}`}>
+              {feedback}
+            </p>
+          ) : null}
+        </div>
 
-      <ModalActions
-        onCancel={onClose}
-        onConfirm={onClose}
-        confirmLabel="Fechar"
-        cancelLabel="Fechar"
-        loading={false}
-      />
+        <ModalActions
+          onCancel={onClose}
+          onConfirm={onClose}
+          confirmLabel="Fechar"
+          cancelLabel="Fechar"
+          loading={false}
+        />
+      </ModalShell>
 
       <ModalShell
         open={editorOpen}
@@ -302,25 +370,85 @@ export function MessagesModal({
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Variáveis disponíveis
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{turmaLinha}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{materia}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{titulo}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{professor}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{alunoNome}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{horario}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{cumprimento}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{aulaContexto}}'}</code>
-                  <code className="rounded-md bg-background px-2 py-1 text-xs">{'{{exemploPronto}}'}</code>
+          {editorType === "custom" ? (
+            <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Destinatário
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Tipo
+                    </label>
+                    <select
+                      value={customTargetType}
+                      onChange={(e) => {
+                        const nextType = e.target.value as "student" | "group"
+                        setCustomTargetType(nextType)
+                        setCustomRecipient(
+                          nextType === "student"
+                            ? String(students?.[0]?.nome || "").trim()
+                            : String(groups?.[0]?.name || "").trim()
+                        )
+                      }}
+                      className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
+                    >
+                      <option value="student">Aluno</option>
+                      <option value="group">Grupo</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {customTargetType === "student" ? "Aluno" : "Grupo"}
+                    </label>
+                    <select
+                      value={customRecipient}
+                      onChange={(e) => setCustomRecipient(e.target.value)}
+                      className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
+                    >
+                      <option value="">
+                        {customTargetType === "student" ? "Selecione um aluno" : "Selecione um grupo"}
+                      </option>
+                      {customTargetType === "student"
+                        ? (students || []).map((student, idx) => (
+                            <option key={`${student?.nome || "student"}-${idx}`} value={String(student?.nome || "")}>
+                              {String(student?.nome || "Aluno")} {student?.whatsapp ? `• ${String(student.whatsapp)}` : "• sem WhatsApp"}
+                            </option>
+                          ))
+                        : groups.map((group, idx) => (
+                            <option key={`${group.id || group.name}-${idx}`} value={group.name}>
+                              {group.name}
+                            </option>
+                          ))}
+                    </select>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleSendCustomMessage}
+                  disabled={sendCustomLoading}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-green-deep disabled:opacity-60"
+                >
+                  {sendCustomLoading
+                    ? "Enviando..."
+                    : customTargetType === "student"
+                      ? "Enviar para aluno"
+                      : "Enviar para grupo"}
+                </button>
               </div>
-              <div className="md:pt-5">
+            </div>
+          ) : null}
+
+          <div className="mt-4">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Texto da mensagem
+              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-xs text-muted-foreground">
+                  Edite o conteúdo que será enviado aos alunos.
+                </p>
                 <button
                   type="button"
                   onClick={() => setPreviewOpen((current) => !current)}
@@ -330,17 +458,6 @@ export function MessagesModal({
                   {previewOpen ? "Ocultar prévia" : "Pré-visualizar"}
                 </button>
               </div>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Texto da mensagem
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Edite o conteúdo que será enviado aos alunos.
-              </p>
             </div>
           </div>
           <textarea
@@ -362,6 +479,8 @@ export function MessagesModal({
             setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
             setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
             setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
+            setCustomTargetType("student")
+            setCustomRecipient(String(students?.[0]?.nome || "").trim())
             setImagePath(String(initialImagePath || "").trim())
             setMediaFileName(String(initialMediaFileName || "").trim())
             setPreviewOpen(false)
@@ -438,6 +557,6 @@ export function MessagesModal({
           cancelLabel="Voltar"
         />
       </ModalShell>
-    </ModalShell>
+    </>
   )
 }

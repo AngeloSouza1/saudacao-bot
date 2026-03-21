@@ -1,11 +1,10 @@
 {
-  "idxAluno": 10,
-  "idxAula": 1,
+  "idxAluno": 11,
+  "idxAula": 2,
   "dataInicio": "2026-03-11",
-  "updatedAt": "2026-03-20T20:33:30.128Z",
+  "updatedAt": "2026-03-21T01:39:08.858Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
-    "Kaio Vieira Nunes",
     "Luana Costa",
     "Matheus Leonardo",
     "Matheus Marques",
@@ -22,7 +21,8 @@
     "Enzo Duarte",
     "Felipe Moreira",
     "Jaynni Nascimento",
-    "Juan Ferreira"
+    "Juan Ferreira",
+    "Kaio Vieira Nunes"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,
@@ -50,6 +50,10 @@
     {
       "itemKey": "cycle_1773228644490_oc6fjf|2026-03-18T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
       "aluno": "Juan Ferreira"
+    },
+    {
+      "itemKey": "cycle_1774027212623_3ss328|2026-03-20T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
+      "aluno": "Kaio Vieira Nunes"
     }
   ],
   "ordemVinculadaCiclo": [
@@ -63,5 +67,7 @@
     "Matheus Leonardo",
     "Matheus Marques"
   ],
-  "efetivadosCiclo": []
+  "efetivadosCiclo": [
+    "Kaio Vieira Nunes"
+  ]
 }

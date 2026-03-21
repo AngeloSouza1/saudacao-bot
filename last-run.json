@@ -1,7 +1,7 @@
 {
-  "type": "scheduled",
+  "type": "agenda_list",
   "skipped": false,
-  "reason": "sem_aula_no_dia",
-  "messageId": "true_120363407433046278@g.us_3EB07FE30D65BD5A79143D_138469896626257@lid",
-  "sentAt": "2026-03-19T14:00:03.131Z"
+  "destination": "grupo teste",
+  "messageId": "true_120363423174718536@g.us_3EB0279E8FFF6BF79E7BF1_138469896626257@lid",
+  "sentAt": "2026-03-21T00:56:02.287Z"
 }

@@ -1,21 +1,24 @@
 {
-  "activeCycleId": "cycle_1774027212623_3ss328",
+  "activeCycleId": "",
   "cycles": [
     {
       "id": "cycle_1774027212623_3ss328",
       "name": "Ciclo recuperado",
-      "status": "active",
+      "status": "completed",
       "reason": "bootstrap",
       "createdAt": "2026-03-20T17:20:12.623Z",
-      "completedAt": null,
+      "completedAt": "2026-03-21T01:00:52.705Z",
       "start": {
         "idxAluno": 10,
         "idxAula": 1,
         "dataInicio": "2026-03-11"
       },
-      "sentCount": 0,
+      "sentCount": 1,
       "totalAlunos": 9,
-      "updatedAt": "2026-03-20T20:33:30.129Z"
+      "updatedAt": "2026-03-21T00:54:18.309Z",
+      "lastMessageAt": "2026-03-21T00:55:07.570Z",
+      "canceled": true,
+      "cancelReason": "manual"
     }
   ]
 }

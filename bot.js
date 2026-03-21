@@ -742,15 +742,18 @@ function buildStudentDetailsForEditor(config) {
   });
 }
 
-function getStudentImageForName(config, studentName) {
+function getStudentDetailByName(config, studentName) {
   const targetName = String(studentName || "").trim().toLocaleLowerCase("pt-BR");
-  if (!targetName) return "";
+  if (!targetName) return null;
   const alunos = Array.isArray(config?.alunos) ? config.alunos : [];
   const details = normalizeStudentDetails(config?.alunoDetalhes, alunos);
-  const match = details.find(
+  return details.find(
     (item) => String(item?.nome || "").trim().toLocaleLowerCase("pt-BR") === targetName
-  );
-  return String(match?.imagem || "").trim();
+  ) || null;
+}
+
+function getStudentImageForName(config, studentName) {
+  return String(getStudentDetailByName(config, studentName)?.imagem || "").trim();
 }
 
 function resolveAgendaItemDate(item) {
@@ -1251,6 +1254,107 @@ async function sendBotMessage(text, cardData = null) {
     console.log("ℹ️ Envio sem imagem (nenhum imagePath configurado).");
   }
   console.log("✅ Enviado pelo WhatsApp Web:", message.id?._serialized || "sem-id");
+  return message;
+}
+
+export async function sendCustomMessageToTarget(targetType, targetValue, template) {
+  const config = loadConfig();
+  const kind = String(targetType || "student").trim();
+  const turma = String(config.turma || "").trim();
+  const instituicao = String(config.instituicao || "").trim();
+  const turmaLinha = [turma, instituicao].filter(Boolean).join(" — ");
+  const hour = new Date().getHours();
+  const cumprimento = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const fallbackImagePath = String(config.imagePath || process.env.WHATSAPP_IMAGE_PATH || "").trim();
+  const mediaAsDocument = String(
+    config.mediaAsDocument ?? process.env.WHATSAPP_MEDIA_AS_DOCUMENT ?? "false"
+  ).toLowerCase() === "true";
+  const mediaFileName = String(config.mediaFileName || process.env.WHATSAPP_MEDIA_FILE_NAME || "").trim();
+  const imageStyle = String(config.imageStyle || process.env.WHATSAPP_IMAGE_STYLE || "banner").trim();
+  const settings = loadSettings();
+
+  if (kind === "group") {
+    const groupName = String(targetValue || "").trim();
+    if (!groupName) {
+      throw new Error("Grupo não informado.");
+    }
+    const text = renderGreetingTemplate(String(template || "").trim(), {
+      turma,
+      instituicao,
+      turmaLinha,
+      materia: "",
+      titulo: "",
+      professor: "",
+      alunoNome: "",
+      horario: "",
+      cumprimento,
+      aulaContexto: "",
+      exemploPronto: ""
+    });
+    const message = await sendText({
+      to: "",
+      groupId: "",
+      groupName,
+      text,
+      imagePath: fallbackImagePath,
+      mediaAsDocument,
+      mediaFileName,
+      imageStyle,
+      cardData: { turma, instituicao, aluno: "", materia: "", titulo: "", professor: "", horario: "" }
+    });
+    saveLastRun({
+      type: "custom_group",
+      skipped: false,
+      destination: groupName,
+      messageId: message.id?._serialized || "sem-id",
+      sentAt: new Date().toISOString()
+    });
+    return message;
+  }
+
+  const detail = getStudentDetailByName(config, targetValue);
+  const alunoNome = String(detail?.nome || targetValue || "").trim();
+  const to = String(detail?.whatsapp || "").trim();
+  if (!alunoNome) {
+    throw new Error("Aluno não informado.");
+  }
+  if (!to) {
+    throw new Error(`O aluno ${alunoNome} não possui WhatsApp cadastrado.`);
+  }
+  const text = renderGreetingTemplate(String(template || "").trim(), {
+    turma,
+    instituicao,
+    turmaLinha,
+    materia: "",
+    titulo: "",
+    professor: "",
+    alunoNome,
+    horario: "",
+    cumprimento,
+    aulaContexto: "",
+    exemploPronto: ""
+  });
+  const studentImagePath = String(detail?.imagem || "").trim();
+  const imagePath = studentImagePath || fallbackImagePath;
+  const message = await sendText({
+    to,
+    groupId: "",
+    groupName: "",
+    text,
+    imagePath,
+    mediaAsDocument,
+    mediaFileName,
+    imageStyle,
+    cardData: { turma, instituicao, aluno: alunoNome, materia: "", titulo: "", professor: "", horario: "" }
+  });
+  saveLastRun({
+    type: "custom_student",
+    skipped: false,
+    aluno: alunoNome,
+    destination: to || settings.to,
+    messageId: message.id?._serialized || "sem-id",
+    sentAt: new Date().toISOString()
+  });
   return message;
 }
 
