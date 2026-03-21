@@ -25,6 +25,8 @@ type DashboardStatusResponse = {
     antecedenciaMin?: number
     diasUteisApenas?: boolean
     defaultGreetingMessage?: string
+    defaultNoClassMessage?: string
+    customMessageTemplate?: string
     imagePath?: string
     mediaFileName?: string
     lockTimeoutMin?: number
@@ -527,6 +529,8 @@ export default function DashboardPage() {
         open={messagesOpen}
         onClose={() => setMessagesOpen(false)}
         initialDefaultMessage={String(statusData?.config?.defaultGreetingMessage || "")}
+        initialNoClassMessage={String(statusData?.config?.defaultNoClassMessage || "")}
+        initialCustomMessage={String(statusData?.config?.customMessageTemplate || "")}
         initialImagePath={String(statusData?.config?.imagePath || "")}
         initialMediaFileName={String(statusData?.config?.mediaFileName || "")}
         onSaved={refreshStatus}

@@ -447,6 +447,10 @@ function resolveMediaPath(imagePath) {
   return path.resolve(process.cwd(), raw);
 }
 
+function isRemoteMediaUrl(imagePath) {
+  return /^https?:\/\//i.test(String(imagePath || "").trim());
+}
+
 function escapeXml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -456,11 +460,11 @@ function escapeXml(value) {
     .replace(/'/g, "&apos;");
 }
 
-async function buildBannerMediaFromPath(imageFullPath, cardData) {
+async function buildBannerMediaFromInput(imageInput, cardData) {
   const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1200);
   const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 460);
 
-  const logoBuffer = await sharp(imageFullPath)
+  const logoBuffer = await sharp(imageInput)
     .rotate()
     .resize({ width: 380, height: 380, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
@@ -497,13 +501,13 @@ async function buildBannerMediaFromPath(imageFullPath, cardData) {
   return new MessageMedia("image/jpeg", bannerBuffer.toString("base64"), "saudacao-banner.jpg");
 }
 
-async function buildOptimizedMediaFromPath(imageFullPath) {
+async function buildOptimizedMediaFromInput(imageInput) {
   const maxWidthRaw = Number(process.env.WHATSAPP_IMAGE_MAX_WIDTH || 320);
   const qualityRaw = Number(process.env.WHATSAPP_IMAGE_QUALITY || 45);
   const maxWidth = Number.isFinite(maxWidthRaw) && maxWidthRaw > 0 ? Math.floor(maxWidthRaw) : 720;
   const quality = Number.isFinite(qualityRaw) ? Math.min(95, Math.max(35, Math.floor(qualityRaw))) : 72;
 
-  const input = sharp(imageFullPath, { failOn: "none" });
+  const input = sharp(imageInput, { failOn: "none" });
   const metadata = await input.metadata();
   const originalWidth = Number(metadata?.width || 0);
   const resizeWidth = originalWidth > 0 ? Math.min(originalWidth, maxWidth) : maxWidth;
@@ -519,6 +523,15 @@ async function buildOptimizedMediaFromPath(imageFullPath) {
     optimizedBuffer.toString("base64"),
     "saudacao-imagem.jpg"
   ) : null;
+}
+
+async function fetchRemoteMediaBuffer(imageUrl) {
+  const response = await fetch(String(imageUrl || "").trim(), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Falha ao baixar imagem remota (${response.status}).`);
+  }
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 export async function sendText({
@@ -537,26 +550,36 @@ export async function sendText({
 
   const me = client.info?.wid?._serialized || "desconhecido@c.us";
   console.log(`📨 Enviando mensagem: ${fromChatId(me)} -> ${destination.destinationLabel}`);
-  const mediaFullPath = resolveMediaPath(imagePath);
+  const rawImagePath = String(imagePath || "").trim();
+  const mediaIsRemote = isRemoteMediaUrl(rawImagePath);
+  const mediaFullPath = mediaIsRemote ? "" : resolveMediaPath(rawImagePath);
   let message;
 
-  if (mediaFullPath) {
-    if (!fs.existsSync(mediaFullPath)) {
+  if (rawImagePath) {
+    if (!mediaIsRemote && !fs.existsSync(mediaFullPath)) {
       throw new Error(`Imagem não encontrada: ${mediaFullPath}`);
     }
     let media;
     try {
+      const mediaInput = mediaIsRemote
+        ? await fetchRemoteMediaBuffer(rawImagePath)
+        : mediaFullPath;
       const style = String(imageStyle || "").toLowerCase();
       if (style === "banner") {
-        media = await buildBannerMediaFromPath(mediaFullPath, cardData || {});
+        media = await buildBannerMediaFromInput(mediaInput, cardData || {});
         console.log("🖼️ Banner personalizado gerado para envio.");
       } else {
-        media = await buildOptimizedMediaFromPath(mediaFullPath);
+        media = await buildOptimizedMediaFromInput(mediaInput);
         console.log("🖼️ Imagem otimizada para envio.");
       }
     } catch (error) {
       console.warn("⚠️ Falha ao otimizar imagem; enviando original:", error?.message || error);
-      media = MessageMedia.fromFilePath(mediaFullPath);
+      if (mediaIsRemote) {
+        const remoteBuffer = await fetchRemoteMediaBuffer(rawImagePath);
+        media = new MessageMedia("image/jpeg", remoteBuffer.toString("base64"), "saudacao-remota.jpg");
+      } else {
+        media = MessageMedia.fromFilePath(mediaFullPath);
+      }
     }
     const sendAsDocument = Boolean(mediaAsDocument);
     const options = {

@@ -1172,8 +1172,7 @@ function buildNoClassMessage() {
   const turma = String(config.turma || "Turma").trim();
   const instituicao = String(config.instituicao || "").trim();
   const turmaLinha = instituicao ? `${turma} — ${instituicao}` : turma;
-
-  return [
+  const defaultTemplate = [
     `*📢 Aviso da turma*`,
     "",
     `Turma: *${turmaLinha}*`,
@@ -1188,6 +1187,14 @@ function buildNoClassMessage() {
     "",
     "*Sigam firmes nos estudos. Constância e dedicação trazem resultado.*"
   ].join("\n");
+
+  const template = String(config?.defaultNoClassMessage || "").trim() || defaultTemplate;
+  return renderGreetingTemplate(template, {
+    turma,
+    instituicao,
+    turmaLinha,
+    cumprimento
+  });
 }
 
 async function sendBotMessage(text, cardData = null) {
@@ -1767,6 +1774,14 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "defaultGreetingMessage")
         ? String(partial.defaultGreetingMessage ?? "")
         : String(current?.defaultGreetingMessage ?? ""),
+    defaultNoClassMessage:
+      partial && Object.prototype.hasOwnProperty.call(partial, "defaultNoClassMessage")
+        ? String(partial.defaultNoClassMessage ?? "")
+        : String(current?.defaultNoClassMessage ?? ""),
+    customMessageTemplate:
+      partial && Object.prototype.hasOwnProperty.call(partial, "customMessageTemplate")
+        ? String(partial.customMessageTemplate ?? "")
+        : String(current?.customMessageTemplate ?? ""),
     imagePath:
       partial && Object.prototype.hasOwnProperty.call(partial, "imagePath")
         ? String(partial.imagePath ?? "").trim()
