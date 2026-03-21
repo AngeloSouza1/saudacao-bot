@@ -1,9 +1,4 @@
-import dynamic from "next/dynamic"
-
-const DashboardPageClient = dynamic(() => import("@/components/saudacao/DashboardPageClient"), {
-  ssr: false,
-  loading: () => <div className="h-screen bg-background" />,
-})
+import DashboardPageClient from "@/components/saudacao/DashboardPageClient"
 
 export default function DashboardPage() {
   return <DashboardPageClient />

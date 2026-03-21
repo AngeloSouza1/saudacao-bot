@@ -668,7 +668,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
               </div>
               <div
                 id="modal-students"
-                className="h-[calc(90vh-300px)] min-h-0 overflow-y-auto overflow-x-hidden rounded-[1.4rem] border border-border bg-muted/15 p-3"
+                className="h-[calc(90vh-300px)] min-h-0 overflow-y-auto overflow-x-hidden rounded-[1.4rem] border border-border bg-muted/15 p-3 pb-24"
               >
                 {filteredStudents.length ? (
                 <div className="space-y-3">

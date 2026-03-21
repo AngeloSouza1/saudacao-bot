@@ -65,6 +65,22 @@ async function readBackendStatus(baseUrl) {
   }
 }
 
+async function isFrontendHealthy(baseUrl) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1500);
+  try {
+    const response = await fetch(baseUrl, {
+      cache: "no-store",
+      signal: controller.signal
+    });
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function isBackendHealthy(status) {
   const phase = String(status?.whatsapp?.phase || "");
   const sender = String(status?.whatsapp?.sender || "");
@@ -79,18 +95,45 @@ function isBackendHealthy(status) {
 }
 
 function stopProcessOnPort(port) {
+  const pids = new Set();
+
   try {
     const output = execFileSync("lsof", ["-tiTCP:" + String(port), "-sTCP:LISTEN"], {
       encoding: "utf8"
     }).trim();
-    const pids = output.split(/\s+/).filter(Boolean);
-    for (const pid of pids) {
-      process.kill(Number(pid), "SIGKILL");
+    for (const pid of output.split(/\s+/).filter(Boolean)) {
+      pids.add(pid);
     }
-    return pids;
   } catch {
-    return [];
+    // noop
   }
+
+  if (!pids.size) {
+    try {
+      const output = execFileSync("ss", ["-ltnp"], {
+        encoding: "utf8"
+      });
+      const pattern = new RegExp(`:${String(port)}\\b`);
+      for (const line of output.split("\n")) {
+        if (!pattern.test(line)) continue;
+        for (const match of line.matchAll(/pid=(\d+)/g)) {
+          if (match[1]) pids.add(match[1]);
+        }
+      }
+    } catch {
+      // noop
+    }
+  }
+
+  const pidList = Array.from(pids);
+  for (const pid of pidList) {
+    try {
+      process.kill(Number(pid), "SIGKILL");
+    } catch {
+      // noop
+    }
+  }
+  return pidList;
 }
 
 function shutdown() {
@@ -118,8 +161,9 @@ process.on("SIGTERM", () => {
 async function main() {
   const dashboardHost = process.env.DASHBOARD_HOST || "127.0.0.1";
   const backendBaseUrl = process.env.BACKEND_API_BASE_URL || `http://${dashboardHost}:${backendPort}`;
+  const frontendBaseUrl = `http://127.0.0.1:${frontendPort}`;
   let backendInUse = await isPortInUse(backendPort, dashboardHost);
-  const frontendInUse = await isPortInUse(frontendPort, "127.0.0.1");
+  let frontendInUse = await isPortInUse(frontendPort, "127.0.0.1");
 
   console.log("🚀 Iniciando Saudacao Bot (backend + frontend v0)...");
   console.log(`   - Backend/API: http://${dashboardHost}:${backendPort}`);
@@ -148,8 +192,21 @@ async function main() {
   }
 
   if (frontendInUse) {
-    console.log(`   - Frontend já ativo na porta ${frontendPort}. Reaproveitando instância existente.`);
-  } else {
+    const frontendHealthy = await isFrontendHealthy(frontendBaseUrl);
+    if (frontendHealthy) {
+      console.log(`   - Frontend já ativo na porta ${frontendPort}. Reaproveitando instância existente.`);
+    } else {
+      const stoppedPids = stopProcessOnPort(frontendPort);
+      if (stoppedPids.length) {
+        console.log(`   - Frontend na porta ${frontendPort} estava travado. Reiniciando instância (${stoppedPids.join(", ")}).`);
+      } else {
+        console.log(`   - Frontend na porta ${frontendPort} não respondeu corretamente. Iniciando nova instância.`);
+      }
+      frontendInUse = false;
+    }
+  }
+
+  if (!frontendInUse) {
     startProcess("frontend-v0", npmCmd, ["--prefix", "frontend-v0", "run", "dev", "--", "-p", frontendPort], {
       BACKEND_API_BASE_URL: backendBaseUrl
     });

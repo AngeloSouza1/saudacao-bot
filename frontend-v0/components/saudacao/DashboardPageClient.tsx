@@ -232,6 +232,12 @@ export default function DashboardPageClient() {
     )
   }, [])
 
+  useEffect(() => {
+    if (!isMounted || statusRequested) return
+    setStatusRequested(true)
+    void refreshStatus()
+  }, [isMounted, refreshStatus, statusRequested])
+
   const runAction = useCallback(
     async (path: "/api/send-test" | "/api/send-now" | "/api/send-now-forced", fallbackMessage: string) => {
       const payload = await fetchJson<{ message?: string }>(path, { method: "POST" })
@@ -324,6 +330,18 @@ export default function DashboardPageClient() {
   const disableManualSend = !statusData?.cycle?.active || !isSystemReady || hasConfigPending
   const showSessionCard = activeItem === "session"
   const showShortcutsCard = shortcutsOpen
+
+  useEffect(() => {
+    if (!statusRequested || !statusPollingEnabled) return
+
+    const intervalMs = isSystemReady ? 10000 : 3000
+
+    const timer = setInterval(() => {
+      void refreshStatus()
+    }, intervalMs)
+
+    return () => clearInterval(timer)
+  }, [isSystemReady, refreshStatus, statusPollingEnabled, statusRequested])
 
   if (!isMounted) {
     return <div className="h-screen bg-background" suppressHydrationWarning />
