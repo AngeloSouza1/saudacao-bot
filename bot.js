@@ -742,6 +742,17 @@ function buildStudentDetailsForEditor(config) {
   });
 }
 
+function getStudentImageForName(config, studentName) {
+  const targetName = String(studentName || "").trim().toLocaleLowerCase("pt-BR");
+  if (!targetName) return "";
+  const alunos = Array.isArray(config?.alunos) ? config.alunos : [];
+  const details = normalizeStudentDetails(config?.alunoDetalhes, alunos);
+  const match = details.find(
+    (item) => String(item?.nome || "").trim().toLocaleLowerCase("pt-BR") === targetName
+  );
+  return String(match?.imagem || "").trim();
+}
+
 function resolveAgendaItemDate(item) {
   if (item?.scheduledDateISO) {
     const parsed = new Date(item.scheduledDateISO);
@@ -1200,7 +1211,9 @@ function buildNoClassMessage() {
 async function sendBotMessage(text, cardData = null) {
   const settings = loadSettings();
   const config = loadConfig();
-  const imagePath = String(config.imagePath || process.env.WHATSAPP_IMAGE_PATH || "").trim();
+  const studentImagePath = getStudentImageForName(config, cardData?.aluno);
+  const fallbackImagePath = String(config.imagePath || process.env.WHATSAPP_IMAGE_PATH || "").trim();
+  const imagePath = studentImagePath || fallbackImagePath;
   const mediaAsDocument = String(
     config.mediaAsDocument ?? process.env.WHATSAPP_MEDIA_AS_DOCUMENT ?? "false"
   ).toLowerCase() === "true";
@@ -1231,6 +1244,9 @@ async function sendBotMessage(text, cardData = null) {
         ? `📎 Envio com mídia como documento habilitado: ${imagePath}`
         : `🖼️ Envio com imagem habilitado: ${imagePath}`
     );
+    if (studentImagePath) {
+      console.log(`👤 Imagem do aluno aplicada no envio: ${cardData?.aluno || "sem aluno"}`);
+    }
   } else {
     console.log("ℹ️ Envio sem imagem (nenhum imagePath configurado).");
   }
