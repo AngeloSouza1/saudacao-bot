@@ -268,6 +268,8 @@ export function MessagesModal({
   const [customTargetType, setCustomTargetType] = useState<"student" | "group">("student")
   const [customRecipient, setCustomRecipient] = useState("")
   const [groups, setGroups] = useState<GroupOption[]>([])
+  const [groupsLoading, setGroupsLoading] = useState(false)
+  const [groupsLoadError, setGroupsLoadError] = useState("")
   const [feedback, setFeedback] = useState("")
 
   useEffect(() => {
@@ -304,8 +306,13 @@ export function MessagesModal({
 
   useEffect(() => {
     if (!open) return
+    setGroupsLoading(true)
+    setGroupsLoadError("")
     fetch("/api/groups")
       .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Não foi possível carregar os grupos.")
+        }
         const payload = await res.json()
         const list = Array.isArray(payload?.groups) ? payload.groups : []
         setGroups(
@@ -316,8 +323,13 @@ export function MessagesModal({
             }))
             .filter((item: GroupOption) => item.name)
         )
+        setGroupsLoadError("")
       })
-      .catch(() => setGroups([]))
+      .catch(() => {
+        setGroups([])
+        setGroupsLoadError("Não foi possível carregar os grupos agora.")
+      })
+      .finally(() => setGroupsLoading(false))
   }, [open])
 
   async function persistMessagesConfig() {
@@ -511,7 +523,8 @@ export function MessagesModal({
     Boolean(String(customMediaFileName || "").trim()) &&
     Boolean(String(customTargetType || "").trim()) &&
     Boolean(String(customRecipient || "").trim()) &&
-    Boolean(String(customMessage || "").trim())
+    Boolean(String(customMessage || "").trim()) &&
+    !(customTargetType === "group" && groupsLoading)
   const previewTurma = String(initialTurma || "").trim() || PREVIEW_SAMPLE_DEFAULT.turma
   const previewInstituicao = String(initialInstituicao || "").trim() || PREVIEW_SAMPLE_DEFAULT.instituicao
   const previewSample = {
@@ -768,10 +781,15 @@ export function MessagesModal({
                     <select
                       value={customRecipient}
                       onChange={(e) => setCustomRecipient(e.target.value)}
+                      disabled={customTargetType === "group" && groupsLoading}
                       className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
                     >
                       <option value="">
-                        {customTargetType === "student" ? "Selecione um aluno" : "Selecione um grupo"}
+                        {customTargetType === "student"
+                          ? "Selecione um aluno"
+                          : groupsLoading
+                            ? "Carregando grupos..."
+                            : "Selecione um grupo"}
                       </option>
                       {customTargetType === "student"
                         ? studentsWithWhatsapp.map((student, idx) => (
@@ -785,6 +803,15 @@ export function MessagesModal({
                             </option>
                           ))}
                     </select>
+                    {customTargetType === "group" ? (
+                      <p className="text-[11px] text-muted-foreground">
+                        {groupsLoading
+                          ? "Buscando grupos do WhatsApp..."
+                          : groupsLoadError
+                            ? groupsLoadError
+                            : `${groups.length} grupo(s) disponível(is).`}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <button

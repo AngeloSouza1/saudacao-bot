@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Calendar, GraduationCap, MessageCirclePlus } from "lucide-react"
 import { AppHeader } from "@/components/saudacao/AppHeader"
 import { AppSidebar } from "@/components/saudacao/AppSidebar"
@@ -185,7 +185,9 @@ function mapGreetingItems(data: DashboardStatusResponse | null, limit = 12): Gre
 }
 
 export default function DashboardPageClient() {
+  const defaultScreenAppliedRef = useRef(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [activeItem, setActiveItem] = useState("")
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [messagesOpen, setMessagesOpen] = useState(false)
@@ -235,7 +237,13 @@ export default function DashboardPageClient() {
   useEffect(() => {
     if (!isMounted || statusRequested) return
     setStatusRequested(true)
-    void refreshStatus()
+    void (async () => {
+      try {
+        await refreshStatus()
+      } finally {
+        setInitialLoading(false)
+      }
+    })()
   }, [isMounted, refreshStatus, statusRequested])
 
   const runAction = useCallback(
@@ -332,6 +340,13 @@ export default function DashboardPageClient() {
   const showShortcutsCard = shortcutsOpen
 
   useEffect(() => {
+    if (!isSystemReady || defaultScreenAppliedRef.current) return
+    setActiveItem("")
+    setShortcutsOpen(true)
+    defaultScreenAppliedRef.current = true
+  }, [isSystemReady])
+
+  useEffect(() => {
     if (!statusRequested || !statusPollingEnabled) return
 
     const intervalMs = isSystemReady ? 10000 : 3000
@@ -345,6 +360,30 @@ export default function DashboardPageClient() {
 
   if (!isMounted) {
     return <div className="h-screen bg-background" suppressHydrationWarning />
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden bg-background" suppressHydrationWarning>
+        <AppHeader
+          cycleLabel="Carregando painel"
+          userName="Aguardando sessão"
+          userInitials="SB"
+        />
+
+        <main className="flex flex-1 items-center justify-center p-6">
+          <div className="w-full max-w-xl rounded-3xl border border-border bg-card/90 px-8 py-10 text-center shadow-sm">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
+            </div>
+            <h1 className="mt-5 text-2xl font-bold tracking-tight text-foreground">Carregando aplicação</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Aguarde enquanto a sessão, a configuração e os agendamentos ficam disponíveis.
+            </p>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   if (!isSystemReady) {

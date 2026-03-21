@@ -151,6 +151,7 @@ export function ModalActions({
   confirmVariant = "primary",
   secondaryConfirmVariant = "secondary",
   loading = false,
+  confirmDisabled = false,
 }: {
   onCancel: () => void
   onConfirm: () => void
@@ -161,6 +162,7 @@ export function ModalActions({
   confirmVariant?: "primary" | "danger"
   secondaryConfirmVariant?: "secondary" | "danger"
   loading?: boolean
+  confirmDisabled?: boolean
 }) {
   const confirmCls =
     confirmVariant === "danger"
@@ -197,7 +199,7 @@ export function ModalActions({
       ) : null}
       <button
         onClick={onConfirm}
-        disabled={loading}
+        disabled={loading || confirmDisabled}
         className={cn(
           "px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-ring outline-none disabled:opacity-60",
           confirmCls

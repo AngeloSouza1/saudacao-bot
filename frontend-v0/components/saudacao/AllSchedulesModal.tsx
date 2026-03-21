@@ -194,6 +194,7 @@ export function AllSchedulesModal({ open, onClose, items, onRefresh }: AllSchedu
         confirmLabel="Enviar pendentes"
         cancelLabel="Fechar"
         loading={sending}
+        confirmDisabled={items.length === 0}
       />
     </ModalShell>
   )
