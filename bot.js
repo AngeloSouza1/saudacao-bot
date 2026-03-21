@@ -1095,8 +1095,7 @@ function buildMessage(aula, aluno) {
     ? `Hoje nossa saudação é para a aula *${titulo}*, da matéria ${materia}.`
     : `Hoje nossa saudação é para a matéria ${materia}.`;
   const exemploPronto = `${cumprimento}, professor(a) ${professor}. Aqui é a turma ${turmaNome}. ${aulaContexto} Hoje estamos com a maioria presente. A turma está pronta, pode começar quando quiser.`;
-
-  return [
+  const defaultTemplate = [
     `Turma: *${config.turma} — ${config.instituicao}*`,
     `Matéria: *${aula.materia}*`,
     ...(titulo ? [`Título: *${titulo}*`] : []),
@@ -1128,6 +1127,42 @@ function buildMessage(aula, aluno) {
     `_“${exemploPronto}”_`,
     `*— ${alunoNome} (${materia})*`
   ].join("\n");
+
+  const template = String(config?.defaultGreetingMessage || "").trim() || defaultTemplate;
+  return renderGreetingTemplate(template, {
+    turma: String(config.turma || ""),
+    instituicao: String(config.instituicao || ""),
+    turmaLinha: [String(config.turma || "").trim(), String(config.instituicao || "").trim()].filter(Boolean).join(" — "),
+    materia,
+    titulo,
+    professor,
+    alunoNome,
+    horario: String(aula.hora || "").trim(),
+    cumprimento,
+    aulaContexto,
+    exemploPronto
+  });
+}
+
+function renderGreetingTemplate(template, vars) {
+  const replacements = {
+    "{{turma}}": String(vars?.turma || ""),
+    "{{instituicao}}": String(vars?.instituicao || ""),
+    "{{turmaLinha}}": String(vars?.turmaLinha || ""),
+    "{{materia}}": String(vars?.materia || ""),
+    "{{titulo}}": String(vars?.titulo || ""),
+    "{{professor}}": String(vars?.professor || ""),
+    "{{alunoNome}}": String(vars?.alunoNome || ""),
+    "{{horario}}": String(vars?.horario || ""),
+    "{{cumprimento}}": String(vars?.cumprimento || ""),
+    "{{aulaContexto}}": String(vars?.aulaContexto || ""),
+    "{{exemploPronto}}": String(vars?.exemploPronto || "")
+  };
+
+  return Object.entries(replacements).reduce(
+    (text, [token, value]) => text.split(token).join(value),
+    String(template || "")
+  );
 }
 
 function buildNoClassMessage() {
@@ -1727,7 +1762,23 @@ export function updateConfig(partial) {
     diasUteisApenas: asBoolean(
       partial?.diasUteisApenas,
       asBoolean(current?.diasUteisApenas, false)
-    )
+    ),
+    defaultGreetingMessage:
+      partial && Object.prototype.hasOwnProperty.call(partial, "defaultGreetingMessage")
+        ? String(partial.defaultGreetingMessage ?? "")
+        : String(current?.defaultGreetingMessage ?? ""),
+    imagePath:
+      partial && Object.prototype.hasOwnProperty.call(partial, "imagePath")
+        ? String(partial.imagePath ?? "").trim()
+        : String(current?.imagePath ?? ""),
+    mediaFileName:
+      partial && Object.prototype.hasOwnProperty.call(partial, "mediaFileName")
+        ? String(partial.mediaFileName ?? "").trim()
+        : String(current?.mediaFileName ?? ""),
+    imageStyle:
+      partial && Object.prototype.hasOwnProperty.call(partial, "imageStyle")
+        ? String(partial.imageStyle ?? "").trim()
+        : String(current?.imageStyle ?? "banner")
   };
 
   if (partial && Object.prototype.hasOwnProperty.call(partial, "lockTimeoutMin")) {

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import {
   MessageSquare,
+  MessagesSquare,
   Send,
   Settings,
   Calendar,
@@ -24,6 +25,7 @@ interface SidebarProps {
   onOpenDestination: () => void
   onOpenConfig: () => void
   onOpenSchedule: () => void
+  onOpenMessages: () => void
   activeItem: string
   setActiveItem: (id: string) => void
   shortcutsOpen: boolean
@@ -34,6 +36,7 @@ export function AppSidebar({
   onOpenDestination,
   onOpenConfig,
   onOpenSchedule,
+  onOpenMessages,
   activeItem,
   setActiveItem,
   shortcutsOpen,
@@ -48,6 +51,13 @@ export function AppSidebar({
       title: "Agenda",
       subtitle: "Horários e turmas",
       onClick: onOpenSchedule,
+    },
+    {
+      id: "messages",
+      icon: <MessagesSquare size={18} />,
+      title: "Mensagens",
+      subtitle: "Padrão e avisos",
+      onClick: onOpenMessages,
     },
     {
       id: "destination",

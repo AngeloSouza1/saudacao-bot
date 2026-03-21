@@ -9,6 +9,7 @@ import { DestinationModal } from "@/components/saudacao/DestinationModal"
 import { ConfigModal } from "@/components/saudacao/ConfigModal"
 import { ScheduleModal } from "@/components/saudacao/ScheduleModal"
 import { AllSchedulesModal } from "@/components/saudacao/AllSchedulesModal"
+import { MessagesModal } from "@/components/saudacao/MessagesModal"
 import { hasRequiredConfig } from "@/lib/validation"
 import { Calendar, GraduationCap, RefreshCw } from "lucide-react"
 
@@ -23,6 +24,9 @@ type DashboardStatusResponse = {
     instituicao?: string
     antecedenciaMin?: number
     diasUteisApenas?: boolean
+    defaultGreetingMessage?: string
+    imagePath?: string
+    mediaFileName?: string
     lockTimeoutMin?: number
     lockConfigured?: boolean
     alunos?: string[]
@@ -162,6 +166,7 @@ export default function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false)
   const [activeItem, setActiveItem] = useState("")
   const [destinationOpen, setDestinationOpen] = useState(false)
+  const [messagesOpen, setMessagesOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [scheduleInitialSection, setScheduleInitialSection] = useState<"students" | "lessons" | null>(null)
@@ -394,6 +399,7 @@ export default function DashboardPage() {
       <div className="flex flex-1 min-h-0">
         <AppSidebar
           onOpenDestination={() => setDestinationOpen(true)}
+          onOpenMessages={() => setMessagesOpen(true)}
           onOpenConfig={() => setConfigOpen(true)}
           onOpenSchedule={() => {
             setScheduleInitialSection(null)
@@ -515,6 +521,14 @@ export default function DashboardPage() {
         initialState={statusData?.state}
         students={Array.isArray(statusData?.config?.alunos) ? statusData?.config?.alunos : []}
         scheduleSummary={Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary : []}
+        onSaved={refreshStatus}
+      />
+      <MessagesModal
+        open={messagesOpen}
+        onClose={() => setMessagesOpen(false)}
+        initialDefaultMessage={String(statusData?.config?.defaultGreetingMessage || "")}
+        initialImagePath={String(statusData?.config?.imagePath || "")}
+        initialMediaFileName={String(statusData?.config?.mediaFileName || "")}
         onSaved={refreshStatus}
       />
       <ScheduleModal

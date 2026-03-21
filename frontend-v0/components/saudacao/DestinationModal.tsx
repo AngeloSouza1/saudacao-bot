@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Users } from "lucide-react"
+import { Lock, LockOpen, Users } from "lucide-react"
 import { ModalShell, ModalActions, UnderlineInput } from "./ModalShell"
 import { isNullWord, isValidPhoneFallback, normalizeText } from "@/lib/validation"
 
@@ -41,6 +41,11 @@ export function DestinationModal({ open, onClose, initialValues, onSaved }: Dest
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState("")
   const [fieldErrors, setFieldErrors] = useState<{ to?: string; groupName?: string }>({})
+  const [destinationUnlocked, setDestinationUnlocked] = useState(false)
+  const [unlockPassword, setUnlockPassword] = useState("")
+  const [unlockPromptOpen, setUnlockPromptOpen] = useState(false)
+  const [unlockLoading, setUnlockLoading] = useState(false)
+  const [unlockFeedback, setUnlockFeedback] = useState("")
 
   useEffect(() => {
     if (!open) return
@@ -50,6 +55,10 @@ export function DestinationModal({ open, onClose, initialValues, onSaved }: Dest
     setSelectedGroup(initialGroupName)
     setFeedback("")
     setFieldErrors({})
+    setDestinationUnlocked(false)
+    setUnlockPassword("")
+    setUnlockPromptOpen(false)
+    setUnlockFeedback("")
     setGroupsLoading(true)
     fetch("/api/groups")
       .then(async (res) => {
@@ -71,6 +80,35 @@ export function DestinationModal({ open, onClose, initialValues, onSaved }: Dest
         setGroupsLoading(false)
       })
   }, [open, initialValues?.groupName, initialValues?.to])
+
+  async function handleUnlockDestination() {
+    if (!unlockPassword.trim()) {
+      setUnlockFeedback("Digite a senha para liberar a seleção.")
+      return
+    }
+
+    setUnlockLoading(true)
+    setUnlockFeedback("")
+    try {
+      const res = await fetch("/api/unlock-destination", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: unlockPassword }),
+      })
+      const payload = await res.json()
+      if (!res.ok || !payload?.ok) {
+        throw new Error(String(payload?.error || "Senha inválida."))
+      }
+      setDestinationUnlocked(true)
+      setUnlockPromptOpen(false)
+      setUnlockPassword("")
+      setUnlockFeedback("")
+    } catch (error) {
+      setUnlockFeedback(String((error as Error)?.message || "Falha ao validar senha."))
+    } finally {
+      setUnlockLoading(false)
+    }
+  }
 
   async function handleSave() {
     const nextErrors: { to?: string; groupName?: string } = {}
@@ -138,7 +176,30 @@ export function DestinationModal({ open, onClose, initialValues, onSaved }: Dest
           required
         />
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Grupos disponíveis</label>
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Grupos disponíveis
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                if (destinationUnlocked) {
+                  setDestinationUnlocked(false)
+                  setUnlockPromptOpen(false)
+                  setUnlockPassword("")
+                  setUnlockFeedback("")
+                  return
+                }
+                setUnlockPromptOpen((current) => !current)
+                setUnlockFeedback("")
+              }}
+              className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+              aria-label={destinationUnlocked ? "Bloquear seleção de grupo" : "Desbloquear seleção de grupo"}
+            >
+              {destinationUnlocked ? <LockOpen size={12} /> : <Lock size={12} />}
+              {destinationUnlocked ? "Liberado" : "Bloqueado"}
+            </button>
+          </div>
           <select
             value={selectedGroup}
             onChange={(e) => {
@@ -146,10 +207,11 @@ export function DestinationModal({ open, onClose, initialValues, onSaved }: Dest
               setSelectedGroup(value)
               setGroupName(value)
             }}
-            className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors"
+            disabled={!destinationUnlocked}
+            className="bg-transparent border-0 border-b-2 border-input focus:border-primary outline-none py-1.5 text-sm text-foreground transition-colors disabled:cursor-not-allowed disabled:border-dashed disabled:text-muted-foreground"
           >
             <option value="">
-              {groupsLoading ? "Carregando grupos..." : "Selecione um grupo"}
+              {groupsLoading ? "Carregando grupos..." : destinationUnlocked ? "Selecione um grupo" : "Seleção bloqueada"}
             </option>
             {groups.map((group) => (
               <option key={group.id || group.name} value={group.name}>
@@ -157,8 +219,42 @@ export function DestinationModal({ open, onClose, initialValues, onSaved }: Dest
               </option>
             ))}
           </select>
+          {unlockPromptOpen && !destinationUnlocked ? (
+            <div className="mt-2 rounded-xl border border-border bg-muted/20 px-3 py-3">
+              <div className="flex items-center gap-2">
+                <Lock size={14} className="text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground">
+                  Digite a senha para liberar a lista de grupos.
+                </span>
+              </div>
+              <div className="mt-3 flex items-end gap-2">
+                <div className="flex-1">
+                  <input
+                    type="password"
+                    value={unlockPassword}
+                    onChange={(e) => setUnlockPassword(e.target.value)}
+                    placeholder="Senha de desbloqueio"
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleUnlockDestination}
+                  disabled={unlockLoading}
+                  className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-green-deep disabled:opacity-60"
+                >
+                  Liberar
+                </button>
+              </div>
+              {unlockFeedback ? (
+                <p className="mt-2 text-[11px] text-status-err">{unlockFeedback}</p>
+              ) : null}
+            </div>
+          ) : null}
           <p className="text-[11px] text-muted-foreground">
-            Selecione da lista ou digite manualmente no campo acima.
+            {destinationUnlocked
+              ? "Selecione da lista ou digite manualmente no campo acima."
+              : "A lista está protegida por senha. Você ainda pode digitar manualmente no campo acima."}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
