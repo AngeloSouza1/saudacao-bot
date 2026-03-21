@@ -1,8 +1,8 @@
 {
   "idxAluno": 11,
-  "idxAula": 2,
+  "idxAula": 3,
   "dataInicio": "2026-03-11",
-  "updatedAt": "2026-03-21T01:39:08.858Z",
+  "updatedAt": "2026-03-21T10:51:15.382Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
     "Luana Costa",
@@ -12,8 +12,6 @@
     "Rallenson Silva",
     "Thalita Nascimento",
     "Wanuta Santos",
-    "João Marcos Basilio Sales",
-    "João Vitor Gomes Oliveira Rodrigues Resende",
     "Angelo Souza",
     "Bruna Alves",
     "Clara Helena",
@@ -21,6 +19,8 @@
     "Enzo Duarte",
     "Felipe Moreira",
     "Jaynni Nascimento",
+    "João Marcos Basilio Sales",
+    "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes"
   ],

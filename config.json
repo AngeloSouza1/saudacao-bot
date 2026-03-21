@@ -1,5 +1,5 @@
 {
-  "turma": "RiseCode",
+  "turma": "T7G2.2",
   "instituicao": "AlphaTech",
   "agendaSemanal": {
     "1": [
@@ -189,6 +189,23 @@
   ],
   "defaultGreetingMessage": "Turma: *{{turmaLinha}}*\nMatéria: *{{materia}}*\nTítulo: *{{titulo}}*\nProfessor: *{{professor}}*\nAluno: *{{alunoNome}}*\nHorário: *{{horario}}*\n\nOlá, *{{alunoNome}}*! Chegou a sua vez de fazer a saudação de hoje. Contamos com você!\n\n*Texto sugerido (ler no início):*\n\n*Modelo simples:*\n*1. Cumprimento*\n_“Bom dia, professor.” ou “Boa tarde, professor.”_\n\n*2. Identificação da turma*\n_“Somos a turma [nome ou curso].”_\n\n*3. Situação de presença*\n_“Hoje estamos com a turma completa.” ou “Hoje tivemos algumas ausências, mas a maioria está presente.”_\n\n*4. Transição para a aula*\n_“A turma está pronta para a aula. Pode começar quando quiser.”_\n\n*Estrutura resumida:*\n_Cumprimento → Turma → Presença → Passar a palavra_\n\n*Exemplo pronto para usar:*\n_“{{exemploPronto}}”_\n*— {{alunoNome}} ({{materia}})*",
   "defaultNoClassMessage": "*📢 Aviso da turma*\n\nTurma: *{{turmaLinha}}*\n\n{{cumprimento}}, pessoal.\n\n*HOJE NÃO HAVERÁ AULA.*\n\nAproveitem este tempo para colocar os estudos em dia, revisar os conteúdos já vistos e reforçar os pontos que ainda geram dúvida.\n\nUma boa revisão hoje pode fazer diferença no entendimento das próximas aulas.\n\n*Sigam firmes nos estudos. Constância e dedicação trazem resultado.*",
-  "customMessageTemplate": "Olá, aluno!\n\nEsta é uma mensagem personalizada do Saudação Bot.",
-  "bannerTitle": "ola"
+  "customMessageTemplate": "Olá, *{{alunoNome}}*!\n\nEsta é uma mensagem personalizada do Saudação Bot.\n\nTurma: *{{turmaLinha}}*\nMatéria: *{{materia}}*\nProfessor: *{{professor}}*\nHorário: *{{horario}}*",
+  "bannerTitle": "ola",
+  "greetingImagePath": "risecode.png",
+  "greetingMediaFileName": "Saudacao.png",
+  "greetingBannerTitle": "Saudação de Hoje",
+  "greetingBackgroundColor": "#123d37",
+  "greetingBackgroundImagePath": "",
+  "noClassImagePath": "risecode.png",
+  "noClassMediaFileName": "aviso.png",
+  "noClassBannerTitle": "Aviso",
+  "noClassBackgroundColor": "#123d37",
+  "noClassBackgroundImagePath": "",
+  "customImagePath": "https://images.unsplash.com/photo-1772442164828-2c9a6c04e40c?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "customMediaFileName": "Saudacao-personalizadaRiseCode.png",
+  "customBannerTitle": "Ola!!!",
+  "customBackgroundColor": "#61ffea",
+  "customBackgroundImagePath": "https://media.istockphoto.com/id/2257936404/pt/foto/modern-technology-background-technology-concept-on-digital-screen-showcasing-modern-innovations.jpg?s=2048x2048&w=is&k=20&c=4JCqGJGkQmBYDHHCiHqMY0tPikfzFZfwxRnazMmFsh8=",
+  "backgroundColor": "",
+  "backgroundImagePath": ""
 }
