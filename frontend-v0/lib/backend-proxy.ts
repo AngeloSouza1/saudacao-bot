@@ -23,12 +23,37 @@ export async function proxyToBackend(
     headers["Content-Type"] = "application/json; charset=utf-8"
   }
 
-  const response = await fetch(`${getBackendBaseUrl()}${pathname}`, {
-    method,
-    cache: "no-store",
-    headers,
-    body: typeof body !== "undefined" ? JSON.stringify(body) : undefined,
-  })
+  let response: Response
+  try {
+    response = await fetch(`${getBackendBaseUrl()}${pathname}`, {
+      method,
+      cache: "no-store",
+      headers,
+      body: typeof body !== "undefined" ? JSON.stringify(body) : undefined,
+    })
+  } catch (error) {
+    const message = String((error as Error)?.message || "").toLowerCase()
+    const isOfflineError =
+      message.includes("fetch failed") ||
+      message.includes("econnrefused") ||
+      message.includes("connect")
+
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: isOfflineError
+          ? "O backend do painel está offline no momento. Inicie o serviço em 127.0.0.1:3001 e tente novamente."
+          : "Não foi possível comunicar com o backend do painel.",
+      }),
+      {
+        status: 503,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+      }
+    )
+  }
 
   const text = await response.text()
   let payload: unknown

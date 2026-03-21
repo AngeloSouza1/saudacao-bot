@@ -212,6 +212,7 @@ export default function DashboardPage() {
   const [todayLabel, setTodayLabel] = useState("")
   const [statusData, setStatusData] = useState<DashboardStatusResponse | null>(null)
   const [statusError, setStatusError] = useState<string>("")
+  const [statusPollingEnabled, setStatusPollingEnabled] = useState(true)
 
   useEffect(() => {
     setIsMounted(true)
@@ -222,8 +223,13 @@ export default function DashboardPage() {
       const data = await fetchJson<DashboardStatusResponse>("/api/status")
       setStatusData(data)
       setStatusError("")
+      setStatusPollingEnabled(true)
     } catch (error) {
-      setStatusError(String((error as Error)?.message || "Falha ao atualizar status."))
+      const message = String((error as Error)?.message || "Falha ao atualizar status.")
+      setStatusError(message)
+      if (/backend do painel está offline|econnrefused|fetch failed/i.test(message)) {
+        setStatusPollingEnabled(false)
+      }
     }
   }, [])
 
@@ -239,12 +245,14 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => {
+    if (!statusPollingEnabled) return
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | undefined
 
     const run = async () => {
       if (cancelled) return
       await refreshStatus()
+      if (cancelled) return
       timer = setTimeout(run, 3000)
     }
 
@@ -254,7 +262,7 @@ export default function DashboardPage() {
       cancelled = true
       if (timer) clearTimeout(timer)
     }
-  }, [refreshStatus])
+  }, [refreshStatus, statusPollingEnabled])
 
   const runAction = useCallback(
     async (path: "/api/send-test" | "/api/send-now" | "/api/send-now-forced", fallbackMessage: string) => {
@@ -469,8 +477,20 @@ export default function DashboardPage() {
             </div>
 
             {statusError ? (
-              <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {statusError}
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <span>{statusError}</span>
+                {!statusPollingEnabled ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setStatusPollingEnabled(true)
+                      await refreshStatus()
+                    }}
+                    className="rounded-lg border border-destructive/30 bg-background px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5"
+                  >
+                    Tentar novamente
+                  </button>
+                ) : null}
               </div>
             ) : null}
             {hasConfigPending ? (

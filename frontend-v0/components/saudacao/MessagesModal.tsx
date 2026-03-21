@@ -420,6 +420,16 @@ export function MessagesModal({
     Boolean(String(student?.whatsapp || "").trim()) &&
     String(student?.whatsapp || "").replace(/\D/g, "") !== loggedStudentWhatsappDigits
   )
+  useEffect(() => {
+    if (customTargetType !== "student") return
+    if (!customRecipient) return
+    const stillAvailable = studentsWithWhatsapp.some(
+      (student) => String(student?.nome || "") === customRecipient
+    )
+    if (!stillAvailable) {
+      setCustomRecipient("")
+    }
+  }, [customTargetType, customRecipient, studentsWithWhatsapp])
   const setCurrentImagePath = (value: string) => {
     if (editorType === "default") setGreetingImagePath(value)
     else if (editorType === "no-class") setNoClassImagePath(value)
