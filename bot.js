@@ -1045,11 +1045,25 @@ function getCycleLinkedOrder(config, state, cycleLimit = null, forceFromGlobal =
     return true;
   });
 
-  // Se já existe fila vinculada, preserva estritamente essa ordem.
-  // Não completar automaticamente com fila global evita incluir alunos
-  // fora do vínculo do ciclo ativo.
+  // Se já existe fila vinculada, preserva essa ordem como base do ciclo ativo.
+  // Quando novas aulas entram no ciclo, completa com os próximos alunos ainda
+  // não vinculados, respeitando a fila global e retornando ao topo quando
+  // necessário.
   if (cleanedLinked.length) {
-    return cleanedLinked.slice(0, total);
+    if (cleanedLinked.length >= total) {
+      return cleanedLinked.slice(0, total);
+    }
+
+    const pending = normalizePendingOrder(state, alunos);
+    const completedLinked = [...cleanedLinked];
+    for (const name of pending) {
+      if (seen.has(name)) continue;
+      completedLinked.push(name);
+      seen.add(name);
+      if (completedLinked.length >= total) break;
+    }
+
+    return completedLinked.slice(0, total);
   }
 
   return normalizePendingOrder(state, alunos).slice(0, total);
