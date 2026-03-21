@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Eye, MessagesSquare, Megaphone, MessageCircleMore, Pencil } from "lucide-react"
+import { CircleHelp, Eye, MessagesSquare, Megaphone, MessageCircleMore, Pencil } from "lucide-react"
 import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
 
 interface MessagesModalProps {
@@ -14,6 +14,16 @@ interface MessagesModalProps {
   students?: Array<{ nome?: string; whatsapp?: string; imagem?: string }>
   initialImagePath?: string
   initialMediaFileName?: string
+  initialBannerTitle?: string
+  initialGreetingImagePath?: string
+  initialGreetingMediaFileName?: string
+  initialGreetingBannerTitle?: string
+  initialNoClassImagePath?: string
+  initialNoClassMediaFileName?: string
+  initialNoClassBannerTitle?: string
+  initialCustomImagePath?: string
+  initialCustomMediaFileName?: string
+  initialCustomBannerTitle?: string
   onSaved?: () => Promise<void> | void
 }
 
@@ -90,11 +100,61 @@ const PREVIEW_SAMPLE = {
   chatTime: "20:01",
 }
 
+const AVAILABLE_VARIABLES = [
+  { token: "{{turmaLinha}}", description: "Nome completo da turma com instituição." },
+  { token: "{{materia}}", description: "Matéria da aula." },
+  { token: "{{titulo}}", description: "Título do conteúdo da aula." },
+  { token: "{{professor}}", description: "Nome do professor." },
+  { token: "{{alunoNome}}", description: "Nome do aluno destinatário." },
+  { token: "{{horario}}", description: "Horário da aula." },
+  { token: "{{cumprimento}}", description: "Cumprimento automático conforme o horário." },
+  { token: "{{aulaContexto}}", description: "Resumo curto do contexto da aula." },
+  { token: "{{exemploPronto}}", description: "Exemplo pronto de saudação preenchido." },
+]
+
 function renderPreviewTemplate(template: string) {
   return Object.entries(PREVIEW_SAMPLE).reduce(
     (text, [token, value]) => text.split(`{{${token}}}`).join(value),
     String(template || "")
   )
+}
+
+function normalizeCustomSendError(rawError: string, targetType: "student" | "group", recipient: string) {
+  const message = String(rawError || "").trim()
+  const normalized = message.toLowerCase()
+
+  if (!message || normalized === "not_found") {
+    return targetType === "group"
+      ? `Não foi possível enviar para o grupo "${recipient}". Verifique se o backend foi reiniciado e se o grupo ainda existe no WhatsApp.`
+      : `Não foi possível enviar para o aluno selecionado. Verifique se o backend foi reiniciado e se o cadastro do aluno está válido.`
+  }
+
+  if (normalized.includes("grupo não encontrado")) {
+    return `Grupo não encontrado no WhatsApp: "${recipient}". Atualize a lista de grupos e selecione um destino válido.`
+  }
+
+  if (normalized.includes("sem whatsapp") || normalized.includes("whatsapp cadastrado")) {
+    return `O aluno selecionado não possui WhatsApp cadastrado para receber a mensagem.`
+  }
+
+  if (normalized.includes("não há cliente do whatsapp conectado")) {
+    return "O WhatsApp não está conectado no momento. Reconecte a sessão antes de enviar."
+  }
+
+  if (normalized.includes("failed to fetch") || normalized.includes("networkerror")) {
+    return "Não foi possível comunicar com o backend do painel para enviar a mensagem."
+  }
+
+  return message
+}
+
+function mediaByEditorType<T>(
+  editorType: "default" | "no-class" | "custom",
+  greetingValue: T,
+  noClassValue: T,
+  customValue: T
+) {
+  return editorType === "default" ? greetingValue : editorType === "no-class" ? noClassValue : customValue
 }
 
 export function MessagesModal({
@@ -107,6 +167,16 @@ export function MessagesModal({
   students = [],
   initialImagePath,
   initialMediaFileName,
+  initialBannerTitle,
+  initialGreetingImagePath,
+  initialGreetingMediaFileName,
+  initialGreetingBannerTitle,
+  initialNoClassImagePath,
+  initialNoClassMediaFileName,
+  initialNoClassBannerTitle,
+  initialCustomImagePath,
+  initialCustomMediaFileName,
+  initialCustomBannerTitle,
   onSaved,
 }: MessagesModalProps) {
   const wasOpenRef = useRef(false)
@@ -115,9 +185,17 @@ export function MessagesModal({
   const [defaultMessage, setDefaultMessage] = useState(DEFAULT_MESSAGE_FALLBACK)
   const [noClassMessage, setNoClassMessage] = useState(DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
   const [customMessage, setCustomMessage] = useState(DEFAULT_CUSTOM_MESSAGE_FALLBACK)
-  const [imagePath, setImagePath] = useState("")
-  const [mediaFileName, setMediaFileName] = useState("")
+  const [greetingImagePath, setGreetingImagePath] = useState("")
+  const [greetingMediaFileName, setGreetingMediaFileName] = useState("")
+  const [greetingBannerTitle, setGreetingBannerTitle] = useState("")
+  const [noClassImagePath, setNoClassImagePath] = useState("")
+  const [noClassMediaFileName, setNoClassMediaFileName] = useState("")
+  const [noClassBannerTitle, setNoClassBannerTitle] = useState("")
+  const [customImagePath, setCustomImagePath] = useState("")
+  const [customMediaFileName, setCustomMediaFileName] = useState("")
+  const [customBannerTitle, setCustomBannerTitle] = useState("")
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [variablesHelpOpen, setVariablesHelpOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [sendCustomLoading, setSendCustomLoading] = useState(false)
   const [customTargetType, setCustomTargetType] = useState<"student" | "group">("student")
@@ -135,12 +213,20 @@ export function MessagesModal({
       setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
       setCustomTargetType("student")
       setCustomRecipient(String(students?.[0]?.nome || "").trim())
-      setImagePath(String(initialImagePath || "").trim())
-      setMediaFileName(String(initialMediaFileName || "").trim())
+      setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
+      setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
+      setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
+      setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
+      setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
+      setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
+      setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
+      setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
+      setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
       setPreviewOpen(false)
+      setVariablesHelpOpen(false)
     }
     wasOpenRef.current = open
-  }, [open, initialEditorType, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName, students])
+  }, [open, initialEditorType, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName, initialBannerTitle, initialGreetingImagePath, initialGreetingMediaFileName, initialGreetingBannerTitle, initialNoClassImagePath, initialNoClassMediaFileName, initialNoClassBannerTitle, initialCustomImagePath, initialCustomMediaFileName, initialCustomBannerTitle, students])
 
   useEffect(() => {
     if (!open) return
@@ -180,8 +266,15 @@ export function MessagesModal({
             editorType === "custom"
               ? customMessage
               : String(initialCustomMessage || "").trim(),
-          imagePath,
-          mediaFileName,
+          greetingImagePath,
+          greetingMediaFileName,
+          greetingBannerTitle,
+          noClassImagePath,
+          noClassMediaFileName,
+          noClassBannerTitle,
+          customImagePath,
+          customMediaFileName,
+          customBannerTitle,
         }),
       })
       const payload = await res.json()
@@ -213,16 +306,31 @@ export function MessagesModal({
           targetType: customTargetType,
           targetValue: customRecipient,
           template: customMessage,
+          imagePath: customImagePath,
+          mediaFileName: customMediaFileName,
+          bannerTitle: customBannerTitle,
         }),
       })
       const payload = await res.json()
       if (!res.ok) {
-        throw new Error(String(payload?.error || "Falha ao enviar mensagem personalizada."))
+        throw new Error(
+          normalizeCustomSendError(
+            String(payload?.error || ""),
+            customTargetType,
+            customRecipient
+          )
+        )
       }
       if (onSaved) await onSaved()
       setFeedback(String(payload?.message || "Mensagem personalizada enviada com sucesso."))
     } catch (error) {
-      setFeedback(String((error as Error)?.message || "Falha ao enviar mensagem personalizada."))
+      setFeedback(
+        normalizeCustomSendError(
+          String((error as Error)?.message || ""),
+          customTargetType,
+          customRecipient
+        )
+      )
     } finally {
       setSendCustomLoading(false)
     }
@@ -244,6 +352,43 @@ export function MessagesModal({
     editorType === "default" ? defaultMessage : editorType === "no-class" ? noClassMessage : customMessage
   const setCurrentMessage =
     editorType === "default" ? setDefaultMessage : editorType === "no-class" ? setNoClassMessage : setCustomMessage
+  const currentImagePath = mediaByEditorType(editorType, greetingImagePath, noClassImagePath, customImagePath)
+  const currentMediaFileName = mediaByEditorType(
+    editorType,
+    greetingMediaFileName,
+    noClassMediaFileName,
+    customMediaFileName
+  )
+  const currentBannerTitle = mediaByEditorType(
+    editorType,
+    greetingBannerTitle,
+    noClassBannerTitle,
+    customBannerTitle
+  )
+  const setCurrentImagePath = (value: string) => {
+    if (editorType === "default") setGreetingImagePath(value)
+    else if (editorType === "no-class") setNoClassImagePath(value)
+    else setCustomImagePath(value)
+  }
+  const setCurrentMediaFileName = (value: string) => {
+    if (editorType === "default") setGreetingMediaFileName(value)
+    else if (editorType === "no-class") setNoClassMediaFileName(value)
+    else setCustomMediaFileName(value)
+  }
+  const setCurrentBannerTitle = (value: string) => {
+    if (editorType === "default") setGreetingBannerTitle(value)
+    else if (editorType === "no-class") setNoClassBannerTitle(value)
+    else setCustomBannerTitle(value)
+  }
+  const hasMessageContent = Boolean(String(currentMessage || "").trim())
+  const canSendCustomMessage =
+    editorType === "custom" &&
+    Boolean(String(customImagePath || "").trim()) &&
+    Boolean(String(customBannerTitle || "").trim()) &&
+    Boolean(String(customMediaFileName || "").trim()) &&
+    Boolean(String(customTargetType || "").trim()) &&
+    Boolean(String(customRecipient || "").trim()) &&
+    Boolean(String(customMessage || "").trim())
 
   return (
     <>
@@ -338,32 +483,47 @@ export function MessagesModal({
           setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
           setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
           setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
-          setImagePath(String(initialImagePath || "").trim())
-          setMediaFileName(String(initialMediaFileName || "").trim())
+          setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
+          setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
+          setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
+          setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
+          setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
+          setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
+          setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
+          setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
+          setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
           setPreviewOpen(false)
+          setVariablesHelpOpen(false)
         }}
         title={currentEditorTitle}
         subtitle={currentEditorSubtitle}
         icon={<Pencil size={16} className="text-primary" />}
-        size="lg"
+        size="xl"
       >
         <div className="px-6 py-6">
           <div className="rounded-2xl border border-border bg-muted/20 p-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Mídia do envio
             </p>
-            <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3">
               <UnderlineInput
                 label="Banner / imagem"
-                value={imagePath}
-                onChange={setImagePath}
+                value={currentImagePath}
+                onChange={setCurrentImagePath}
                 placeholder="Ex.: risecode.png, /caminho/banner.png ou https://site/imagem.jpg"
                 hint="Aceita arquivo local ou link. Se não alterar, o banner atual continua sendo usado."
               />
               <UnderlineInput
+                label="Título do banner"
+                value={currentBannerTitle}
+                onChange={setCurrentBannerTitle}
+                placeholder="Ex.: 🤖 Saudação de hoje"
+                hint="Texto exibido ao lado da imagem no banner gerado."
+              />
+              <UnderlineInput
                 label="Nome do arquivo"
-                value={mediaFileName}
-                onChange={setMediaFileName}
+                value={currentMediaFileName}
+                onChange={setCurrentMediaFileName}
                 placeholder="Ex.: Saudacao-RiseCode.png"
                 hint="Opcional. Define o nome do arquivo quando a mídia for enviada."
               />
@@ -427,8 +587,8 @@ export function MessagesModal({
                 <button
                   type="button"
                   onClick={handleSendCustomMessage}
-                  disabled={sendCustomLoading}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-green-deep disabled:opacity-60"
+                  disabled={sendCustomLoading || !canSendCustomMessage}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-green-deep disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {sendCustomLoading
                     ? "Enviando..."
@@ -451,8 +611,17 @@ export function MessagesModal({
                 </p>
                 <button
                   type="button"
-                  onClick={() => setPreviewOpen((current) => !current)}
+                  onClick={() => setVariablesHelpOpen(true)}
                   className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <CircleHelp size={15} />
+                  Variáveis
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewOpen((current) => !current)}
+                  disabled={!hasMessageContent}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Eye size={15} />
                   {previewOpen ? "Ocultar prévia" : "Pré-visualizar"}
@@ -466,7 +635,13 @@ export function MessagesModal({
             className="min-h-[220px] w-full rounded-2xl border border-input bg-background px-4 py-4 font-mono text-[15px] leading-7 text-foreground outline-none transition-colors focus:border-primary"
           />
           {feedback ? (
-            <p className={`mt-4 text-sm ${feedback.toLowerCase().includes("falha") ? "text-destructive" : "text-primary"}`}>
+            <p
+              className={`mt-4 text-sm ${
+                /falha|não foi possível|não possui|não está conectado|não encontrado/i.test(feedback)
+                  ? "text-destructive"
+                  : "text-primary"
+              }`}
+            >
               {feedback}
             </p>
           ) : null}
@@ -481,14 +656,47 @@ export function MessagesModal({
             setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
             setCustomTargetType("student")
             setCustomRecipient(String(students?.[0]?.nome || "").trim())
-            setImagePath(String(initialImagePath || "").trim())
-            setMediaFileName(String(initialMediaFileName || "").trim())
+            setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
+            setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
+            setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
+            setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
+            setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
+            setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
+            setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
+            setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
+            setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
             setPreviewOpen(false)
+            setVariablesHelpOpen(false)
           }}
           onConfirm={handleSaveDefaultMessage}
           confirmLabel="Salvar mensagem"
           cancelLabel="Cancelar"
           loading={loading}
+        />
+      </ModalShell>
+
+      <ModalShell
+        open={variablesHelpOpen}
+        onClose={() => setVariablesHelpOpen(false)}
+        title="Variáveis disponíveis"
+        subtitle="Use estes placeholders no texto da mensagem"
+        icon={<CircleHelp size={16} className="text-primary" />}
+        size="xs"
+        bodyClassName="max-h-[48vh] overflow-y-auto"
+      >
+        <div className="space-y-2 px-4 py-4">
+          {AVAILABLE_VARIABLES.map((item) => (
+            <div key={item.token} className="rounded-lg border border-border bg-muted/20 px-3 py-2.5">
+              <p className="font-mono text-[13px] font-semibold text-foreground">{item.token}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
+            </div>
+          ))}
+        </div>
+        <ModalActions
+          onCancel={() => setVariablesHelpOpen(false)}
+          onConfirm={() => setVariablesHelpOpen(false)}
+          confirmLabel="Fechar"
+          cancelLabel=""
         />
       </ModalShell>
 
@@ -532,10 +740,13 @@ export function MessagesModal({
               <div className="ml-auto max-w-[88%] rounded-[18px] rounded-tr-md bg-[#d9fdd3] px-4 py-3 text-[#111b21] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
                 <div className="mb-3 rounded-2xl border border-emerald-200/80 bg-white/55 px-3 py-2 text-xs text-slate-600">
                   <p>
-                    Banner: <span className="font-medium text-slate-800">{imagePath || "padrão atual"}</span>
+                    Banner: <span className="font-medium text-slate-800">{currentImagePath || "padrão atual"}</span>
                   </p>
                   <p className="mt-1">
-                    Arquivo: <span className="font-medium text-slate-800">{mediaFileName || "nome automático"}</span>
+                    Título: <span className="font-medium text-slate-800">{currentBannerTitle || "🤖 Saudação de hoje"}</span>
+                  </p>
+                  <p className="mt-1">
+                    Arquivo: <span className="font-medium text-slate-800">{currentMediaFileName || "nome automático"}</span>
                   </p>
                 </div>
 

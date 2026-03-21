@@ -233,7 +233,11 @@ async function handleApi(req, res, pathname) {
 
     if (req.method === "POST" && pathname === "/api/send-custom-message") {
       const body = await readBody(req);
-      await sendCustomMessageToTarget(body?.targetType, body?.targetValue, body?.template);
+      await sendCustomMessageToTarget(body?.targetType, body?.targetValue, body?.template, {
+        imagePath: body?.imagePath,
+        mediaFileName: body?.mediaFileName,
+        bannerTitle: body?.bannerTitle
+      });
       sendJson(res, 200, { ok: true, message: "Mensagem personalizada enviada com sucesso." });
       return true;
     }

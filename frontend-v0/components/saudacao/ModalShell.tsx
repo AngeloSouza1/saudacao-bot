@@ -10,7 +10,7 @@ interface ModalShellProps {
   title: string
   subtitle?: string
   children: ReactNode
-  size?: "sm" | "md" | "lg" | "xl" | "xxl"
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "xxl"
   icon?: ReactNode
   bodyClassName?: string
   headerActions?: ReactNode
@@ -30,6 +30,7 @@ export function ModalShell({
   if (!open) return null
 
   const sizeClasses = {
+    xs: "max-w-[26rem]",
     sm: "max-w-sm",
     md: "max-w-lg",
     lg: "max-w-2xl",
@@ -159,15 +160,18 @@ export function ModalActions({
     confirmVariant === "danger"
       ? "bg-destructive/10 text-status-err border border-destructive/30 hover:bg-destructive/20"
       : "bg-primary text-primary-foreground hover:bg-green-deep"
+  const hasCancel = Boolean(String(cancelLabel || "").trim())
 
   return (
     <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border bg-muted/20 shrink-0">
-      <button
-        onClick={onCancel}
-        className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring outline-none"
-      >
-        {cancelLabel}
-      </button>
+      {hasCancel ? (
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring outline-none"
+        >
+          {cancelLabel}
+        </button>
+      ) : null}
       <button
         onClick={onConfirm}
         disabled={loading}

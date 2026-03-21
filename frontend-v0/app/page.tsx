@@ -30,6 +30,16 @@ type DashboardStatusResponse = {
     customMessageTemplate?: string
     imagePath?: string
     mediaFileName?: string
+    bannerTitle?: string
+    greetingImagePath?: string
+    greetingMediaFileName?: string
+    greetingBannerTitle?: string
+    noClassImagePath?: string
+    noClassMediaFileName?: string
+    noClassBannerTitle?: string
+    customImagePath?: string
+    customMediaFileName?: string
+    customBannerTitle?: string
     lockTimeoutMin?: number
     lockConfigured?: boolean
     alunos?: string[]
@@ -546,6 +556,16 @@ export default function DashboardPage() {
         students={Array.isArray(statusData?.config?.alunoDetalhes) ? statusData?.config?.alunoDetalhes : []}
         initialImagePath={String(statusData?.config?.imagePath || "")}
         initialMediaFileName={String(statusData?.config?.mediaFileName || "")}
+        initialBannerTitle={String(statusData?.config?.bannerTitle || "")}
+        initialGreetingImagePath={String(statusData?.config?.greetingImagePath || "")}
+        initialGreetingMediaFileName={String(statusData?.config?.greetingMediaFileName || "")}
+        initialGreetingBannerTitle={String(statusData?.config?.greetingBannerTitle || "")}
+        initialNoClassImagePath={String(statusData?.config?.noClassImagePath || "")}
+        initialNoClassMediaFileName={String(statusData?.config?.noClassMediaFileName || "")}
+        initialNoClassBannerTitle={String(statusData?.config?.noClassBannerTitle || "")}
+        initialCustomImagePath={String(statusData?.config?.customImagePath || "")}
+        initialCustomMediaFileName={String(statusData?.config?.customMediaFileName || "")}
+        initialCustomBannerTitle={String(statusData?.config?.customBannerTitle || "")}
         onSaved={refreshStatus}
       />
       <HistoryModal

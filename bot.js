@@ -1211,16 +1211,47 @@ function buildNoClassMessage() {
   });
 }
 
-async function sendBotMessage(text, cardData = null) {
+function resolveMessageMediaConfig(config, kind = "default", overrides = {}) {
+  const normalizedKind = String(kind || "default").trim().toLowerCase();
+  const legacyImagePath = String(config.imagePath || process.env.WHATSAPP_IMAGE_PATH || "").trim();
+  const legacyMediaFileName = String(config.mediaFileName || process.env.WHATSAPP_MEDIA_FILE_NAME || "").trim();
+  const legacyBannerTitle = String(config.bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "").trim();
+
+  if (normalizedKind === "no-class") {
+    return {
+      imagePath: String(overrides.imagePath ?? config.noClassImagePath ?? legacyImagePath).trim(),
+      mediaFileName: String(overrides.mediaFileName ?? config.noClassMediaFileName ?? legacyMediaFileName).trim(),
+      bannerTitle: String(overrides.bannerTitle ?? config.noClassBannerTitle ?? legacyBannerTitle).trim(),
+    };
+  }
+
+  if (normalizedKind === "custom") {
+    return {
+      imagePath: String(overrides.imagePath ?? config.customImagePath ?? legacyImagePath).trim(),
+      mediaFileName: String(overrides.mediaFileName ?? config.customMediaFileName ?? legacyMediaFileName).trim(),
+      bannerTitle: String(overrides.bannerTitle ?? config.customBannerTitle ?? legacyBannerTitle).trim(),
+    };
+  }
+
+  return {
+    imagePath: String(overrides.imagePath ?? config.greetingImagePath ?? legacyImagePath).trim(),
+    mediaFileName: String(overrides.mediaFileName ?? config.greetingMediaFileName ?? legacyMediaFileName).trim(),
+    bannerTitle: String(overrides.bannerTitle ?? config.greetingBannerTitle ?? legacyBannerTitle).trim(),
+  };
+}
+
+async function sendBotMessage(text, cardData = null, messageKind = "default") {
   const settings = loadSettings();
   const config = loadConfig();
   const studentImagePath = getStudentImageForName(config, cardData?.aluno);
-  const fallbackImagePath = String(config.imagePath || process.env.WHATSAPP_IMAGE_PATH || "").trim();
+  const mediaConfig = resolveMessageMediaConfig(config, messageKind);
+  const fallbackImagePath = mediaConfig.imagePath;
   const imagePath = studentImagePath || fallbackImagePath;
+  const bannerTitle = mediaConfig.bannerTitle;
   const mediaAsDocument = String(
     config.mediaAsDocument ?? process.env.WHATSAPP_MEDIA_AS_DOCUMENT ?? "false"
   ).toLowerCase() === "true";
-  const mediaFileName = String(config.mediaFileName || process.env.WHATSAPP_MEDIA_FILE_NAME || "").trim();
+  const mediaFileName = mediaConfig.mediaFileName;
   const imageStyle = String(config.imageStyle || process.env.WHATSAPP_IMAGE_STYLE || "banner").trim();
   const message = await sendText({
     to: settings.to,
@@ -1230,6 +1261,7 @@ async function sendBotMessage(text, cardData = null) {
     imagePath,
     mediaAsDocument,
     mediaFileName,
+    bannerTitle,
     imageStyle,
     cardData
   });
@@ -1257,7 +1289,7 @@ async function sendBotMessage(text, cardData = null) {
   return message;
 }
 
-export async function sendCustomMessageToTarget(targetType, targetValue, template) {
+export async function sendCustomMessageToTarget(targetType, targetValue, template, overrides = {}) {
   const config = loadConfig();
   const kind = String(targetType || "student").trim();
   const turma = String(config.turma || "").trim();
@@ -1265,11 +1297,13 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
   const turmaLinha = [turma, instituicao].filter(Boolean).join(" — ");
   const hour = new Date().getHours();
   const cumprimento = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
-  const fallbackImagePath = String(config.imagePath || process.env.WHATSAPP_IMAGE_PATH || "").trim();
+  const mediaConfig = resolveMessageMediaConfig(config, "custom", overrides);
+  const fallbackImagePath = mediaConfig.imagePath;
+  const bannerTitle = mediaConfig.bannerTitle;
   const mediaAsDocument = String(
     config.mediaAsDocument ?? process.env.WHATSAPP_MEDIA_AS_DOCUMENT ?? "false"
   ).toLowerCase() === "true";
-  const mediaFileName = String(config.mediaFileName || process.env.WHATSAPP_MEDIA_FILE_NAME || "").trim();
+  const mediaFileName = mediaConfig.mediaFileName;
   const imageStyle = String(config.imageStyle || process.env.WHATSAPP_IMAGE_STYLE || "banner").trim();
   const settings = loadSettings();
 
@@ -1299,6 +1333,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
       imagePath: fallbackImagePath,
       mediaAsDocument,
       mediaFileName,
+      bannerTitle,
       imageStyle,
       cardData: { turma, instituicao, aluno: "", materia: "", titulo: "", professor: "", horario: "" }
     });
@@ -1344,6 +1379,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
     imagePath,
     mediaAsDocument,
     mediaFileName,
+    bannerTitle,
     imageStyle,
     cardData: { turma, instituicao, aluno: alunoNome, materia: "", titulo: "", professor: "", horario: "" }
   });
@@ -1618,7 +1654,7 @@ async function runScheduledDispatch(config) {
 
   if (aulasDoDia.length === 0) {
     const text = buildNoClassMessage();
-    const message = await sendBotMessage(text);
+    const message = await sendBotMessage(text, null, "no-class");
     saveLastRun({
       type: "scheduled",
       skipped: false,
@@ -1654,7 +1690,7 @@ async function runScheduledDispatch(config) {
     aluno: String(aluno || ""),
     horario: String(aula.hora || "")
   };
-  const message = await sendBotMessage(text, cardData);
+  const message = await sendBotMessage(text, cardData, "default");
   markCycleMessageSent(aluno, itemKeyFromCycle);
 
   saveLastRun({
@@ -1902,6 +1938,42 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "customMessageTemplate")
         ? String(partial.customMessageTemplate ?? "")
         : String(current?.customMessageTemplate ?? ""),
+    greetingImagePath:
+      partial && Object.prototype.hasOwnProperty.call(partial, "greetingImagePath")
+        ? String(partial.greetingImagePath ?? "").trim()
+        : String(current?.greetingImagePath ?? ""),
+    greetingMediaFileName:
+      partial && Object.prototype.hasOwnProperty.call(partial, "greetingMediaFileName")
+        ? String(partial.greetingMediaFileName ?? "").trim()
+        : String(current?.greetingMediaFileName ?? ""),
+    greetingBannerTitle:
+      partial && Object.prototype.hasOwnProperty.call(partial, "greetingBannerTitle")
+        ? String(partial.greetingBannerTitle ?? "").trim()
+        : String(current?.greetingBannerTitle ?? ""),
+    noClassImagePath:
+      partial && Object.prototype.hasOwnProperty.call(partial, "noClassImagePath")
+        ? String(partial.noClassImagePath ?? "").trim()
+        : String(current?.noClassImagePath ?? ""),
+    noClassMediaFileName:
+      partial && Object.prototype.hasOwnProperty.call(partial, "noClassMediaFileName")
+        ? String(partial.noClassMediaFileName ?? "").trim()
+        : String(current?.noClassMediaFileName ?? ""),
+    noClassBannerTitle:
+      partial && Object.prototype.hasOwnProperty.call(partial, "noClassBannerTitle")
+        ? String(partial.noClassBannerTitle ?? "").trim()
+        : String(current?.noClassBannerTitle ?? ""),
+    customImagePath:
+      partial && Object.prototype.hasOwnProperty.call(partial, "customImagePath")
+        ? String(partial.customImagePath ?? "").trim()
+        : String(current?.customImagePath ?? ""),
+    customMediaFileName:
+      partial && Object.prototype.hasOwnProperty.call(partial, "customMediaFileName")
+        ? String(partial.customMediaFileName ?? "").trim()
+        : String(current?.customMediaFileName ?? ""),
+    customBannerTitle:
+      partial && Object.prototype.hasOwnProperty.call(partial, "customBannerTitle")
+        ? String(partial.customBannerTitle ?? "").trim()
+        : String(current?.customBannerTitle ?? ""),
     imagePath:
       partial && Object.prototype.hasOwnProperty.call(partial, "imagePath")
         ? String(partial.imagePath ?? "").trim()
@@ -1910,6 +1982,10 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "mediaFileName")
         ? String(partial.mediaFileName ?? "").trim()
         : String(current?.mediaFileName ?? ""),
+    bannerTitle:
+      partial && Object.prototype.hasOwnProperty.call(partial, "bannerTitle")
+        ? String(partial.bannerTitle ?? "").trim()
+        : String(current?.bannerTitle ?? ""),
     imageStyle:
       partial && Object.prototype.hasOwnProperty.call(partial, "imageStyle")
         ? String(partial.imageStyle ?? "").trim()

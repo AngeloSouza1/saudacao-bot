@@ -460,9 +460,10 @@ function escapeXml(value) {
     .replace(/'/g, "&apos;");
 }
 
-async function buildBannerMediaFromInput(imageInput, cardData) {
+async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1200);
   const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 460);
+  const title = escapeXml(String(bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "🤖 Saudação de hoje").trim() || "🤖 Saudação de hoje");
 
   const logoBuffer = await sharp(imageInput)
     .rotate()
@@ -479,7 +480,7 @@ async function buildBannerMediaFromInput(imageInput, cardData) {
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>
-      <text x="470" y="240" fill="#ffffff" font-size="66" font-family="Georgia, serif" font-weight="700">🤖 Saudação de hoje</text>
+      <text x="470" y="240" fill="#ffffff" font-size="66" font-family="Georgia, serif" font-weight="700">${title}</text>
     </svg>
   `;
 
@@ -542,6 +543,7 @@ export async function sendText({
   imagePath,
   mediaAsDocument,
   mediaFileName,
+  bannerTitle,
   imageStyle,
   cardData
 }) {
@@ -566,7 +568,7 @@ export async function sendText({
         : mediaFullPath;
       const style = String(imageStyle || "").toLowerCase();
       if (style === "banner") {
-        media = await buildBannerMediaFromInput(mediaInput, cardData || {});
+        media = await buildBannerMediaFromInput(mediaInput, cardData || {}, bannerTitle);
         console.log("🖼️ Banner personalizado gerado para envio.");
       } else {
         media = await buildOptimizedMediaFromInput(mediaInput);
