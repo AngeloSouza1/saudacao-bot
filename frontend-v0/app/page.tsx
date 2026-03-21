@@ -98,6 +98,10 @@ type DashboardStatusResponse = {
     lastError?: string
     userName?: string
     userAvatar?: string
+    loggedStudentMatch?: {
+      nome?: string
+      whatsapp?: string
+    } | null
   }
 }
 
@@ -274,6 +278,7 @@ export default function DashboardPage() {
     const cycle = statusData?.cycle?.active
     const sent = Number(cycle?.sentCount || 0)
     const total = Number(cycle?.totalAlunos || 0)
+    const loggedStudentMatch = statusData?.whatsapp?.loggedStudentMatch
 
     return [
       {
@@ -291,6 +296,17 @@ export default function DashboardPage() {
         value: statusData?.whatsapp?.qrAvailable ? "sim" : "não",
         status: statusData?.whatsapp?.qrAvailable ? "warn" : "ok",
       },
+      loggedStudentMatch
+        ? {
+            label: "Número logado",
+            value: `coincide com ${String(loggedStudentMatch?.nome || "aluno")}`,
+            status: "warn" as SystemStatus,
+          }
+        : {
+            label: "Número logado",
+            value: "não coincide com alunos",
+            status: "ok" as SystemStatus,
+          },
       {
         label: "Ciclo",
         value: cycle ? `${sent}/${total}` : "sem ciclo ativo",
@@ -562,6 +578,7 @@ export default function DashboardPage() {
         initialNoClassMessage={String(statusData?.config?.defaultNoClassMessage || "")}
         initialCustomMessage={String(statusData?.config?.customMessageTemplate || "")}
         students={Array.isArray(statusData?.config?.alunoDetalhes) ? statusData?.config?.alunoDetalhes : []}
+        loggedStudentMatch={statusData?.whatsapp?.loggedStudentMatch || null}
         initialImagePath={String(statusData?.config?.imagePath || "")}
         initialMediaFileName={String(statusData?.config?.mediaFileName || "")}
         initialBannerTitle={String(statusData?.config?.bannerTitle || "")}

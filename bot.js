@@ -756,6 +756,31 @@ function getStudentImageForName(config, studentName) {
   return String(getStudentDetailByName(config, studentName)?.imagem || "").trim();
 }
 
+function normalizeWhatsappDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function findLoggedStudentMatch(config, sender) {
+  const senderDigits = normalizeWhatsappDigits(sender);
+  if (!senderDigits) return null;
+
+  const alunos = Array.isArray(config?.alunos) ? config.alunos : [];
+  const details = normalizeStudentDetails(config?.alunoDetalhes, alunos);
+  return (
+    details.find((item) => {
+      const studentDigits = normalizeWhatsappDigits(item?.whatsapp);
+      return (
+        Boolean(studentDigits) &&
+        (
+          senderDigits === studentDigits ||
+          senderDigits.endsWith(studentDigits) ||
+          studentDigits.endsWith(senderDigits)
+        )
+      );
+    }) || null
+  );
+}
+
 function resolveAgendaItemDate(item) {
   if (item?.scheduledDateISO) {
     const parsed = new Date(item.scheduledDateISO);
@@ -1756,6 +1781,8 @@ export function getDashboardState() {
   const config = loadConfig();
   const settings = loadSettings();
   const state = getStateNormalized();
+  const whatsapp = getWhatsAppStatus();
+  const loggedStudentMatch = findLoggedStudentMatch(config, whatsapp?.sender);
   const cycles = completeActiveCycleIfNeeded(loadCycles());
   saveCycles(cycles);
   const activeCycle = getActiveCycle(cycles);
@@ -1808,7 +1835,15 @@ export function getDashboardState() {
     },
     schedulePreview,
     lastRun,
-    whatsapp: getWhatsAppStatus()
+    whatsapp: {
+      ...whatsapp,
+      loggedStudentMatch: loggedStudentMatch
+        ? {
+            nome: String(loggedStudentMatch?.nome || "").trim(),
+            whatsapp: String(loggedStudentMatch?.whatsapp || "").trim()
+          }
+        : null
+    }
   };
 }
 

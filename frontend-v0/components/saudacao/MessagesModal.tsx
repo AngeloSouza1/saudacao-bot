@@ -12,6 +12,7 @@ interface MessagesModalProps {
   initialNoClassMessage?: string
   initialCustomMessage?: string
   students?: Array<{ nome?: string; whatsapp?: string; imagem?: string }>
+  loggedStudentMatch?: { nome?: string; whatsapp?: string } | null
   initialImagePath?: string
   initialMediaFileName?: string
   initialBannerTitle?: string
@@ -171,6 +172,7 @@ export function MessagesModal({
   initialNoClassMessage,
   initialCustomMessage,
   students = [],
+  loggedStudentMatch,
   initialImagePath,
   initialMediaFileName,
   initialBannerTitle,
@@ -413,6 +415,11 @@ export function MessagesModal({
   const colorPickerValue = currentBackgroundColor || "#123d37"
   const currentImageIsRemote = /^https?:\/\//i.test(String(currentImagePath || "").trim())
   const currentBackgroundImageIsRemote = /^https?:\/\//i.test(String(currentBackgroundImagePath || "").trim())
+  const loggedStudentWhatsappDigits = String(loggedStudentMatch?.whatsapp || "").replace(/\D/g, "")
+  const studentsWithWhatsapp = (students || []).filter((student) =>
+    Boolean(String(student?.whatsapp || "").trim()) &&
+    String(student?.whatsapp || "").replace(/\D/g, "") !== loggedStudentWhatsappDigits
+  )
   const setCurrentImagePath = (value: string) => {
     if (editorType === "default") setGreetingImagePath(value)
     else if (editorType === "no-class") setNoClassImagePath(value)
@@ -527,7 +534,7 @@ export function MessagesModal({
           onCancel={onClose}
           onConfirm={onClose}
           confirmLabel="Fechar"
-          cancelLabel="Fechar"
+          cancelLabel=""
           loading={false}
         />
       </ModalShell>
@@ -716,9 +723,9 @@ export function MessagesModal({
                         {customTargetType === "student" ? "Selecione um aluno" : "Selecione um grupo"}
                       </option>
                       {customTargetType === "student"
-                        ? (students || []).map((student, idx) => (
+                        ? studentsWithWhatsapp.map((student, idx) => (
                             <option key={`${student?.nome || "student"}-${idx}`} value={String(student?.nome || "")}>
-                              {String(student?.nome || "Aluno")} {student?.whatsapp ? `• ${String(student.whatsapp)}` : "• sem WhatsApp"}
+                              {String(student?.nome || "Aluno")} • {String(student?.whatsapp || "")}
                             </option>
                           ))
                         : groups.map((group, idx) => (
