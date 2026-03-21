@@ -10,6 +10,14 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ cycleLabel, userName, userInitials, userAvatar }: AppHeaderProps) {
+  async function handleLogout() {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      cache: "no-store",
+    })
+    window.location.reload()
+  }
+
   return (
     <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border shadow-sm">
       <div className="flex items-center justify-between px-6 py-3 gap-4">
@@ -45,6 +53,15 @@ export function AppHeader({ cycleLabel, userName, userInitials, userAvatar }: Ap
             className="bg-gold-light text-accent-foreground border border-gold/30"
           />
           <UserChip name={userName} initials={userInitials} avatarUrl={userAvatar} />
+          <button
+            type="button"
+            onClick={() => {
+              void handleLogout()
+            }}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            Sair
+          </button>
         </div>
       </div>
     </header>
