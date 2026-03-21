@@ -1,7 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { CheckCircle2, XCircle, AlertCircle, Clock, Send, Zap, RefreshCw } from "lucide-react"
+import {
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Clock,
+  Send,
+  Zap,
+  RefreshCw,
+  QrCode,
+  Loader2,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export type SystemStatus = "ok" | "warn" | "error" | "idle"
@@ -17,6 +27,8 @@ interface SessionStatusCardProps {
   qrAvailable?: boolean
   qrImageDataUrl?: string
   qrText?: string
+  qrPhase?: string
+  lastError?: string
   title?: string
   subtitle?: string
   showStatusRows?: boolean
@@ -34,6 +46,8 @@ export function SessionStatusCard({
   qrAvailable = false,
   qrImageDataUrl,
   qrText,
+  qrPhase,
+  lastError,
   title = "Status da Sessão",
   subtitle = "Saúde do sistema em tempo real",
   showStatusRows = true,
@@ -48,6 +62,45 @@ export function SessionStatusCard({
   const [lastFeedback, setLastFeedback] = useState<string | null>(null)
   const [feedbackType, setFeedbackType] = useState<"ok" | "err">("ok")
   const [loading, setLoading] = useState<string | null>(null)
+  const qrMode = !showStatusRows && !showActions && !showOverallBadge
+
+  const getQrVisualState = () => {
+    const phase = String(qrPhase || "").toLowerCase()
+    if (phase === "ready" || phase === "authenticated") return "authenticated"
+    if (phase === "error" || phase === "auth_failure" || phase === "disconnected") return "error"
+    if (phase === "qr") return "ready"
+    if (phase === "initializing") return qrAvailable ? "ready" : "loading"
+    if (qrAvailable) return "ready"
+    return "loading"
+  }
+
+  const qrState = getQrVisualState()
+
+  const getQrStatusText = () => {
+    switch (qrState) {
+      case "loading":
+        return "Gerando QR Code..."
+      case "ready":
+        return "Aguardando leitura do QR Code"
+      case "authenticated":
+        return "Sessão autenticada. Carregando painel..."
+      case "error":
+        return "Erro ao gerar QR Code"
+      default:
+        return ""
+    }
+  }
+
+  const getQrStatusColor = () => {
+    switch (qrState) {
+      case "authenticated":
+        return "text-green-mid"
+      case "error":
+        return "text-destructive"
+      default:
+        return "text-muted-foreground"
+    }
+  }
 
   const handleAction = async (action: string, runner?: () => Promise<string>) => {
     if (!runner) return
@@ -62,6 +115,104 @@ export function SessionStatusCard({
     } finally {
       setLoading(null)
     }
+  }
+
+  if (qrMode) {
+    return (
+      <div className="flex h-full flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-start gap-3 border-b border-border px-6 pb-6 pt-6">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <QrCode className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          </div>
+          {onClose ? (
+            <button
+              onClick={onClose}
+              className="h-8 w-8 rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="Fechar autenticação"
+              title="Fechar"
+            >
+              ✕
+            </button>
+          ) : null}
+        </div>
+
+        <div className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+          {qrState === "loading" ? (
+            <div className="w-full space-y-4">
+              <div className="flex justify-center">
+                <div className="h-48 w-48 animate-pulse rounded-lg bg-muted" />
+              </div>
+              <p className="text-center text-sm text-muted-foreground">Preparando QR Code...</p>
+            </div>
+          ) : null}
+
+          {qrState === "error" ? (
+            <div className="w-full space-y-4">
+              <div className="flex justify-center">
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+                  <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+                </div>
+              </div>
+              <p className="text-center text-sm text-destructive">
+                {lastError || "Não foi possível gerar o QR Code no momento."}
+              </p>
+            </div>
+          ) : null}
+
+          {(qrState === "ready" || qrState === "authenticated") ? (
+            <div className="relative flex flex-col items-center gap-4">
+              <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
+                {qrImageDataUrl ? (
+                  <img
+                    src={qrImageDataUrl}
+                    alt="QR Code para autenticar WhatsApp Web"
+                    className={cn(
+                      "h-40 w-40 rounded object-contain transition-opacity",
+                      qrState === "authenticated" ? "opacity-60" : "opacity-100"
+                    )}
+                  />
+                ) : (
+                  <div className="flex h-40 w-40 items-center justify-center rounded bg-muted text-xs text-muted-foreground">
+                    Gerando imagem do QR...
+                  </div>
+                )}
+              </div>
+
+              {qrState === "authenticated" ? (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm">
+                  <div className="text-center">
+                    <CheckCircle2 className="mx-auto mb-2 h-12 w-12 text-green-mid" />
+                    <p className="text-sm font-medium text-foreground">Autenticado</p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="space-y-4 border-t border-border px-6 pb-6 pt-5">
+          <div className={cn("flex items-center gap-2 text-sm font-medium", getQrStatusColor())}>
+            {qrState === "authenticated" ? (
+              <CheckCircle2 className="h-5 w-5" />
+            ) : qrState === "error" ? (
+              <AlertCircle className="h-5 w-5" />
+            ) : qrState === "loading" ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <QrCode className="h-5 w-5" />
+            )}
+            <span>{getQrStatusText()}</span>
+          </div>
+          {qrText && qrState === "ready" ? (
+            <p className="text-xs text-muted-foreground line-clamp-2">{qrText}</p>
+          ) : null}
+        </div>
+      </div>
+    )
   }
 
   return (

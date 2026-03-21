@@ -410,29 +410,42 @@ export default function DashboardPageClient() {
 
             <div className="grid items-stretch gap-6 lg:grid-cols-[0.95fr_1.25fr]">
               <section className="rounded-3xl border border-border bg-card/90 p-8 shadow-sm">
-                <span className="inline-flex rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                <span className="inline-flex rounded-full border border-green-soft bg-green-soft px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-deep">
                   Saudação Bot
                 </span>
-                <h2 className="mt-4 text-3xl font-black tracking-tight text-foreground">
-                  Mensagens automáticas com controle operacional simples
+                <h2 className="mt-6 text-4xl font-bold leading-tight text-foreground">
+                  Conecte o WhatsApp para liberar o painel
                 </h2>
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                  Esta aplicação organiza os alunos, a agenda semanal e a fila de saudações para enviar mensagens
-                  no momento certo pelo WhatsApp.
+                <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
+                  Sua conta do painel já foi autenticada. Agora conecte a sessão do WhatsApp para liberar os envios automáticos e o uso completo da aplicação.
                 </p>
-                <div className="mt-6 space-y-3">
-                  <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
-                    <p className="text-sm font-semibold text-foreground">1. Escaneie o QR Code</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Abra o WhatsApp no celular e conecte esta sessão.</p>
-                  </div>
-                  <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
-                    <p className="text-sm font-semibold text-foreground">2. Libere o painel</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Após a autenticação, o painel e os atalhos serão desbloqueados automaticamente.</p>
-                  </div>
-                  <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
-                    <p className="text-sm font-semibold text-foreground">3. Continue de onde parou</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Sua sessão fica pronta para operar envios, ciclos e agenda do bot.</p>
-                  </div>
+                <div className="mt-8 space-y-4">
+                  {[
+                    {
+                      title: "Abra o WhatsApp no celular.",
+                      desc: "Tenha o aplicativo disponível em seu smartphone.",
+                    },
+                    {
+                      title: "Escaneie o QR Code exibido ao lado.",
+                      desc: "Use a câmera ou o recurso de leitura do WhatsApp.",
+                    },
+                    {
+                      title: "Após a validação, o painel operacional será carregado automaticamente.",
+                      desc: "A sessão será estabelecida em poucos segundos.",
+                    },
+                  ].map((step, index) => (
+                    <div key={step.title} className="flex gap-4">
+                      <div className="pt-0.5">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary">
+                          <span className="text-sm font-semibold text-primary-foreground">{index + 1}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-foreground">{step.title}</p>
+                        <p className="text-sm text-muted-foreground">{step.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </section>
 
@@ -444,6 +457,8 @@ export default function DashboardPageClient() {
                   qrAvailable={Boolean(statusData?.whatsapp?.qrAvailable)}
                   qrImageDataUrl={String(statusData?.whatsapp?.qrImageDataUrl || "")}
                   qrText={String(statusData?.whatsapp?.qrText || "")}
+                  qrPhase={String(statusData?.whatsapp?.phase || "")}
+                  lastError={String(statusData?.whatsapp?.lastError || "")}
                   showStatusRows={false}
                   showActions={false}
                   showOverallBadge={false}
