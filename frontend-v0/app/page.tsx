@@ -246,22 +246,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!statusPollingEnabled) return
-    let cancelled = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-
-    const run = async () => {
-      if (cancelled) return
-      await refreshStatus()
-      if (cancelled) return
-      timer = setTimeout(run, 3000)
-    }
-
-    run()
-
-    return () => {
-      cancelled = true
-      if (timer) clearTimeout(timer)
-    }
+    void refreshStatus()
   }, [refreshStatus, statusPollingEnabled])
 
   const runAction = useCallback(
@@ -379,12 +364,6 @@ export default function DashboardPage() {
                 Conecte a sessão para liberar o painel operacional e os envios automáticos da aplicação.
               </p>
             </div>
-
-            {statusError ? (
-              <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {statusError}
-              </div>
-            ) : null}
 
             <div className="grid items-stretch gap-6 lg:grid-cols-[0.95fr_1.25fr]">
               <section className="rounded-3xl border border-border bg-card/90 p-8 shadow-sm">
