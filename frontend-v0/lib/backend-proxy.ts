@@ -1,3 +1,5 @@
+import { getPanelSession } from "@/lib/panel-auth"
+
 const DEFAULT_BACKEND_URL = "http://127.0.0.1:3001"
 
 function getBackendBaseUrl() {
@@ -16,6 +18,23 @@ export async function proxyToBackend(
   method: "GET" | "POST",
   body?: unknown
 ) {
+  const session = await getPanelSession()
+  if (!session.authenticated) {
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: "Sessão do painel expirada. Faça login novamente.",
+      }),
+      {
+        status: 401,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+      }
+    )
+  }
+
   const headers: Record<string, string> = { Accept: "application/json" }
   const auth = getBackendAuthHeader()
   if (auth) headers.Authorization = auth

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { PANEL_AUTH_COOKIE } from "@/lib/panel-auth"
+import { getPanelCookieOptions, PANEL_AUTH_COOKIE } from "@/lib/panel-auth"
 
 export async function POST() {
   const response = NextResponse.json(
@@ -10,11 +10,7 @@ export async function POST() {
   response.cookies.set({
     name: PANEL_AUTH_COOKIE,
     value: "",
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-    path: "/",
-    maxAge: 0,
+    ...getPanelCookieOptions(0),
   })
 
   return response
