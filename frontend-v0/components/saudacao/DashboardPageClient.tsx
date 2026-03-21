@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Calendar, GraduationCap, MessageCirclePlus } from "lucide-react"
+import { Calendar, GraduationCap, MessageCirclePlus, RefreshCcw } from "lucide-react"
 import { AppHeader } from "@/components/saudacao/AppHeader"
 import { AppSidebar } from "@/components/saudacao/AppSidebar"
 import { SessionStatusCard, type SystemStatus } from "@/components/saudacao/SessionStatusCard"
@@ -12,6 +12,7 @@ import { ScheduleModal } from "@/components/saudacao/ScheduleModal"
 import { AllSchedulesModal } from "@/components/saudacao/AllSchedulesModal"
 import { MessagesModal } from "@/components/saudacao/MessagesModal"
 import { HistoryModal } from "@/components/saudacao/HistoryModal"
+import { CycleModal } from "@/components/saudacao/CycleModal"
 import { hasRequiredConfig } from "@/lib/validation"
 
 type DashboardStatusResponse = {
@@ -53,7 +54,7 @@ type DashboardStatusResponse = {
     alunos?: string[]
     alunoDetalhes?: Array<{ nome?: string; whatsapp?: string; imagem?: string }>
   }
-  scheduleSummary?: Array<{ dia?: string | number; horario?: string; materia?: string }>
+  scheduleSummary?: Array<{ data?: string; dia?: string | number; horario?: string; materia?: string }>
   schedulerStarted?: boolean
   schedulePreview?: Array<{
     dia?: string | number
@@ -106,7 +107,10 @@ type DashboardStatusResponse = {
 }
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
+  const res = await fetch(url, {
+    cache: "no-store",
+    ...init,
+  })
   const data = await res.json()
   if (!res.ok) {
     throw new Error(String(data?.error || "Falha na requisição."))
@@ -193,6 +197,7 @@ export default function DashboardPageClient() {
   const [messagesOpen, setMessagesOpen] = useState(false)
   const [messagesInitialEditorType, setMessagesInitialEditorType] = useState<"default" | "no-class" | "custom">("default")
   const [configOpen, setConfigOpen] = useState(false)
+  const [cycleOpen, setCycleOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [scheduleInitialSection, setScheduleInitialSection] = useState<"students" | "lessons" | null>(null)
@@ -349,14 +354,12 @@ export default function DashboardPageClient() {
   useEffect(() => {
     if (!statusRequested || !statusPollingEnabled) return
 
-    const intervalMs = isSystemReady ? 10000 : 3000
-
     const timer = setInterval(() => {
       void refreshStatus()
-    }, intervalMs)
+    }, 5000)
 
     return () => clearInterval(timer)
-  }, [isSystemReady, refreshStatus, statusPollingEnabled, statusRequested])
+  }, [refreshStatus, statusPollingEnabled, statusRequested])
 
   if (!isMounted) {
     return <div className="h-screen bg-background" suppressHydrationWarning />
@@ -445,19 +448,6 @@ export default function DashboardPageClient() {
                   showActions={false}
                   showOverallBadge={false}
                 />
-                <div className="mt-4 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setStatusRequested(true)
-                      setStatusPollingEnabled(true)
-                      await refreshStatus()
-                    }}
-                    className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/30"
-                  >
-                    Atualizar status
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -507,25 +497,8 @@ export default function DashboardPageClient() {
                   />
                   {isSystemReady ? "Sistema operacional" : "Aguardando WhatsApp"}
                 </div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setStatusRequested(true)
-                    setStatusPollingEnabled(true)
-                    await refreshStatus()
-                  }}
-                  className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/30"
-                >
-                  Atualizar status
-                </button>
               </div>
             </div>
-
-            {!statusRequested && !statusData && !statusError ? (
-              <div className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-muted-foreground">
-                O status da sessão não é consultado automaticamente. Clique em "Atualizar status" para carregar os dados.
-              </div>
-            ) : null}
 
             {statusError ? (
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -617,6 +590,16 @@ export default function DashboardPageClient() {
                 <Calendar size={18} className="text-primary" />
               </span>
             </button>
+            <button
+              onClick={() => setCycleOpen(true)}
+              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              title="Ciclo"
+              aria-label="Ciclo"
+            >
+              <span className="inline-flex w-full items-center justify-center">
+                <RefreshCcw size={18} className="text-primary" />
+              </span>
+            </button>
           </div>
         </aside>
       ) : null}
@@ -631,9 +614,17 @@ export default function DashboardPageClient() {
         open={configOpen}
         onClose={() => setConfigOpen(false)}
         initialConfig={statusData?.config}
+        onSaved={refreshStatus}
+      />
+      <CycleModal
+        open={cycleOpen}
+        onClose={() => setCycleOpen(false)}
+        initialConfig={statusData?.config}
         initialState={statusData?.state}
         cycleActive={Boolean(statusData?.cycle?.active)}
         cycleName={String(statusData?.cycle?.active?.name || "")}
+        cycleSentCount={Number(statusData?.cycle?.active?.sentCount || 0)}
+        cycleTotalAlunos={Number(statusData?.cycle?.active?.totalAlunos || 0)}
         students={Array.isArray(statusData?.config?.alunos) ? statusData?.config?.alunos : []}
         scheduleSummary={Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary : []}
         onSaved={refreshStatus}
@@ -685,6 +676,7 @@ export default function DashboardPageClient() {
         }}
         onSaved={refreshStatus}
         initialSection={scheduleInitialSection}
+        cycleActive={Boolean(statusData?.cycle?.active)}
       />
       <AllSchedulesModal
         open={allSchedulesOpen}

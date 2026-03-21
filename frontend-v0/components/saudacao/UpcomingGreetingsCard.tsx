@@ -39,7 +39,7 @@ export function UpcomingGreetingsCard({ items, onOpenAll }: UpcomingGreetingsCar
             <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gold-light text-accent-foreground border border-gold/30">
               {items.length} na fila
             </span>
-            {onOpenAll ? (
+            {onOpenAll && items.length > 0 ? (
               <button
                 onClick={onOpenAll}
                 className="px-2.5 py-1 rounded-full text-xs font-semibold border border-border bg-card hover:bg-muted transition-colors"

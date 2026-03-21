@@ -15,6 +15,7 @@ interface Student {
 
 interface Lesson {
   id: string
+  data: string
   dia: string
   hora: string
   titulo: string
@@ -27,11 +28,17 @@ interface ScheduleModalProps {
   onClose: () => void
   onSaved?: () => Promise<void> | void
   initialSection?: AgendaSection
+  cycleActive?: boolean
 }
 
 type DeleteTarget =
   | { kind: "student"; id: string; label: string }
   | { kind: "lesson"; id: string; label: string }
+
+type LessonCycleAction =
+  | { kind: "create" }
+  | { kind: "edit"; lesson: Lesson }
+  | { kind: "delete"; lesson: Lesson }
 
 type AgendaSection = "students" | "lessons" | null
 
@@ -49,7 +56,19 @@ const DAY_OPTIONS = [
 type AgendaJsonPayload = {
   alunos?: string[]
   alunoDetalhes?: Array<{ nome?: string; whatsapp?: string; imagem?: string }>
-  agendaSemanal?: Record<string, Array<{ hora?: string; titulo?: string; materia?: string; professor?: string }>>
+  agendaSemanal?: Record<string, Array<{ data?: string; hora?: string; titulo?: string; materia?: string; professor?: string }>>
+}
+
+function getWeekdayFromDate(dateOnly: string) {
+  const parsed = new Date(`${String(dateOnly || "").trim()}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return ""
+  return String(parsed.getDay())
+}
+
+function formatDateOnlyPt(dateOnly: string) {
+  const parsed = new Date(`${String(dateOnly || "").trim()}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return "--/--/----"
+  return parsed.toLocaleDateString("pt-BR")
 }
 
 async function fetchJson<T>(url: string, init?: RequestInit) {
@@ -66,6 +85,7 @@ function agendaToLessons(agendaSemanal: AgendaJsonPayload["agendaSemanal"]): Les
     for (const aula of Array.isArray(aulas) ? aulas : []) {
       list.push({
         id: `l-${dia}-${String(aula?.hora || "--:--")}-${String(aula?.titulo || "")}-${Math.random().toString(36).slice(2, 7)}`,
+        data: String(aula?.data || ""),
         dia,
         hora: String(aula?.hora || ""),
         titulo: String(aula?.titulo || ""),
@@ -80,10 +100,11 @@ function agendaToLessons(agendaSemanal: AgendaJsonPayload["agendaSemanal"]): Les
 function lessonsToAgenda(lessons: Lesson[]): AgendaJsonPayload["agendaSemanal"] {
   const out: NonNullable<AgendaJsonPayload["agendaSemanal"]> = {}
   for (const lesson of lessons) {
-    const dia = String(lesson.dia || "").trim()
+    const dia = getWeekdayFromDate(lesson.data) || String(lesson.dia || "").trim()
     if (!dia) continue
     if (!out[dia]) out[dia] = []
     out[dia].push({
+      data: String(lesson.data || "").trim(),
       hora: String(lesson.hora || "").trim(),
       titulo: String(lesson.titulo || "").trim(),
       materia: String(lesson.materia || "").trim(),
@@ -97,6 +118,34 @@ function sortStudentsByName(list: Student[]): Student[] {
   return [...list].sort((a, b) =>
     a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
   )
+}
+
+function sortLessonsByDate(list: Lesson[]): Lesson[] {
+  return [...list].sort((a, b) => {
+    const leftDate = String(a.data || "").trim()
+    const rightDate = String(b.data || "").trim()
+    const leftHasDate = Boolean(leftDate)
+    const rightHasDate = Boolean(rightDate)
+
+    if (leftHasDate && rightHasDate) {
+      const byDate = leftDate.localeCompare(rightDate)
+      if (byDate !== 0) return byDate
+    } else if (leftHasDate !== rightHasDate) {
+      return leftHasDate ? -1 : 1
+    }
+
+    const byHour = String(a.hora || "").localeCompare(String(b.hora || ""))
+    if (byHour !== 0) return byHour
+
+    const byMateria = String(a.materia || "").localeCompare(String(b.materia || ""), "pt-BR", {
+      sensitivity: "base",
+    })
+    if (byMateria !== 0) return byMateria
+
+    return String(a.professor || "").localeCompare(String(b.professor || ""), "pt-BR", {
+      sensitivity: "base",
+    })
+  })
 }
 
 function sanitizeFilterValue(value: unknown) {
@@ -115,7 +164,7 @@ function forceCleanFilterInput(input: HTMLInputElement | null, nextValue = "") {
   })
 }
 
-export function ScheduleModal({ open, onClose, onSaved, initialSection = null }: ScheduleModalProps) {
+export function ScheduleModal({ open, onClose, onSaved, initialSection = null, cycleActive = false }: ScheduleModalProps) {
   const studentFilterInputRef = useRef<HTMLInputElement | null>(null)
   const [activeSection, setActiveSection] = useState<AgendaSection>(null)
   const [studentName, setStudentName] = useState("")
@@ -127,6 +176,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null)
   const [showStudentForm, setShowStudentForm] = useState(false)
   const [lessonForm, setLessonForm] = useState({
+    data: "",
     dia: "",
     hora: "",
     titulo: "",
@@ -142,6 +192,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
   const [studentError, setStudentError] = useState("")
   const [lessonErrors, setLessonErrors] = useState<Record<string, string>>({})
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
+  const [lessonCycleAction, setLessonCycleAction] = useState<LessonCycleAction | null>(null)
   const isLessonFormVisible = showLessonForm || Boolean(editingLessonId)
   const isStudentModalOpen = showStudentForm || Boolean(editingStudentId)
   const headerActions = activeSection ? (
@@ -176,12 +227,13 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
   ) : null
 
   const isLessonValid = useMemo(() => {
+    const data = normalizeText(lessonForm.data)
     const titulo = normalizeText(lessonForm.titulo)
     const hora = normalizeHourInput(lessonForm.hora)
     const materia = normalizeText(lessonForm.materia)
     const professor = normalizeText(lessonForm.professor)
     return (
-      Boolean(lessonForm.dia) &&
+      Boolean(data) &&
       Boolean(hora) &&
       (!titulo || (titulo.length >= 2 && !isNullWord(titulo))) &&
       Boolean(materia) &&
@@ -206,9 +258,9 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
 
   const filteredLessons = useMemo(() => {
     const query = normalizeText(sanitizeFilterValue(lessonFilter)).toLocaleLowerCase("pt-BR")
-    if (!query) return lessons
+    if (!query) return sortLessonsByDate(lessons)
 
-    return lessons.filter((lesson) => {
+    return sortLessonsByDate(lessons).filter((lesson) => {
       const titulo = normalizeText(lesson.titulo).toLocaleLowerCase("pt-BR")
       const materia = normalizeText(lesson.materia).toLocaleLowerCase("pt-BR")
       const professor = normalizeText(lesson.professor).toLocaleLowerCase("pt-BR")
@@ -266,7 +318,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
             })
           )
         )
-        setLessons(agendaToLessons(data?.agendaSemanal))
+        setLessons(sortLessonsByDate(agendaToLessons(data?.agendaSemanal)))
         setStudentError("")
         setLessonErrors({})
         setActiveSection(initialSection)
@@ -304,12 +356,16 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
 
   function resetLessonForm() {
     setEditingLessonId(null)
-    setLessonForm({ dia: "", hora: "", titulo: "", materia: "", professor: "" })
+    setLessonForm({ data: "", dia: "", hora: "", titulo: "", materia: "", professor: "" })
     setLessonErrors({})
     setShowLessonForm(false)
   }
 
   function openCreateLessonModal() {
+    if (cycleActive) {
+      setLessonCycleAction({ kind: "create" })
+      return
+    }
     resetLessonForm()
     setShowLessonForm(true)
     setActiveSection("lessons")
@@ -391,11 +447,12 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
 
   async function addLesson() {
     const nextErrors: Record<string, string> = {}
+    const data = normalizeText(lessonForm.data)
     const hora = normalizeHourInput(lessonForm.hora)
     const titulo = normalizeText(lessonForm.titulo)
     const materia = normalizeText(lessonForm.materia)
     const professor = normalizeText(lessonForm.professor)
-    if (!lessonForm.dia) nextErrors.dia = "Selecione o dia da aula."
+    if (!data) nextErrors.data = "Selecione a data da aula."
     if (!hora) nextErrors.hora = "Hora inválida. Use HH:MM."
     if (titulo && (titulo.length < 2 || isNullWord(titulo))) nextErrors.titulo = "Título inválido."
     if (materia.length < 2 || isNullWord(materia)) nextErrors.materia = "Matéria inválida."
@@ -406,14 +463,15 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
     const nextLessons = editingLessonId
       ? lessons.map((l) =>
           l.id === editingLessonId
-            ? { ...l, dia: lessonForm.dia, hora, titulo, materia, professor }
+            ? { ...l, data, dia: getWeekdayFromDate(data), hora, titulo, materia, professor }
             : l
         )
       : [
           ...lessons,
           {
             id: `l${Date.now()}`,
-            dia: lessonForm.dia,
+            data,
+            dia: getWeekdayFromDate(data),
             hora,
             titulo,
             materia,
@@ -424,7 +482,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
     const saved = await persistAgendaChanges(students, nextLessons)
     if (!saved) return
 
-    setLessons(nextLessons)
+    setLessons(sortLessonsByDate(nextLessons))
     if (editingLessonId) {
       setEditingLessonId(null)
     }
@@ -434,6 +492,10 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
 
   function removeLesson(id: string) {
     const lesson = lessons.find((l) => l.id === id)
+    if (cycleActive && lesson) {
+      setLessonCycleAction({ kind: "delete", lesson })
+      return
+    }
     setDeleteTarget({
       kind: "lesson",
       id,
@@ -445,7 +507,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
     const nextLessons = lessons.filter((l) => l.id !== id)
     const saved = await persistAgendaChanges(students, nextLessons)
     if (!saved) return
-    setLessons(nextLessons)
+    setLessons(sortLessonsByDate(nextLessons))
     if (editingLessonId === id) {
       resetLessonForm()
     }
@@ -462,9 +524,14 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
   }
 
   function startEditLesson(lesson: Lesson) {
+    if (cycleActive) {
+      setLessonCycleAction({ kind: "edit", lesson })
+      return
+    }
     setActiveSection("lessons")
     setEditingLessonId(lesson.id)
     setLessonForm({
+      data: lesson.data,
       dia: lesson.dia,
       hora: lesson.hora,
       titulo: lesson.titulo,
@@ -473,6 +540,38 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
     })
     setLessonErrors({})
     setShowLessonForm(true)
+  }
+
+  function proceedLessonCycleAction() {
+    if (!lessonCycleAction) return
+
+    if (lessonCycleAction.kind === "create") {
+      resetLessonForm()
+      setShowLessonForm(true)
+      setActiveSection("lessons")
+    } else if (lessonCycleAction.kind === "edit") {
+      const lesson = lessonCycleAction.lesson
+      setActiveSection("lessons")
+      setEditingLessonId(lesson.id)
+      setLessonForm({
+        data: lesson.data,
+        dia: lesson.dia,
+        hora: lesson.hora,
+        titulo: lesson.titulo,
+        materia: lesson.materia,
+        professor: lesson.professor,
+      })
+      setLessonErrors({})
+      setShowLessonForm(true)
+    } else {
+      setDeleteTarget({
+        kind: "lesson",
+        id: lessonCycleAction.lesson.id,
+        label: lessonCycleAction.lesson.titulo?.trim() || "aula",
+      })
+    }
+
+    setLessonCycleAction(null)
   }
 
   function buildAgendaPayload(studentList: Student[], lessonList: Lesson[]) {
@@ -750,7 +849,12 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
 
           {activeSection === "lessons" ? (
           <div className="rounded-2xl bg-card/80 p-4 flex flex-col min-h-0 h-full">
-            <h3 className="text-[2rem] font-black tracking-tight text-foreground">Aulas da Semana</h3>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-[2rem] font-black tracking-tight text-foreground">Aulas da Semana</h3>
+              <span className="rounded-full border border-primary/15 bg-primary/8 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                {lessons.length} cadastradas
+              </span>
+            </div>
             <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <button
                 onClick={openCreateLessonModal}
@@ -786,16 +890,23 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
             >
               <table className="table w-full table-fixed text-sm">
                 <colgroup>
-                  <col className="w-[8%]" />
+                  <col className="w-[12%]" />
                   <col className="w-[10%]" />
-                  <col className="w-[36%]" />
-                  <col className="w-[17%]" />
-                  <col className="w-[17%]" />
-                  <col className="w-[6%]" />
-                  <col className="w-[6%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[30%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[5%]" />
+                  <col className="w-[5%]" />
                 </colgroup>
                 <thead className="sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/92">
                   <tr className="h-10">
+                    <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-2">
+                        <Calendar size={13} className="text-primary" />
+                        Data
+                      </span>
+                    </th>
                     <th className="px-3 py-2 text-left text-xs uppercase tracking-wider">
                       <span className="inline-flex items-center gap-2">
                         <Calendar size={13} className="text-primary" />
@@ -839,6 +950,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
                         idx % 2 ? "bg-muted/18" : "bg-primary/6"
                       )}
                     >
+                      <td className="px-3 py-2 align-middle text-[15px] tabular-nums">{formatDateOnlyPt(lesson.data)}</td>
                       <td className="px-3 py-2 align-middle text-[15px]">
                         {(DAY_OPTIONS.find((d) => d.value === String(lesson.dia))?.label || lesson.dia).replace(/^\d+\s-\s/, "").slice(0, 3)}
                       </td>
@@ -913,6 +1025,48 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
                 className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-status-err hover:bg-destructive/20"
               >
                 Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {lessonCycleAction ? (
+        <div className="fixed inset-0 z-[71] flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-transparent"
+            onClick={() => setLessonCycleAction(null)}
+            aria-label="Fechar confirmação de alteração do ciclo"
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl">
+            <h4 className="text-lg font-bold text-foreground">
+              {lessonCycleAction.kind === "create"
+                ? "Adicionar aula com ciclo ativo"
+                : lessonCycleAction.kind === "edit"
+                  ? "Editar aula com ciclo ativo"
+                  : "Excluir aula com ciclo ativo"}
+            </h4>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {lessonCycleAction.kind === "create"
+                ? "Você está prestes a adicionar uma nova aula enquanto existe um ciclo ativo. Deseja continuar?"
+                : lessonCycleAction.kind === "edit"
+                ? `A aula "${lessonCycleAction.lesson.titulo || "aula"}" faz parte de um ciclo ativo. Deseja continuar com a edição?`
+                : `A aula "${lessonCycleAction.lesson.titulo || "aula"}" faz parte de um ciclo ativo. Deseja continuar com a exclusão?`}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Essa alteração pode afetar a ordem das saudações e pode exigir reinício do ciclo.
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setLessonCycleAction(null)}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={proceedLessonCycleAction}
+                className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+              >
+                Continuar
               </button>
             </div>
           </div>
@@ -1020,26 +1174,18 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null }:
               </button>
             </div>
             <div className="grid grid-cols-1 gap-4 rounded-[1.5rem] border border-primary/15 bg-muted/20 p-4 md:grid-cols-2">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dia</label>
-                <select
-                  value={lessonForm.dia}
-                  onChange={(e) => {
-                    setLessonForm((p) => ({ ...p, dia: e.target.value }))
-                    setLessonErrors((prev) => ({ ...prev, dia: "" }))
-                  }}
-                  className={`border-0 border-b-2 outline-none py-1.5 text-sm text-foreground transition-colors ${
-                    lessonErrors.dia ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
-                  } ${editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : "bg-transparent"}`}
-                >
-                  {DAY_OPTIONS.map((d) => (
-                    <option key={d.value || "ph"} value={d.value} disabled={!d.value}>
-                      {d.label}
-                    </option>
-                  ))}
-                </select>
-                {lessonErrors.dia ? <p className="text-[11px] text-status-err">{lessonErrors.dia}</p> : null}
-              </div>
+              <UnderlineInput
+                label="Data"
+                value={lessonForm.data}
+                onChange={(v) => {
+                  setLessonForm((p) => ({ ...p, data: v, dia: getWeekdayFromDate(v) }))
+                  setLessonErrors((prev) => ({ ...prev, data: "" }))
+                }}
+                type="date"
+                required
+                error={lessonErrors.data}
+                inputClassName={editingLessonId ? "bg-amber-100/70 rounded-t-md px-2" : ""}
+              />
               <UnderlineInput
                 label="Hora"
                 value={lessonForm.hora}

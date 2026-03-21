@@ -160,6 +160,12 @@ function buildCycleName(customName, reason = "manual") {
     minute: "2-digit"
   });
   const prefix = reason === "bootstrap" ? "Ciclo inicial" : "Novo ciclo";
+  const state = getStateNormalized();
+  const startDate = parseDateOnly(String(state?.dataInicio || "").trim());
+  if (startDate instanceof Date && !Number.isNaN(startDate.getTime())) {
+    const startLabel = startDate.toLocaleDateString("pt-BR");
+    return `${prefix} ${stamp} · início ${startLabel}`;
+  }
   return `${prefix} ${stamp}`;
 }
 
@@ -372,10 +378,20 @@ function isDiaPermitido(config, d) {
 }
 
 function getAgendaEntriesByConfig(config) {
-  return getAgendaEntries(config).filter(({ dia }) => {
-    const day = Number(dia);
-    return Number.isInteger(day) && isDiaPermitido(config, day);
-  });
+  return getAgendaEntries(config)
+    .filter(({ dia }) => {
+      const day = Number(dia);
+      return Number.isInteger(day) && isDiaPermitido(config, day);
+    })
+    .sort((left, right) => {
+      const leftDate = String(left?.aula?.data || "");
+      const rightDate = String(right?.aula?.data || "");
+      const byDate = leftDate.localeCompare(rightDate);
+      if (byDate !== 0) return byDate;
+      const byDay = Number(left?.dia) - Number(right?.dia);
+      if (byDay !== 0) return byDay;
+      return String(left?.aula?.hora || "").localeCompare(String(right?.aula?.hora || ""));
+    });
 }
 
 function parseHora(hora) {
@@ -403,6 +419,7 @@ function validateAula(aula, contextLabel) {
   const materia = String(aula.materia || "").trim();
   const professor = String(aula.professor || "").trim();
   const hora = String(aula.hora || "").trim();
+  const data = String(aula.data || "").trim();
 
   // "titulo" é opcional para manter compatibilidade com agendas antigas.
   if (titulo && titulo.length < 2) {
@@ -411,6 +428,9 @@ function validateAula(aula, contextLabel) {
   if (!materia) throw new Error(`${contextLabel}: matéria obrigatória.`);
   if (!professor) throw new Error(`${contextLabel}: professor obrigatório.`);
   parseHora(hora);
+  if (data && !parseDateOnly(data)) {
+    throw new Error(`${contextLabel}: data inválida. Use YYYY-MM-DD.`);
+  }
 }
 
 function validateAgendaSemanal(agendaSemanal) {
@@ -452,10 +472,11 @@ function normalizeAgendaSemanal(agendaSemanal) {
       const titulo = String(aula?.titulo || "").trim();
       const materia = String(aula?.materia || "").trim();
       const professor = String(aula?.professor || "").trim();
+      const data = String(aula?.data || "").trim();
       const horaRaw = String(aula?.hora || "").trim();
       const { hours, minutes } = parseHora(horaRaw);
       const hora = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-      return { titulo, materia, professor, hora };
+      return { data, titulo, materia, professor, hora };
     });
 
     normalized[String(day)] = aulasNormalized;
@@ -479,13 +500,19 @@ function getAgendaEntries(config) {
   for (const [dia, aulas] of Object.entries(config.agendaSemanal || {})) {
     if (Array.isArray(aulas)) {
       for (const aula of aulas) {
-        entries.push({ dia, aula });
+        const data = String(aula?.data || "").trim();
+        const parsedDate = parseDateOnly(data);
+        const derivedDia = parsedDate instanceof Date ? String(parsedDate.getDay()) : String(dia);
+        entries.push({ dia: derivedDia, aula: { ...aula, data } });
       }
       continue;
     }
 
     if (aulas && typeof aulas === "object") {
-      entries.push({ dia, aula: aulas });
+      const data = String(aulas?.data || "").trim();
+      const parsedDate = parseDateOnly(data);
+      const derivedDia = parsedDate instanceof Date ? String(parsedDate.getDay()) : String(dia);
+      entries.push({ dia: derivedDia, aula: { ...aulas, data } });
     }
   }
 
@@ -534,9 +561,18 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
   const scheduleItems = Array.isArray(summary) ? summary : [];
   if (!scheduleItems.length) return [];
 
-  // A prévia deve seguir a mesma ordem visual do editor de aulas (Adicionar Aula).
-  // O avanço de idxAula continua valendo apenas para o envio em runtime.
-  const orderedScheduleItems = scheduleItems;
+  // A prévia deve seguir a mesma ordem visual do editor de aulas e respeitar a aula
+  // inicial escolhida para o ciclo atual.
+  const rawStartIndex = Number(state?.idxAula || 0);
+  const normalizedStartIndex = scheduleItems.length
+    ? ((rawStartIndex % scheduleItems.length) + scheduleItems.length) % scheduleItems.length
+    : 0;
+  const orderedScheduleItems = scheduleItems.length
+    ? [
+        ...scheduleItems.slice(normalizedStartIndex),
+        ...scheduleItems.slice(0, normalizedStartIndex),
+      ]
+    : [];
 
   const startDate = parseDateOnly(state?.dataInicio);
   const timelineStart = startDate || new Date();
@@ -558,9 +594,12 @@ function buildSchedulePreview(config, state, summary, cycleLimit = null, cycleId
     const item = orderedScheduleItems[index % Math.max(orderedScheduleItems.length, 1)];
     if (!item) break;
 
-    const scheduledDate = (index === 0 && startDate)
-      ? applyTimeOnDate(startDate, item.horario)
-      : computeNextScheduledDate(item.dia, item.horario, cursor);
+    const itemDate = parseDateOnly(String(item?.data || "").trim());
+    const scheduledDate = itemDate instanceof Date
+      ? applyTimeOnDate(itemDate, item.horario)
+      : (index === 0 && startDate)
+        ? applyTimeOnDate(startDate, item.horario)
+        : computeNextScheduledDate(item.dia, item.horario, cursor);
     cursor = new Date(scheduledDate.getTime() + 60 * 1000);
     const scheduledDateISO = scheduledDate.toISOString();
     const itemKey = buildAgendaItemKey({
@@ -651,10 +690,13 @@ function sortPreviewSummaryLikeLessonsModal(summary, state) {
   const referenceDate = getPreviewReferenceDate(state);
   const weekdayOccurrenceMap = new Map();
   const rows = list.map((item, index) => {
-    const nextDate = computeNextScheduledDate(item?.dia, item?.horario, referenceDate);
+    const explicitDate = parseDateOnly(String(item?.data || "").trim());
+    const nextDate = explicitDate instanceof Date
+      ? applyTimeOnDate(explicitDate, String(item?.horario || "00:00"))
+      : computeNextScheduledDate(item?.dia, item?.horario, referenceDate);
     const dayKey = String(item?.dia || "");
     const occurrenceIndex = Number(weekdayOccurrenceMap.get(dayKey) || 0);
-    if (nextDate instanceof Date && occurrenceIndex > 0) {
+    if (!(explicitDate instanceof Date) && nextDate instanceof Date && occurrenceIndex > 0) {
       nextDate.setDate(nextDate.getDate() + (occurrenceIndex * 7));
     }
     weekdayOccurrenceMap.set(dayKey, occurrenceIndex + 1);
@@ -1439,6 +1481,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
 
 function getOrderedLessonsForManualSend(config) {
   const entries = getAgendaEntriesByConfig(config).map(({ dia, aula }) => ({
+    data: String(aula?.data || ""),
     dia: String(dia),
     titulo: String(aula?.titulo || ""),
     materia: aula.materia,
@@ -1447,6 +1490,8 @@ function getOrderedLessonsForManualSend(config) {
   }));
 
   entries.sort((a, b) => {
+    const byDate = String(a.data || "").localeCompare(String(b.data || ""));
+    if (byDate !== 0) return byDate;
     const diaDiff = Number(a.dia) - Number(b.dia);
     if (diaDiff !== 0) return diaDiff;
     const horaDiff = String(a.hora).localeCompare(String(b.hora));
@@ -1641,6 +1686,7 @@ export function startScheduler() {
     }
 
     scheduleSummary.push({
+      data: String(aula.data || ""),
       dia,
       horario: aula.hora,
       horarioDisparo: label,
@@ -1691,8 +1737,15 @@ async function runScheduledDispatch(config) {
     return null;
   }
 
+  const todayKey = getLocalDateKey(new Date());
   const aulasDoDia = getAgendaEntries(config)
-    .filter((item) => item.dia === String(d))
+    .filter((item) => {
+      const itemDate = String(item?.aula?.data || "").trim();
+      if (itemDate) {
+        return itemDate === todayKey;
+      }
+      return item.dia === String(d);
+    })
     .map((item) => item.aula);
 
   if (aulasDoDia.length === 0) {
