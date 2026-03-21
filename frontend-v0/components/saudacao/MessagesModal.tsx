@@ -616,43 +616,19 @@ export function MessagesModal({
                 hint="Opcional. Define o nome do arquivo quando a mídia for enviada."
               />
               <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between gap-3">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Cor de fundo
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCurrentBackgroundColor(
-                        hasBackgroundColor ? "" : colorPickerValue || "#123d37"
-                      )
-                    }
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                      hasBackgroundColor
-                        ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/15"
-                        : "border-border bg-background text-muted-foreground hover:border-primary/40"
-                    }`}
-                  >
-                    {hasBackgroundColor ? "Desabilitar" : "Usar cor"}
-                  </button>
-                </div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Cor de fundo
+                </label>
                 <div
-                  className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${
-                    hasBackgroundColor
-                      ? "border-input bg-background hover:border-primary"
-                      : "border-border/70 bg-muted/20 opacity-60"
-                  }`}
+                  className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2 text-left transition-colors hover:border-primary"
                 >
                   <input
                     type="color"
                     value={colorPickerValue}
                     onChange={(e) => setCurrentBackgroundColor(e.target.value)}
-                    disabled={!hasBackgroundColor}
-                    className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0 disabled:cursor-not-allowed"
+                    className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
                   />
-                  <span className={`font-mono text-sm ${hasBackgroundColor ? "text-foreground" : "text-muted-foreground"}`}>
-                    {hasBackgroundColor ? currentBackgroundColor : "desabilitada"}
-                  </span>
+                  <span className="font-mono text-sm text-foreground">{currentBackgroundColor || "#123d37"}</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   Define a cor do fundo do banner desta mensagem.

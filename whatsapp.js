@@ -519,69 +519,93 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     })
     .join("");
 
-  const avatarSize = 240;
-  const avatarContentSize = 188;
-  const avatarLeft = 76;
-  const avatarTop = Math.max(0, Math.floor((height - avatarSize) / 2));
-  const avatarRadius = Math.floor(avatarSize / 2);
-  const shadowSize = avatarSize + 34;
-  const shadowLeft = avatarLeft - 17;
-  const shadowTop = avatarTop - 12;
-  const logoMask = Buffer.from(`
-    <svg width="${avatarSize}" height="${avatarSize}" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${avatarRadius}" cy="${avatarRadius}" r="${avatarRadius}" fill="#ffffff"/>
+  const mediaFrameWidth = 224;
+  const mediaFrameHeight = 224;
+  const mediaContentWidth = 188;
+  const mediaContentHeight = 188;
+  const mediaLeft = 64;
+  const mediaTop = Math.max(0, Math.floor((height - mediaFrameHeight) / 2));
+  const mediaRadius = 28;
+  const mediaContentLeft = Math.floor((mediaFrameWidth - mediaContentWidth) / 2);
+  const mediaContentTop = Math.floor((mediaFrameHeight - mediaContentHeight) / 2);
+  const shadowWidth = mediaFrameWidth + 22;
+  const shadowHeight = mediaFrameHeight + 22;
+  const shadowLeft = mediaLeft - 11;
+  const shadowTop = mediaTop - 8;
+  const mediaContentBackdropBuffer = Buffer.from(`
+    <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mediaInner" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="rgba(255,255,255,0.96)"/>
+          <stop offset="100%" stop-color="rgba(231,239,245,0.92)"/>
+        </linearGradient>
+      </defs>
+      <rect
+        x="${mediaContentLeft}"
+        y="${mediaContentTop}"
+        width="${mediaContentWidth}"
+        height="${mediaContentHeight}"
+        rx="22"
+        fill="url(#mediaInner)"
+        stroke="rgba(255,255,255,0.10)"
+        stroke-width="1.5"
+      />
     </svg>
   `);
   const logoInnerBuffer = await sharp(imageInput)
     .rotate()
+    .flatten({ background: { r: 245, g: 248, b: 251 } })
     .resize({
-      width: avatarContentSize,
-      height: avatarContentSize,
+      width: mediaContentWidth,
+      height: mediaContentHeight,
       fit: "contain",
+      position: "centre",
       background: { r: 0, g: 0, b: 0, alpha: 0 }
     })
     .png()
     .toBuffer();
-  const logoBuffer = await sharp({
+  const mediaFrameBuffer = await sharp({
     create: {
-      width: avatarSize,
-      height: avatarSize,
+      width: mediaFrameWidth,
+      height: mediaFrameHeight,
       channels: 4,
-      background: { r: 255, g: 255, b: 255, alpha: 0.06 }
+      background: { r: 14, g: 24, b: 34, alpha: 1 }
     }
   })
-    .composite([{
-      input: logoInnerBuffer,
-      top: Math.floor((avatarSize - avatarContentSize) / 2),
-      left: Math.floor((avatarSize - avatarContentSize) / 2)
-    }])
-    .composite([{ input: logoMask, blend: "dest-in" }])
+    .composite([
+      { input: mediaContentBackdropBuffer, top: 0, left: 0 },
+      {
+        input: logoInnerBuffer,
+        top: mediaContentTop,
+        left: mediaContentLeft
+      }
+    ])
     .png()
     .toBuffer();
-  const avatarShadowBuffer = await sharp({
+  const mediaShadowBuffer = await sharp({
     create: {
-      width: shadowSize,
-      height: shadowSize,
+      width: shadowWidth,
+      height: shadowHeight,
       channels: 4,
       background: { r: 0, g: 0, b: 0, alpha: 0 }
     }
   })
     .composite([{
       input: Buffer.from(`
-        <svg width="${shadowSize}" height="${shadowSize}" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="${Math.floor(shadowSize / 2)}" cy="${Math.floor(shadowSize / 2)}" r="${avatarRadius}" fill="rgba(0,0,0,0.42)"/>
+        <svg width="${shadowWidth}" height="${shadowHeight}" xmlns="http://www.w3.org/2000/svg">
+          <rect x="11" y="8" width="${mediaFrameWidth}" height="${mediaFrameHeight}" rx="${mediaRadius}" fill="rgba(0,0,0,0.36)"/>
         </svg>
       `),
       top: 0,
       left: 0
     }])
-    .blur(18)
+    .blur(12)
     .png()
     .toBuffer();
-  const avatarRingBuffer = Buffer.from(`
-    <svg width="${avatarSize}" height="${avatarSize}" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${avatarRadius}" cy="${avatarRadius}" r="${avatarRadius - 4}" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="8"/>
-      <circle cx="${avatarRadius}" cy="${avatarRadius}" r="${avatarRadius - 18}" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  const mediaRingBuffer = Buffer.from(`
+    <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="${mediaFrameWidth - 6}" height="${mediaFrameHeight - 6}" rx="${mediaRadius - 3}" fill="none" stroke="rgba(255,255,255,0.82)" stroke-width="4"/>
+      <rect x="12" y="12" width="${mediaFrameWidth - 24}" height="${mediaFrameHeight - 24}" rx="${mediaRadius - 10}" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="2"/>
     </svg>
   `);
 
@@ -599,8 +623,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
       </defs>
       <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>
       <rect x="22" y="22" width="${width - 44}" height="${height - 44}" rx="18" fill="url(#panel)" stroke="rgba(125,255,210,0.24)" stroke-width="3"/>
-      <rect x="396" y="58" width="${width - 454}" height="${height - 116}" rx="24" fill="${hasBackgroundImage ? "rgba(6,18,26,0.08)" : "rgba(6,18,26,0.14)"}"/>
-      <text x="448" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
+      <rect x="332" y="58" width="${width - 390}" height="${height - 116}" rx="24" fill="${hasBackgroundImage ? "rgba(6,18,26,0.06)" : "rgba(6,18,26,0.14)"}"/>
+      <text x="356" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
     </svg>
   `;
 
@@ -632,9 +656,9 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     .composite([
       ...composites,
       { input: Buffer.from(svgText), top: 0, left: 0 },
-      { input: avatarShadowBuffer, top: shadowTop, left: shadowLeft },
-      { input: logoBuffer, top: avatarTop, left: avatarLeft },
-      { input: avatarRingBuffer, top: avatarTop, left: avatarLeft }
+      { input: mediaShadowBuffer, top: shadowTop, left: shadowLeft },
+      { input: mediaFrameBuffer, top: mediaTop, left: mediaLeft },
+      { input: mediaRingBuffer, top: mediaTop, left: mediaLeft }
     ])
     .jpeg({ quality: 68, mozjpeg: true })
     .toBuffer();
