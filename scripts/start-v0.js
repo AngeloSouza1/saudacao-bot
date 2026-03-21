@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import net from "node:net";
 
 const backendPort = String(process.env.DASHBOARD_PORT || "3001");
@@ -48,6 +48,51 @@ function isPortInUse(port, host = "127.0.0.1") {
   });
 }
 
+async function readBackendStatus(baseUrl) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1500);
+  try {
+    const response = await fetch(`${baseUrl}/api/status`, {
+      cache: "no-store",
+      signal: controller.signal
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function isBackendHealthy(status) {
+  const phase = String(status?.whatsapp?.phase || "");
+  const sender = String(status?.whatsapp?.sender || "");
+  const qrAvailable = Boolean(status?.whatsapp?.qrAvailable);
+  const lastError = String(status?.whatsapp?.lastError || "").toLowerCase();
+
+  if (sender || qrAvailable) return true;
+  if (["ready", "authenticated", "qr", "initializing"].includes(phase)) return true;
+  if (lastError.includes("navigating frame was detached")) return false;
+  if (phase === "error") return false;
+  return Boolean(status);
+}
+
+function stopProcessOnPort(port) {
+  try {
+    const output = execFileSync("lsof", ["-tiTCP:" + String(port), "-sTCP:LISTEN"], {
+      encoding: "utf8"
+    }).trim();
+    const pids = output.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      process.kill(Number(pid), "SIGKILL");
+    }
+    return pids;
+  } catch {
+    return [];
+  }
+}
+
 function shutdown() {
   for (const child of children) {
     if (!child.killed) {
@@ -72,7 +117,8 @@ process.on("SIGTERM", () => {
 
 async function main() {
   const dashboardHost = process.env.DASHBOARD_HOST || "127.0.0.1";
-  const backendInUse = await isPortInUse(backendPort, dashboardHost);
+  const backendBaseUrl = process.env.BACKEND_API_BASE_URL || `http://${dashboardHost}:${backendPort}`;
+  let backendInUse = await isPortInUse(backendPort, dashboardHost);
   const frontendInUse = await isPortInUse(frontendPort, "127.0.0.1");
 
   console.log("🚀 Iniciando Saudacao Bot (backend + frontend v0)...");
@@ -80,8 +126,21 @@ async function main() {
   console.log(`   - Frontend v0: http://127.0.0.1:${frontendPort}`);
 
   if (backendInUse) {
-    console.log(`   - Backend já ativo na porta ${backendPort}. Reaproveitando instância existente.`);
-  } else {
+    const backendStatus = await readBackendStatus(backendBaseUrl);
+    if (isBackendHealthy(backendStatus)) {
+      console.log(`   - Backend já ativo na porta ${backendPort}. Reaproveitando instância existente.`);
+    } else {
+      const stoppedPids = stopProcessOnPort(backendPort);
+      if (stoppedPids.length) {
+        console.log(`   - Backend na porta ${backendPort} estava travado. Reiniciando instância (${stoppedPids.join(", ")}).`);
+      } else {
+        console.log(`   - Backend na porta ${backendPort} não respondeu corretamente. Iniciando nova instância.`);
+      }
+      backendInUse = false;
+    }
+  }
+
+  if (!backendInUse) {
     startProcess("backend", "node", ["index.js"], {
       DASHBOARD_HOST: dashboardHost,
       DASHBOARD_PORT: backendPort
@@ -92,7 +151,7 @@ async function main() {
     console.log(`   - Frontend já ativo na porta ${frontendPort}. Reaproveitando instância existente.`);
   } else {
     startProcess("frontend-v0", npmCmd, ["--prefix", "frontend-v0", "run", "dev", "--", "-p", frontendPort], {
-      BACKEND_API_BASE_URL: process.env.BACKEND_API_BASE_URL || `http://${dashboardHost}:${backendPort}`
+      BACKEND_API_BASE_URL: backendBaseUrl
     });
   }
 
