@@ -267,11 +267,13 @@ const VIEWER_HELP: Record<string, { title: string; description: string; guidance
 
 export default function DashboardPageClient({ panelSession }: DashboardPageClientProps) {
   const defaultScreenAppliedRef = useRef(false)
+  const qrScreenSeenRef = useRef(false)
   const authTransitionDurationMs = 7000
   const [isMounted, setIsMounted] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [justAuthenticated, setJustAuthenticated] = useState(false)
   const [showAuthTransition, setShowAuthTransition] = useState(false)
+  const [authTransitionMode, setAuthTransitionMode] = useState<"login" | "whatsapp-ready">("login")
   const [authTransitionStartedAt, setAuthTransitionStartedAt] = useState(0)
   const [authTransitionProgress, setAuthTransitionProgress] = useState(0)
   const [activeItem, setActiveItem] = useState("")
@@ -300,6 +302,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
     const authMarker = window.sessionStorage.getItem("saudacao.panel.just-authenticated")
     if (!authMarker) return
     setJustAuthenticated(true)
+    setAuthTransitionMode("login")
     const startedAt = Date.now()
     setAuthTransitionStartedAt(startedAt)
     setAuthTransitionProgress(0)
@@ -345,16 +348,20 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   }, [isMounted, refreshStatus, statusRequested])
 
   useEffect(() => {
-    if (!isMounted || initialLoading || !justAuthenticated) return
+    if (!isMounted || initialLoading || !showAuthTransition) return
     if (typeof window === "undefined") return
-    window.sessionStorage.removeItem("saudacao.panel.just-authenticated")
+    if (authTransitionMode === "login") {
+      window.sessionStorage.removeItem("saudacao.panel.just-authenticated")
+    }
     const timer = window.setTimeout(() => {
       setAuthTransitionProgress(100)
       setShowAuthTransition(false)
-      setJustAuthenticated(false)
+      if (authTransitionMode === "login") {
+        setJustAuthenticated(false)
+      }
     }, authTransitionDurationMs)
     return () => window.clearTimeout(timer)
-  }, [authTransitionDurationMs, initialLoading, isMounted, justAuthenticated])
+  }, [authTransitionDurationMs, authTransitionMode, initialLoading, isMounted, showAuthTransition])
 
   useEffect(() => {
     if (!showAuthTransition || !authTransitionStartedAt) return
@@ -468,6 +475,20 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const showShortcutsCard = shortcutsOpen
 
   useEffect(() => {
+    if (initialLoading) return
+    if (!isSystemReady) {
+      qrScreenSeenRef.current = true
+      return
+    }
+    if (justAuthenticated || showAuthTransition || !qrScreenSeenRef.current) return
+    qrScreenSeenRef.current = false
+    setAuthTransitionMode("whatsapp-ready")
+    setAuthTransitionStartedAt(Date.now())
+    setAuthTransitionProgress(0)
+    setShowAuthTransition(true)
+  }, [initialLoading, isSystemReady, justAuthenticated, showAuthTransition])
+
+  useEffect(() => {
     if (!isSystemReady || defaultScreenAppliedRef.current) return
     setActiveItem("")
     setShortcutsOpen(true)
@@ -503,16 +524,25 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             </div>
 
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-green-700/70">
-              Acesso liberado
+              {authTransitionMode === "whatsapp-ready" ? "Sessão conectada" : "Acesso liberado"}
             </p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground">
-              Usuário autenticado
+              {authTransitionMode === "whatsapp-ready" ? "WhatsApp autenticado" : "Usuário autenticado"}
             </h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              A conta <span className="font-semibold text-foreground">{panelUserName}</span> foi validada com sucesso.
-              {isSystemReady
-                ? " Preparando o painel principal para acesso."
-                : " Agora vamos verificar a sessão do WhatsApp."}
+              {authTransitionMode === "whatsapp-ready" ? (
+                <>
+                  A sessão do WhatsApp da conta <span className="font-semibold text-foreground">{panelUserName}</span> foi validada.
+                  {" "}Preparando o painel principal para acesso.
+                </>
+              ) : (
+                <>
+                  A conta <span className="font-semibold text-foreground">{panelUserName}</span> foi validada com sucesso.
+                  {isSystemReady
+                    ? " Preparando o painel principal para acesso."
+                    : " Agora vamos verificar a sessão do WhatsApp."}
+                </>
+              )}
             </p>
 
             <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-border bg-secondary/55 px-4 py-2.5 text-sm text-foreground">
@@ -545,7 +575,11 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             </div>
 
             <p className="mt-5 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              {isSystemReady ? "Redirecionando para o painel operacional" : "Redirecionando para a autenticação do WhatsApp"}
+              {authTransitionMode === "whatsapp-ready"
+                ? "Redirecionando para o painel operacional"
+                : isSystemReady
+                  ? "Redirecionando para o painel operacional"
+                  : "Redirecionando para a autenticação do WhatsApp"}
             </p>
           </div>
         </div>
