@@ -31,7 +31,7 @@ function normalizeSessionKey(rawValue) {
   const normalized = String(rawValue || "")
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/[^a-z0-9_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
   return normalized || DEFAULT_SESSION_KEY;
@@ -85,6 +85,33 @@ function clearSavedSession(options = {}) {
   if (fs.existsSync(sessionDir)) {
     fs.rmSync(sessionDir, { recursive: true, force: true });
     console.log(`🧹 Sessão local removida (${sessionKey}): ${sessionDir}`);
+  }
+}
+
+function clearSessionBrowserLocks(options = {}) {
+  const sessionDir = getSessionDir(options);
+  const lockPaths = [
+    path.join(sessionDir, "DevToolsActivePort"),
+    path.join(sessionDir, "SingletonLock"),
+    path.join(sessionDir, "SingletonSocket"),
+    path.join(sessionDir, "SingletonCookie"),
+    path.join(sessionDir, "Default", "LOCK")
+  ];
+
+  let removedAny = false;
+  for (const lockPath of lockPaths) {
+    try {
+      if (fs.existsSync(lockPath)) {
+        fs.rmSync(lockPath, { force: true });
+        removedAny = true;
+      }
+    } catch {
+      // Ignora falhas de limpeza pontuais.
+    }
+  }
+
+  if (removedAny) {
+    console.warn(`🧹 Locks temporários do navegador removidos em ${sessionDir}`);
   }
 }
 
@@ -269,7 +296,15 @@ function createClient(options = {}) {
     puppeteer: {
       headless: isHeadlessMode(),
       ...(executablePath ? { executablePath } : {}),
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+      protocolTimeout: 120000,
+      timeout: 120000,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--no-first-run",
+        "--no-default-browser-check"
+      ]
     }
   });
 
@@ -374,6 +409,8 @@ export async function initWhatsApp(options = {}) {
   const session = getSessionContext(options);
   const sessionKey = session.key;
   const status = session.status;
+  const allowBrowserLockRetry = options?.allowBrowserLockRetry !== false;
+  const allowBootstrapRetry = options?.allowBootstrapRetry !== false;
 
   if (!session.clientPromise) {
     status.phase = "initializing";
@@ -396,8 +433,55 @@ export async function initWhatsApp(options = {}) {
     const isSessionContextError =
       hasSavedSession({ sessionKey }) && errorMessage.includes("Execution context was destroyed");
     const isBrowserLockError = errorMessage.includes("The browser is already running for");
+    const isProtocolTimeoutError =
+      errorMessage.includes("Runtime.callFunctionOn timed out") ||
+      errorMessage.includes("Increase the 'protocolTimeout' setting");
+
+    if (isProtocolTimeoutError) {
+      try {
+        await session.currentClient?.destroy();
+      } catch {
+        // Ignora falhas ao destruir cliente anterior.
+      }
+
+      session.clientPromise = undefined;
+      session.currentClient = undefined;
+      session.authenticatedLogged = false;
+      session.readyLogged = false;
+
+      if (allowBootstrapRetry) {
+        clearSessionBrowserLocks({ sessionKey });
+        status.phase = "retrying_after_timeout";
+        status.lastError = "";
+        return initWhatsApp({ sessionKey, allowBrowserLockRetry, allowBootstrapRetry: false });
+      }
+
+      status.phase = "error";
+      status.lastError = "browser_start_timeout";
+      throw new Error(
+        "O navegador do WhatsApp demorou demais para responder. Tente novamente em alguns instantes."
+      );
+    }
 
     if (isBrowserLockError) {
+      try {
+        await session.currentClient?.destroy();
+      } catch {
+        // Ignora falhas ao destruir cliente anterior.
+      }
+
+      session.clientPromise = undefined;
+      session.currentClient = undefined;
+      session.authenticatedLogged = false;
+      session.readyLogged = false;
+
+      if (allowBrowserLockRetry) {
+        clearSessionBrowserLocks({ sessionKey });
+        status.phase = "resetting_browser_lock";
+        status.lastError = "";
+        return initWhatsApp({ sessionKey, allowBrowserLockRetry: false });
+      }
+
       status.phase = "error";
       status.lastError = "browser_locked";
       throw new Error(
@@ -408,6 +492,7 @@ export async function initWhatsApp(options = {}) {
     if (!isSessionContextError) {
       status.phase = "error";
       status.lastError = errorMessage;
+      console.error(`❌ Falha ao inicializar WhatsApp Web (${sessionKey}):`, errorMessage);
       throw error;
     }
 
