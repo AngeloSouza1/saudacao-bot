@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Lock, LogIn } from "lucide-react"
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -20,6 +20,30 @@ export function LoginPage() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [userPreview, setUserPreview] = useState<{ username?: string; imageUrl?: string } | null>(null)
+
+  useEffect(() => {
+    const normalizedUsername = username.trim()
+    if (!normalizedUsername) {
+      setUserPreview(null)
+      return
+    }
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/auth/user-preview?username=${encodeURIComponent(normalizedUsername)}`, {
+          cache: "no-store",
+        })
+        const data = await response.json().catch(() => ({}))
+        const preview = data?.user && typeof data.user === "object" ? data.user : null
+        setUserPreview(preview)
+      } catch {
+        setUserPreview(null)
+      }
+    }, 180)
+
+    return () => window.clearTimeout(timer)
+  }, [username])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -106,14 +130,33 @@ export function LoginPage() {
                     >
                       Usuário
                     </label>
-                    <input
-                      id="panel-user"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      autoComplete="username"
-                      placeholder="seu.usuario"
-                      className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
+                    <div className="relative">
+                      {userPreview?.imageUrl ? (
+                        <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 overflow-hidden rounded-full border border-border bg-muted shadow-sm">
+                          <img
+                            src={userPreview.imageUrl}
+                            alt=""
+                            className="h-8 w-8 object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </span>
+                      ) : null}
+                      <input
+                        id="panel-user"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        autoComplete="username"
+                        placeholder="seu.usuario"
+                        className={`w-full rounded-md border border-border bg-background py-2.5 pr-3 text-sm text-foreground placeholder:text-muted-foreground/50 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary ${
+                          userPreview?.imageUrl ? "pl-14" : "px-3"
+                        }`}
+                      />
+                    </div>
+                    {userPreview?.imageUrl ? (
+                      <p className="text-[11px] text-muted-foreground">
+                        Usuário reconhecido: {userPreview.username}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="space-y-2">

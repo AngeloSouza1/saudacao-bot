@@ -202,9 +202,13 @@ type DashboardPageClientProps = {
 
 export default function DashboardPageClient({ panelSession }: DashboardPageClientProps) {
   const defaultScreenAppliedRef = useRef(false)
+  const authTransitionDurationMs = 7000
   const [isMounted, setIsMounted] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
+  const [justAuthenticated, setJustAuthenticated] = useState(false)
   const [showAuthTransition, setShowAuthTransition] = useState(false)
+  const [authTransitionStartedAt, setAuthTransitionStartedAt] = useState(0)
+  const [authTransitionProgress, setAuthTransitionProgress] = useState(0)
   const [activeItem, setActiveItem] = useState("")
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [messagesOpen, setMessagesOpen] = useState(false)
@@ -226,6 +230,14 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
 
   useEffect(() => {
     setIsMounted(true)
+    if (typeof window === "undefined") return
+    const authMarker = window.sessionStorage.getItem("saudacao.panel.just-authenticated")
+    if (!authMarker) return
+    setJustAuthenticated(true)
+    const startedAt = Date.now()
+    setAuthTransitionStartedAt(startedAt)
+    setAuthTransitionProgress(0)
+    setShowAuthTransition(true)
   }, [])
 
   const refreshStatus = useCallback(async () => {
@@ -267,17 +279,28 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   }, [isMounted, refreshStatus, statusRequested])
 
   useEffect(() => {
-    if (!isMounted || initialLoading) return
+    if (!isMounted || initialLoading || !justAuthenticated) return
     if (typeof window === "undefined") return
-    const authMarker = window.sessionStorage.getItem("saudacao.panel.just-authenticated")
-    if (!authMarker) return
     window.sessionStorage.removeItem("saudacao.panel.just-authenticated")
-    setShowAuthTransition(true)
     const timer = window.setTimeout(() => {
+      setAuthTransitionProgress(100)
       setShowAuthTransition(false)
-    }, 2800)
+      setJustAuthenticated(false)
+    }, authTransitionDurationMs)
     return () => window.clearTimeout(timer)
-  }, [initialLoading, isMounted])
+  }, [authTransitionDurationMs, initialLoading, isMounted, justAuthenticated])
+
+  useEffect(() => {
+    if (!showAuthTransition || !authTransitionStartedAt) return
+
+    const interval = window.setInterval(() => {
+      const elapsed = Date.now() - authTransitionStartedAt
+      const nextProgress = Math.max(0, Math.min(100, (elapsed / authTransitionDurationMs) * 100))
+      setAuthTransitionProgress(nextProgress)
+    }, 80)
+
+    return () => window.clearInterval(interval)
+  }, [authTransitionDurationMs, authTransitionStartedAt, showAuthTransition])
 
   const runAction = useCallback(
     async (path: "/api/send-test" | "/api/send-now" | "/api/send-now-forced", fallbackMessage: string) => {
@@ -392,31 +415,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
     return <div className="h-screen bg-background" suppressHydrationWarning />
   }
 
-  if (initialLoading) {
-    return (
-      <div className="flex h-screen flex-col overflow-hidden bg-background" suppressHydrationWarning>
-        <AppHeader
-          cycleLabel="Carregando painel"
-          userName={panelUserName}
-          userInitials="SB"
-        />
-
-        <main className="flex flex-1 items-center justify-center p-6">
-          <div className="w-full max-w-xl rounded-3xl border border-border bg-card/90 px-8 py-10 text-center shadow-sm">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
-            </div>
-            <h1 className="mt-5 text-2xl font-bold tracking-tight text-foreground">Carregando aplicação</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Aguarde enquanto a sessão, a configuração e os agendamentos ficam disponíveis.
-            </p>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  if (showAuthTransition && !isSystemReady) {
+  if (showAuthTransition) {
     return (
       <div className="relative flex h-screen items-center justify-center overflow-hidden bg-background px-6" suppressHydrationWarning>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#e8f5ec,transparent_42%),linear-gradient(180deg,#f8fbf8_0%,#eff5f0_100%)]" />
@@ -438,7 +437,9 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             </h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               A conta <span className="font-semibold text-foreground">{panelUserName}</span> foi validada com sucesso.
-              Agora vamos verificar a sessão do WhatsApp.
+              {isSystemReady
+                ? " Preparando o painel principal para acesso."
+                : " Agora vamos verificar a sessão do WhatsApp."}
             </p>
 
             <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-border bg-secondary/55 px-4 py-2.5 text-sm text-foreground">
@@ -457,8 +458,48 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
               )}
               <span className="font-medium">{userName}</span>
             </div>
+
+            <div className="mt-7">
+              <div className="h-2.5 overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-75 ease-linear"
+                  style={{ width: `${authTransitionProgress}%` }}
+                />
+              </div>
+              <p className="mt-2 text-[11px] font-medium text-muted-foreground">
+                {Math.round(authTransitionProgress)}%
+              </p>
+            </div>
+
+            <p className="mt-5 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              {isSystemReady ? "Redirecionando para o painel operacional" : "Redirecionando para a autenticação do WhatsApp"}
+            </p>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="flex h-screen flex-col overflow-hidden bg-background" suppressHydrationWarning>
+        <AppHeader
+          cycleLabel="Carregando painel"
+          userName={panelUserName}
+          userInitials="SB"
+        />
+
+        <main className="flex flex-1 items-center justify-center p-6">
+          <div className="w-full max-w-xl rounded-3xl border border-border bg-card/90 px-8 py-10 text-center shadow-sm">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
+            </div>
+            <h1 className="mt-5 text-2xl font-bold tracking-tight text-foreground">Carregando aplicação</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Aguarde enquanto a sessão, a configuração e os agendamentos ficam disponíveis.
+            </p>
+          </div>
+        </main>
       </div>
     )
   }

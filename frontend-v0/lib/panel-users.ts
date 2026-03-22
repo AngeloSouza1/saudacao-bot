@@ -121,6 +121,11 @@ export async function findStoredPanelUser(username: string): Promise<StoredPanel
   return payload.users.find((item) => item.username === normalized) || null
 }
 
+export async function findPanelUser(username: string): Promise<PanelUser | null> {
+  const user = await findStoredPanelUser(username)
+  return user ? toPublicUser(user) : null
+}
+
 export async function validateStoredPanelCredentials(username: string, password: string) {
   const user = await findStoredPanelUser(username)
   if (!user) return null
