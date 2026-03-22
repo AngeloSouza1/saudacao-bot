@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Calendar, Check, GraduationCap, MessageCirclePlus, RefreshCcw } from "lucide-react"
 import { AppHeader } from "@/components/saudacao/AppHeader"
 import { AppSidebar } from "@/components/saudacao/AppSidebar"
@@ -474,7 +474,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const showSessionCard = activeItem === "session"
   const showShortcutsCard = shortcutsOpen
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (initialLoading) return
     if (!isSystemReady) {
       qrScreenSeenRef.current = true

@@ -16,6 +16,7 @@ const sessionRegistry = new Map();
 function createInitialStatus() {
   return {
     phase: "idle",
+    phaseStartedAt: 0,
     transportState: "",
     sender: "",
     userName: "",
@@ -48,6 +49,8 @@ function getSessionContext(options = {}) {
       key: sessionKey,
       clientPromise: undefined,
       currentClient: undefined,
+      recoveryPromise: undefined,
+      lastRecoveryAt: 0,
       authenticatedLogged: false,
       readyLogged: false,
       status: createInitialStatus()
@@ -312,6 +315,7 @@ function createClient(options = {}) {
     session.authenticatedLogged = false;
     session.readyLogged = false;
     status.phase = "qr";
+    status.phaseStartedAt = Date.now();
     status.sender = "";
     status.userName = "";
     status.userAvatar = "";
@@ -341,6 +345,7 @@ function createClient(options = {}) {
 
   client.on("ready", async () => {
     status.phase = "ready";
+    status.phaseStartedAt = Date.now();
     status.qrAvailable = false;
     status.qrText = "";
     status.qrImageDataUrl = "";
@@ -354,6 +359,7 @@ function createClient(options = {}) {
 
   client.on("authenticated", () => {
     status.phase = "authenticated";
+    status.phaseStartedAt = Date.now();
     status.qrAvailable = false;
     status.qrText = "";
     status.qrImageDataUrl = "";
@@ -368,6 +374,7 @@ function createClient(options = {}) {
 
   client.on("auth_failure", (message) => {
     status.phase = "auth_failure";
+    status.phaseStartedAt = Date.now();
     status.lastError = String(message || "");
     status.sender = "";
     status.userName = "";
@@ -382,12 +389,14 @@ function createClient(options = {}) {
     status.transportState = String(state || "");
     if (!["ready", "authenticated"].includes(String(status.phase || ""))) {
       status.phase = `state:${state}`;
+      status.phaseStartedAt = Date.now();
     }
     console.log(`ℹ️ Estado do cliente (${sessionKey}): ${state}`);
   });
 
   client.on("disconnected", (reason) => {
     status.phase = "disconnected";
+    status.phaseStartedAt = Date.now();
     status.lastError = String(reason || "");
     status.sender = "";
     status.userName = "";
@@ -414,6 +423,7 @@ export async function initWhatsApp(options = {}) {
 
   if (!session.clientPromise) {
     status.phase = "initializing";
+    status.phaseStartedAt = Date.now();
     status.lastError = "";
     const client = createClient({ sessionKey });
     session.currentClient = client;
@@ -517,6 +527,60 @@ export async function initWhatsApp(options = {}) {
 export function getWhatsAppStatus(options = {}) {
   const session = getSessionContext(options);
   return { ...session.status };
+}
+
+export async function restartWhatsAppSession(options = {}, restartOptions = {}) {
+  const session = getSessionContext(options);
+  const sessionKey = session.key;
+  const clearSaved = restartOptions?.clearSaved !== false;
+  const restart = restartOptions?.restart !== false;
+  const now = Date.now();
+
+  if (session.recoveryPromise) {
+    return session.recoveryPromise;
+  }
+  if (now - Number(session.lastRecoveryAt || 0) < 10000) {
+    return getWhatsAppStatus({ sessionKey });
+  }
+
+  session.lastRecoveryAt = now;
+  session.recoveryPromise = (async () => {
+    try {
+      await session.currentClient?.destroy();
+    } catch {
+      // ignora
+    }
+
+    clearSessionBrowserLocks({ sessionKey });
+    if (clearSaved) {
+      clearSavedSession({ sessionKey });
+    }
+
+    session.clientPromise = undefined;
+    session.currentClient = undefined;
+    session.authenticatedLogged = false;
+    session.readyLogged = false;
+    session.status = createInitialStatus();
+    session.status.phase = "restarting";
+    session.status.phaseStartedAt = Date.now();
+
+    if (!restart) {
+      return getWhatsAppStatus({ sessionKey });
+    }
+
+    try {
+      await initWhatsApp({ sessionKey });
+    } catch {
+      // status refletirá a falha
+    }
+    return getWhatsAppStatus({ sessionKey });
+  })();
+
+  try {
+    return await session.recoveryPromise;
+  } finally {
+    session.recoveryPromise = undefined;
+  }
 }
 
 export async function listGroups(options = {}) {

@@ -184,9 +184,12 @@ export function SessionStatusCard({
 
               {qrState === "authenticated" ? (
                 <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm">
-                  <div className="text-center">
+                  <div className="w-full max-w-[250px] rounded-2xl border border-green-200 bg-green-50/95 px-5 py-4 text-center shadow-sm">
                     <CheckCircle2 className="mx-auto mb-2 h-10 w-10 text-green-mid" />
-                    <p className="text-sm font-medium text-foreground">Autenticado</p>
+                    <p className="text-base font-semibold text-green-900">WhatsApp conectado</p>
+                    <p className="mt-1 text-sm text-green-800">
+                      Leitura confirmada. Preparando o acesso ao painel.
+                    </p>
                   </div>
                 </div>
               ) : null}
@@ -207,6 +210,11 @@ export function SessionStatusCard({
             )}
             <span>{getQrStatusText()}</span>
           </div>
+          {qrState === "authenticated" ? (
+            <div className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-900">
+              Celular autenticado com sucesso. Aguarde alguns segundos enquanto a aplicação libera a tela principal.
+            </div>
+          ) : null}
           {qrText && qrState === "ready" ? (
             <p className="text-xs text-muted-foreground line-clamp-2">{qrText}</p>
           ) : null}

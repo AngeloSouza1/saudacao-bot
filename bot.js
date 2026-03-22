@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import cron from "node-cron";
 import dotenv from "dotenv";
-import { getWhatsAppStatus, initWhatsApp, listGroups, sendText } from "./whatsapp.js";
+import { getWhatsAppStatus, initWhatsApp, listGroups, restartWhatsAppSession, sendText } from "./whatsapp.js";
 
 dotenv.config();
 
@@ -1888,9 +1888,35 @@ export async function reconnectWhatsApp(options = {}) {
 export function getDashboardState(options = {}) {
   const requester = resolveRequesterContext(options);
   if (requester.username) {
-    void initWhatsApp(requester).catch(() => {
-      // O status detalhado da falha será refletido na próxima leitura via getWhatsAppStatus.
-    });
+    const currentWhatsapp = getWhatsAppStatus(requester);
+    const currentPhase = String(currentWhatsapp?.phase || "");
+    const phaseStartedAt = Number(currentWhatsapp?.phaseStartedAt || 0);
+    const isBootstrapPhase =
+      currentPhase === "initializing" ||
+      currentPhase === "retrying_after_timeout" ||
+      currentPhase === "resetting_browser_lock" ||
+      currentPhase === "resetting_session" ||
+      currentPhase === "restarting" ||
+      currentPhase.startsWith("state:");
+    const bootstrapTooLong =
+      isBootstrapPhase &&
+      phaseStartedAt > 0 &&
+      Date.now() - phaseStartedAt > 20000 &&
+      !Boolean(currentWhatsapp?.qrAvailable) &&
+      !String(currentWhatsapp?.sender || "").trim();
+    const shouldRefreshQr =
+      ["disconnected", "auth_failure", "error"].includes(currentPhase) ||
+      bootstrapTooLong;
+
+    if (shouldRefreshQr) {
+      void restartWhatsAppSession(requester, { clearSaved: true, restart: true }).catch(() => {
+        // O status detalhado da falha será refletido na próxima leitura.
+      });
+    } else {
+      void initWhatsApp(requester).catch(() => {
+        // O status detalhado da falha será refletido na próxima leitura via getWhatsAppStatus.
+      });
+    }
   }
   const config = loadConfig();
   const settings = loadSettings();
