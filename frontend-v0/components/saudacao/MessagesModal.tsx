@@ -272,6 +272,40 @@ export function MessagesModal({
   const [groupsLoadError, setGroupsLoadError] = useState("")
   const [feedback, setFeedback] = useState("")
 
+  const resetEditorState = () => {
+    setEditorOpen(false)
+    setEditorType("default")
+    setFeedback("")
+    setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
+    setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
+    setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
+    setCustomTargetType("student")
+    setCustomRecipient("")
+    setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
+    setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
+    setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
+    setGreetingBackgroundColor(String(initialGreetingBackgroundColor || "#123d37").trim() || "#123d37")
+    setGreetingBackgroundImagePath(String(initialGreetingBackgroundImagePath || "").trim())
+    setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
+    setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
+    setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
+    setNoClassBackgroundColor(String(initialNoClassBackgroundColor || "#123d37").trim() || "#123d37")
+    setNoClassBackgroundImagePath(String(initialNoClassBackgroundImagePath || "").trim())
+    setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
+    setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
+    setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
+    setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
+    setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
+    setModelHelpOpen(false)
+    setPreviewOpen(false)
+    setVariablesHelpOpen(false)
+  }
+
+  const closeEditorToDashboard = () => {
+    resetEditorState()
+    onClose()
+  }
+
   useEffect(() => {
     if (open && !wasOpenRef.current) {
       setEditorOpen(initialEditorType === "custom")
@@ -371,7 +405,7 @@ export function MessagesModal({
       const payload = await persistMessagesConfig()
       if (onSaved) await onSaved()
       if (closeAfterSave) {
-        setEditorOpen(false)
+        closeEditorToDashboard()
       }
       setFeedback(String(payload?.message || "Mensagem padrão salva com sucesso."))
     } catch (error) {
@@ -620,32 +654,7 @@ export function MessagesModal({
 
       <ModalShell
         open={editorOpen}
-        onClose={() => {
-          setEditorOpen(false)
-          setEditorType("default")
-          setFeedback("")
-          setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
-          setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
-          setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
-          setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
-          setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
-          setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
-          setGreetingBackgroundColor(String(initialGreetingBackgroundColor || "#123d37").trim() || "#123d37")
-          setGreetingBackgroundImagePath(String(initialGreetingBackgroundImagePath || "").trim())
-          setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
-          setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
-          setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
-          setNoClassBackgroundColor(String(initialNoClassBackgroundColor || "#123d37").trim() || "#123d37")
-          setNoClassBackgroundImagePath(String(initialNoClassBackgroundImagePath || "").trim())
-          setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
-          setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
-          setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
-          setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
-          setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
-          setModelHelpOpen(false)
-          setPreviewOpen(false)
-          setVariablesHelpOpen(false)
-        }}
+        onClose={closeEditorToDashboard}
         title={currentEditorTitle}
         subtitle={currentEditorSubtitle}
         icon={<Pencil size={16} className="text-primary" />}
@@ -842,34 +851,7 @@ export function MessagesModal({
           ) : null}
         </div>
         <ModalActions
-          onCancel={() => {
-            setEditorOpen(false)
-            setEditorType("default")
-            setFeedback("")
-            setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
-            setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
-            setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
-            setCustomTargetType("student")
-            setCustomRecipient("")
-            setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
-            setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
-            setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
-            setGreetingBackgroundColor(String(initialGreetingBackgroundColor || "#123d37").trim() || "#123d37")
-            setGreetingBackgroundImagePath(String(initialGreetingBackgroundImagePath || "").trim())
-            setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
-            setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
-            setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
-            setNoClassBackgroundColor(String(initialNoClassBackgroundColor || "#123d37").trim() || "#123d37")
-            setNoClassBackgroundImagePath(String(initialNoClassBackgroundImagePath || "").trim())
-            setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
-            setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
-            setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
-            setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
-            setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
-            setModelHelpOpen(false)
-            setPreviewOpen(false)
-            setVariablesHelpOpen(false)
-          }}
+          onCancel={closeEditorToDashboard}
           onSecondaryConfirm={() => handleSaveDefaultMessage(false)}
           secondaryConfirmLabel="Salvar e continuar"
           onConfirm={() => handleSaveDefaultMessage(true)}
