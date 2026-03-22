@@ -2,7 +2,7 @@ import { createHash } from "node:crypto"
 import { promises as fs } from "node:fs"
 import path from "node:path"
 
-export type PanelUserRole = "admin" | "user"
+export type PanelUserRole = "admin" | "user" | "viewer"
 
 type StoredPanelUser = {
   username: string
@@ -91,7 +91,7 @@ async function readUsersFile(): Promise<PanelUsersFile> {
       .map((item): StoredPanelUser => ({
         username: normalizeUsername(item?.username || ""),
         passwordHash: String(item?.passwordHash || "").trim().toLowerCase(),
-        role: item?.role === "admin" ? "admin" : "user",
+        role: item?.role === "admin" ? "admin" : item?.role === "viewer" ? "viewer" : "user",
         imageUrl: normalizeImageUrl(item?.imageUrl || ""),
         createdAt: String(item?.createdAt || ""),
         updatedAt: String(item?.updatedAt || ""),
@@ -142,7 +142,7 @@ export async function createPanelUser(input: {
 }) {
   const username = normalizeUsername(input.username)
   const password = String(input.password || "")
-  const role: PanelUserRole = input.role === "admin" ? "admin" : "user"
+  const role: PanelUserRole = input.role === "admin" ? "admin" : input.role === "viewer" ? "viewer" : "user"
   const imageUrl = normalizeImageUrl(input.imageUrl || "")
 
   if (!username) {
@@ -193,7 +193,14 @@ export async function updatePanelUser(
 
   const current = payload.users[index]
   const nextUsername = changes.nextUsername ? normalizeUsername(changes.nextUsername) : current.username
-  const nextRole: PanelUserRole = changes.nextRole === "admin" ? "admin" : changes.nextRole === "user" ? "user" : current.role
+  const nextRole: PanelUserRole =
+    changes.nextRole === "admin"
+      ? "admin"
+      : changes.nextRole === "viewer"
+        ? "viewer"
+        : changes.nextRole === "user"
+          ? "user"
+          : current.role
   const nextPassword = String(changes.nextPassword || "")
   const nextImageUrl = typeof changes.nextImageUrl === "string" ? normalizeImageUrl(changes.nextImageUrl) : current.imageUrl
 

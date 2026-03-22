@@ -119,6 +119,25 @@ export function AppSidebar({
       )}
       aria-label="Menu lateral"
     >
+      <div className={cn("border-b border-sidebar-border", collapsed ? "px-2 py-3" : "px-4 py-4")}>
+        <div
+          className={cn(
+            "flex items-center",
+            collapsed ? "justify-center" : "gap-3 rounded-2xl border border-border/60 bg-white/60 px-3 py-2.5"
+          )}
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-white shadow-sm">
+            <img src="/logo1.png" alt="Saudação Bot" className="h-full w-full object-cover" />
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-sidebar-foreground">Saudação Bot</p>
+              <p className="truncate text-[11px] text-muted-foreground">Painel operacional</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Toggle Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}

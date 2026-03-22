@@ -77,7 +77,10 @@ export function LoginPage() {
               <div className="grid gap-3 xl:grid-cols-[0.98fr_0.72fr] xl:items-stretch">
                 <div className="flex flex-col justify-between">
                   <div>
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/18 bg-primary/7 px-3 py-1.5">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/18 bg-primary/7 px-2.5 py-1.5 pr-3.5">
+                      <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-primary/12 bg-white/90 shadow-sm">
+                        <img src="/logo1.png" alt="Saudação Bot" className="h-full w-full object-cover" />
+                      </span>
                       <span className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
                         Saudação Bot
                       </span>

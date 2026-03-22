@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const user = await createPanelUser({
       username: String(body?.username || ""),
       password: String(body?.password || ""),
-      role: body?.role === "admin" ? "admin" : "user",
+      role: body?.role === "admin" ? "admin" : body?.role === "viewer" ? "viewer" : "user",
       imageUrl: String(body?.imageUrl || ""),
     })
     return NextResponse.json(

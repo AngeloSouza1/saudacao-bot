@@ -68,6 +68,7 @@ export async function readPanelSessionValue(value: string) {
       username: user.username,
       role: user.role,
       isAdmin: user.role === "admin",
+      isViewer: user.role === "viewer",
       imageUrl: user.imageUrl,
     }
   } catch {
@@ -95,6 +96,7 @@ export async function getPanelSession() {
     username: "",
     role: null,
     isAdmin: false,
+    isViewer: false,
     imageUrl: "",
   }
 }

@@ -10,9 +10,10 @@ interface AllSchedulesModalProps {
   onClose: () => void
   items: GreetingItem[]
   onRefresh?: () => Promise<void> | void
+  readOnly?: boolean
 }
 
-export function AllSchedulesModal({ open, onClose, items, onRefresh }: AllSchedulesModalProps) {
+export function AllSchedulesModal({ open, onClose, items, onRefresh, readOnly = false }: AllSchedulesModalProps) {
   const [sending, setSending] = useState(false)
   const [feedback, setFeedback] = useState("")
   const [swapFromIndex, setSwapFromIndex] = useState<number | null>(null)
@@ -131,7 +132,7 @@ export function AllSchedulesModal({ open, onClose, items, onRefresh }: AllSchedu
                 <th className="px-4 py-2 text-left text-xs uppercase tracking-wider">Data</th>
                 <th className="px-4 py-2 text-left text-xs uppercase tracking-wider">Hora</th>
                 <th className="px-4 py-2 text-left text-xs uppercase tracking-wider">Detalhes</th>
-                <th className="px-4 py-2 text-left text-xs uppercase tracking-wider">Ações</th>
+                <th className="px-4 py-2 text-left text-xs uppercase tracking-wider">{readOnly ? "Modo" : "Ações"}</th>
               </tr>
             </thead>
             <tbody>
@@ -149,26 +150,32 @@ export function AllSchedulesModal({ open, onClose, items, onRefresh }: AllSchedu
                     <td className="px-4 py-3 tabular-nums">{item.time}</td>
                     <td className="px-4 py-3">{item.classInfo}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleMarkAbsent(item)}
-                          disabled={sending || !Number.isInteger(item.pendingIndex)}
-                          className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50"
-                        >
-                          Ausente
-                        </button>
-                        <button
-                          onClick={() => handleSwap(item)}
-                          disabled={sending || !Number.isInteger(item.pendingIndex)}
-                          className={`rounded-xl border px-3 py-1.5 text-xs disabled:opacity-50 ${
-                            swapFromIndex === item.pendingIndex
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border bg-card hover:bg-muted"
-                          }`}
-                        >
-                          {swapFromIndex === item.pendingIndex ? "Selecionado" : "Trocar"}
-                        </button>
-                      </div>
+                      {readOnly ? (
+                        <span className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground">
+                          Somente leitura
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleMarkAbsent(item)}
+                            disabled={sending || !Number.isInteger(item.pendingIndex)}
+                            className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50"
+                          >
+                            Ausente
+                          </button>
+                          <button
+                            onClick={() => handleSwap(item)}
+                            disabled={sending || !Number.isInteger(item.pendingIndex)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs disabled:opacity-50 ${
+                              swapFromIndex === item.pendingIndex
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border bg-card hover:bg-muted"
+                            }`}
+                          >
+                            {swapFromIndex === item.pendingIndex ? "Selecionado" : "Trocar"}
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -176,6 +183,11 @@ export function AllSchedulesModal({ open, onClose, items, onRefresh }: AllSchedu
             </tbody>
           </table>
         </div>
+        {readOnly ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Este perfil pode consultar a fila completa, mas não pode enviar pendentes, marcar ausência ou trocar posições.
+          </p>
+        ) : null}
         {feedback ? (
           <p
             className={`mt-3 text-sm ${
@@ -190,11 +202,11 @@ export function AllSchedulesModal({ open, onClose, items, onRefresh }: AllSchedu
       </div>
       <ModalActions
         onCancel={onClose}
-        onConfirm={handleSendPending}
-        confirmLabel="Enviar pendentes"
+        onConfirm={readOnly ? onClose : handleSendPending}
+        confirmLabel={readOnly ? "Entendi" : "Enviar pendentes"}
         cancelLabel="Fechar"
         loading={sending}
-        confirmDisabled={items.length === 0}
+        confirmDisabled={!readOnly && items.length === 0}
       />
     </ModalShell>
   )

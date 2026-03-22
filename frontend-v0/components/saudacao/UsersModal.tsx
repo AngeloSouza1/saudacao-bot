@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Shield, UserRound, UserRoundCog, UserRoundPlus } from "lucide-react"
+import { Eye, Shield, UserRound, UserRoundCog, UserRoundPlus } from "lucide-react"
 import { ModalActions, ModalShell, UnderlineInput } from "@/components/saudacao/ModalShell"
 
 type PanelUser = {
   username: string
-  role: "admin" | "user"
+  role: "admin" | "user" | "viewer"
   imageUrl?: string
   createdAt: string
   updatedAt: string
@@ -48,7 +48,7 @@ export function UsersModal({ open, onClose, currentUsername, onCurrentUserUpdate
   const [formUsername, setFormUsername] = useState("")
   const [formPassword, setFormPassword] = useState("")
   const [formImageUrl, setFormImageUrl] = useState("")
-  const [formRole, setFormRole] = useState<"admin" | "user">("user")
+  const [formRole, setFormRole] = useState<"admin" | "user" | "viewer">("user")
 
   const isEditing = Boolean(editingUsername)
 
@@ -213,13 +213,13 @@ export function UsersModal({ open, onClose, currentUsername, onCurrentUserUpdate
                             </span>
                           ) : (
                             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                              {user.role === "admin" ? <Shield size={16} /> : <UserRound size={16} />}
+                              {user.role === "admin" ? <Shield size={16} /> : user.role === "viewer" ? <Eye size={16} /> : <UserRound size={16} />}
                             </span>
                           )}
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-foreground">{user.username}</p>
                             <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                              {user.role === "admin" ? "Administrador" : "Usuário"}
+                              {user.role === "admin" ? "Administrador" : user.role === "viewer" ? "Visualização" : "Usuário"}
                               {isCurrent ? " · sessão atual" : ""}
                             </p>
                           </div>
@@ -309,13 +309,25 @@ export function UsersModal({ open, onClose, currentUsername, onCurrentUserUpdate
               <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Perfil</label>
               <select
                 value={formRole}
-                onChange={(event) => setFormRole(event.target.value === "admin" ? "admin" : "user")}
+                onChange={(event) =>
+                  setFormRole(
+                    event.target.value === "admin"
+                      ? "admin"
+                      : event.target.value === "viewer"
+                        ? "viewer"
+                        : "user"
+                  )
+                }
                 disabled={editingUsername === currentUsername}
                 className="rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary"
               >
                 <option value="user">Usuário</option>
+                <option value="viewer">Visualização</option>
                 <option value="admin">Administrador</option>
               </select>
+              <p className="text-[11px] text-muted-foreground">
+                `Visualização` pode navegar pelo painel e ver explicações, mas não altera dados.
+              </p>
             </div>
 
             {error ? (

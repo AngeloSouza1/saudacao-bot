@@ -23,12 +23,8 @@ export function AppHeader({ cycleLabel, userName, userInitials, userAvatar }: Ap
       <div className="flex items-center justify-between px-6 py-3 gap-4">
         {/* Left: Logo + Title */}
         <div className="flex items-center gap-4 min-w-0">
-          <div
-            className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center font-bold text-lg text-primary-foreground shadow-md"
-            style={{ background: "linear-gradient(135deg, oklch(0.44 0.12 155), oklch(0.52 0.12 155))" }}
-            aria-label="Saudação Bot"
-          >
-            SB
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-white shadow-md">
+            <img src="/logo1.png" alt="Saudação Bot" className="h-full w-full object-cover" />
           </div>
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight truncate">

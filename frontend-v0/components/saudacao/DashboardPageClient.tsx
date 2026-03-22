@@ -194,10 +194,69 @@ type DashboardPageClientProps = {
   panelSession: {
     authenticated: true
     username: string
-    role: "admin" | "user"
+    role: "admin" | "user" | "viewer"
     isAdmin: boolean
+    isViewer?: boolean
     imageUrl?: string
   }
+}
+
+const VIEWER_HELP: Record<string, { title: string; description: string; guidance: string }> = {
+  schedule: {
+    title: "Agenda",
+    description: "Aqui ficam os alunos, as aulas e a organização base do fluxo de saudações.",
+    guidance: "No perfil de visualização, use esta área para entender a ordem dos alunos, o calendário e a estrutura que alimenta os envios.",
+  },
+  messages: {
+    title: "Mensagens",
+    description: "Central de textos padrão, mensagens de ausência e mensagens personalizadas.",
+    guidance: "Este perfil não pode editar modelos, mas pode entender como a comunicação é configurada antes do envio automático.",
+  },
+  destination: {
+    title: "Destino",
+    description: "Define para onde as mensagens são enviadas, seja número, grupo ou configuração equivalente.",
+    guidance: "No modo visita, esta funcionalidade serve para inspeção e entendimento do canal configurado, sem alterar o destino real.",
+  },
+  config: {
+    title: "Configuração",
+    description: "Área com parâmetros gerais do bot, imagens, identidade visual e comportamentos do fluxo.",
+    guidance: "Use esta visão para compreender como a aplicação é personalizada e quais dados sustentam o painel operacional.",
+  },
+  session: {
+    title: "Sessão",
+    description: "Mostra o estado atual da conexão com o WhatsApp, QR Code e saúde da automação.",
+    guidance: "Neste perfil você pode consultar o status, mas ações manuais de envio ou reconciliação permanecem bloqueadas.",
+  },
+  history: {
+    title: "Histórico",
+    description: "Lista de ciclos anteriores, andamento e volumes já processados.",
+    guidance: "Serve para demonstrar a operação passada e explicar como os ciclos evoluem ao longo do uso do sistema.",
+  },
+  shortcuts: {
+    title: "Atalhos",
+    description: "Acesso rápido a ações comuns como ciclo, mensagens e cadastro operacional.",
+    guidance: "No modo visualização, os atalhos viram um guia do que o operador normalmente faria, sem executar alterações reais.",
+  },
+  "custom-message": {
+    title: "Mensagem personalizada",
+    description: "Permite montar um envio específico fora do fluxo padrão.",
+    guidance: "Neste perfil ela é apresentada apenas como demonstração do recurso e do seu objetivo operacional.",
+  },
+  students: {
+    title: "Aluno",
+    description: "Cadastro e manutenção da base de alunos usada pelo ciclo.",
+    guidance: "Aqui você entende como os participantes entram na fila de saudações, sem poder criar ou editar registros.",
+  },
+  lessons: {
+    title: "Aula",
+    description: "Gerencia a agenda de aulas que determina o calendário de disparos.",
+    guidance: "No perfil teste, use esta área para compreender a lógica de datas, horários e vínculo com os alunos.",
+  },
+  cycle: {
+    title: "Ciclo",
+    description: "Controla o início, reinício e acompanhamento do ciclo atual.",
+    guidance: "A visualização permite entender a regra do ciclo e sua rotação, mas qualquer alteração operacional permanece bloqueada.",
+  },
 }
 
 export default function DashboardPageClient({ panelSession }: DashboardPageClientProps) {
@@ -227,6 +286,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const [statusError, setStatusError] = useState<string>("")
   const [statusPollingEnabled, setStatusPollingEnabled] = useState(true)
   const [statusRequested, setStatusRequested] = useState(false)
+  const [viewerFeature, setViewerFeature] = useState<string>("session")
 
   useEffect(() => {
     setIsMounted(true)
@@ -391,6 +451,8 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
     scheduleCount: Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary.length : 0,
   })
   const disableManualSend = !statusData?.cycle?.active || !isSystemReady || hasConfigPending
+  const isViewer = panelSession.role === "viewer"
+  const viewerHelp = VIEWER_HELP[viewerFeature]
   const showSessionCard = activeItem === "session"
   const showShortcutsCard = shortcutsOpen
 
@@ -599,12 +661,16 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
 
       <div className="flex flex-1 min-h-0">
         <AppSidebar
-          onOpenDestination={() => setDestinationOpen(true)}
-          onOpenMessages={() => setMessagesOpen(true)}
-          onOpenConfig={() => setConfigOpen(true)}
-          onOpenHistory={() => setHistoryOpen(true)}
+          onOpenDestination={() => (isViewer ? setViewerFeature("destination") : setDestinationOpen(true))}
+          onOpenMessages={() => (isViewer ? setViewerFeature("messages") : setMessagesOpen(true))}
+          onOpenConfig={() => (isViewer ? setViewerFeature("config") : setConfigOpen(true))}
+          onOpenHistory={() => (isViewer ? setViewerFeature("history") : setHistoryOpen(true))}
           onOpenUsers={() => setUsersOpen(true)}
           onOpenSchedule={() => {
+            if (isViewer) {
+              setViewerFeature("schedule")
+              return
+            }
             setScheduleInitialSection(null)
             setScheduleOpen(true)
           }}
@@ -657,6 +723,14 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 Pendências obrigatórias: revise Destino, Configuração e Agenda (mínimo 1 aula) antes do envio.
               </div>
             ) : null}
+            {isViewer ? (
+              <div className="rounded-2xl border border-primary/20 bg-[linear-gradient(180deg,rgba(237,247,240,0.95),rgba(229,241,233,0.9))] px-5 py-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/70">Modo visualização</p>
+                <h2 className="mt-1 text-lg font-semibold text-foreground">{viewerHelp?.title || "Painel demonstrativo"}</h2>
+                <p className="mt-1.5 text-sm leading-6 text-foreground/80">{viewerHelp?.description}</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{viewerHelp?.guidance}</p>
+              </div>
+            ) : null}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               {showSessionCard ? (
                 <div className="lg:h-[560px]">
@@ -666,9 +740,10 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                     qrImageDataUrl={String(statusData?.whatsapp?.qrImageDataUrl || "")}
                     qrText={String(statusData?.whatsapp?.qrText || "")}
                     disableManualSend={disableManualSend}
-                    onSendTest={() => runAction("/api/send-test", "Teste enviado.")}
-                    onSendNow={() => runAction("/api/send-now", "Envio imediato executado.")}
-                    onSendForced={() => runAction("/api/send-now-forced", "Envio forçado executado.")}
+                    showActions={!isViewer}
+                    onSendTest={!isViewer ? () => runAction("/api/send-test", "Teste enviado.") : undefined}
+                    onSendNow={!isViewer ? () => runAction("/api/send-now", "Envio imediato executado.") : undefined}
+                    onSendForced={!isViewer ? () => runAction("/api/send-now-forced", "Envio forçado executado.") : undefined}
                     onClose={() => setActiveItem("")}
                   />
                 </div>
@@ -687,6 +762,10 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
           <div className="mt-1 flex flex-col gap-2">
             <button
               onClick={() => {
+                if (isViewer) {
+                  setViewerFeature("custom-message")
+                  return
+                }
                 setMessagesInitialEditorType("custom")
                 setMessagesOpen(true)
               }}
@@ -700,6 +779,10 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             </button>
             <button
               onClick={() => {
+                if (isViewer) {
+                  setViewerFeature("students")
+                  return
+                }
                 setScheduleInitialSection("students")
                 setScheduleOpen(true)
               }}
@@ -713,6 +796,10 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             </button>
             <button
               onClick={() => {
+                if (isViewer) {
+                  setViewerFeature("lessons")
+                  return
+                }
                 setScheduleInitialSection("lessons")
                 setScheduleOpen(true)
               }}
@@ -725,7 +812,13 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
               </span>
             </button>
             <button
-              onClick={() => setCycleOpen(true)}
+              onClick={() => {
+                if (isViewer) {
+                  setViewerFeature("cycle")
+                  return
+                }
+                setCycleOpen(true)
+              }}
               className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
               title="Ciclo"
               aria-label="Ciclo"
@@ -828,6 +921,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
         onClose={() => setAllSchedulesOpen(false)}
         items={allGreetingItems}
         onRefresh={refreshStatus}
+        readOnly={isViewer}
       />
     </div>
   )

@@ -23,7 +23,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   if (targetUsername === session.username) {
     const nextUsername = typeof body?.username === "string" ? body.username.trim().toLowerCase() : targetUsername
-    const nextRole = body?.role === "admin" ? "admin" : body?.role === "user" ? "user" : session.role
+    const nextRole =
+      body?.role === "admin" ? "admin" : body?.role === "viewer" ? "viewer" : body?.role === "user" ? "user" : session.role
     if (nextUsername !== session.username || nextRole !== session.role) {
       return NextResponse.json(
         { ok: false, error: "A sessão atual só permite alterar a própria senha." },
@@ -36,7 +37,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const user = await updatePanelUser(targetUsername, {
       nextUsername: typeof body?.username === "string" ? body.username : undefined,
       nextPassword: typeof body?.password === "string" ? body.password : undefined,
-      nextRole: body?.role === "admin" ? "admin" : body?.role === "user" ? "user" : undefined,
+      nextRole: body?.role === "admin" ? "admin" : body?.role === "viewer" ? "viewer" : body?.role === "user" ? "user" : undefined,
       nextImageUrl: typeof body?.imageUrl === "string" ? body.imageUrl : undefined,
     })
     return NextResponse.json({ ok: true, user }, { headers: { "Cache-Control": "no-store" } })
