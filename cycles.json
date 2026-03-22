@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "cycle_1774134764092_56cdcq",
+  "activeCycleId": "cycle_1774189788071_cbuvoc",
   "cycles": [
     {
       "id": "cycle_1774027212623_3ss328",
@@ -491,9 +491,45 @@
     {
       "id": "cycle_1774134764092_56cdcq",
       "name": "Novo ciclo 21/03/2026, 20:12 · início 23/03/2026",
-      "status": "active",
+      "status": "completed",
       "reason": "manual",
       "createdAt": "2026-03-21T23:12:44.092Z",
+      "completedAt": "2026-03-22T14:29:24.987Z",
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-22T14:29:24.426Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774189765532_cq01j4",
+      "name": "Novo ciclo 21/03/2026, 20:12 · início 23/03/2026",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-22T14:29:25.532Z",
+      "completedAt": "2026-03-22T14:29:40.882Z",
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-22T14:29:25.535Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774189788071_cbuvoc",
+      "name": "Novo ciclo 22/03/2026, 11:29 · início 23/03/2026",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-22T14:29:48.083Z",
       "completedAt": null,
       "start": {
         "idxAluno": 8,
@@ -502,7 +538,8 @@
       },
       "sentCount": 0,
       "totalAlunos": 7,
-      "updatedAt": "2026-03-21T23:12:44.095Z"
+      "updatedAt": "2026-03-22T14:40:11.213Z",
+      "ownerUsername": "admin"
     }
   ]
 }

@@ -334,6 +334,12 @@ function createClient(options = {}) {
   client.on("auth_failure", (message) => {
     status.phase = "auth_failure";
     status.lastError = String(message || "");
+    status.sender = "";
+    status.userName = "";
+    status.userAvatar = "";
+    status.qrAvailable = false;
+    status.qrText = "";
+    status.qrImageDataUrl = "";
     console.error(`❌ Falha de autenticação do WhatsApp Web (${sessionKey}):`, message);
   });
 

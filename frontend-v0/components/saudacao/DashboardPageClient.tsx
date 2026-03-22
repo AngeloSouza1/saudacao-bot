@@ -136,7 +136,8 @@ function getUserInitials(name: string) {
 }
 
 function phaseToStatus(phase: string): SystemStatus {
-  if (phase === "ready" || phase === "authenticated") return "ok"
+  if (phase === "ready") return "ok"
+  if (phase === "authenticated") return "warn"
   if (phase === "disconnected" || phase === "auth_failure" || phase === "error") return "error"
   if (phase === "qr" || phase === "initializing") return "warn"
   return "idle"
@@ -447,7 +448,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const userInitials = getUserInitials(panelUserName)
   const userAvatar = panelUserImageUrl || undefined
   const whatsappPhase = String(statusData?.whatsapp?.phase || "")
-  const isSystemReady = whatsappPhase === "ready" || whatsappPhase === "authenticated" || Boolean(statusData?.whatsapp?.sender)
+  const isSystemReady = whatsappPhase === "ready"
   const activeCycleOwner = String(statusData?.cycle?.active?.ownerUsername || "").trim()
   const activeCycleOwnerReady = statusData?.cycle?.active
     ? Boolean(statusData?.cycle?.active?.ownerSessionReady)

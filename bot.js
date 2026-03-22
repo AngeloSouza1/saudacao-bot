@@ -1895,13 +1895,18 @@ export function getDashboardState(options = {}) {
   const whatsapp = getWhatsAppStatus(requester);
   const loggedStudentMatch = findLoggedStudentMatch(config, whatsapp?.sender);
   const cycles = completeActiveCycleIfNeeded(loadCycles());
-  saveCycles(cycles);
   const activeCycle = getActiveCycle(cycles);
+  if (activeCycle && !String(activeCycle?.ownerUsername || "").trim() && requester.username) {
+    activeCycle.ownerUsername = requester.username;
+    activeCycle.updatedAt = new Date().toISOString();
+    saveCycles(cycles);
+  } else {
+    saveCycles(cycles);
+  }
   const activeCycleOwnerUsername = String(activeCycle?.ownerUsername || "").trim().toLowerCase();
   const activeCycleOwnerWhatsapp = activeCycleOwnerUsername ? getWhatsAppStatus({ username: activeCycleOwnerUsername }) : null;
   const activeCycleOwnerReady =
-    ["ready", "authenticated"].includes(String(activeCycleOwnerWhatsapp?.phase || "")) ||
-    Boolean(String(activeCycleOwnerWhatsapp?.sender || "").trim());
+    ["ready", "authenticated"].includes(String(activeCycleOwnerWhatsapp?.phase || ""));
   if (
     activeCycle &&
     (
@@ -1975,9 +1980,7 @@ export function getDashboardState(options = {}) {
 export function createNewCycle(customName = "", options = {}) {
   const requester = resolveRequesterContext(options);
   const requesterWhatsapp = getWhatsAppStatus(requester);
-  const requesterReady =
-    ["ready", "authenticated"].includes(String(requesterWhatsapp?.phase || "")) ||
-    Boolean(String(requesterWhatsapp?.sender || "").trim());
+  const requesterReady = ["ready", "authenticated"].includes(String(requesterWhatsapp?.phase || ""));
 
   if (requester.username && !requesterReady) {
     throw new Error("Conecte sua própria sessão do WhatsApp antes de criar um novo ciclo.");
@@ -2609,8 +2612,7 @@ export async function getGroups(options = {}) {
   const requester = resolveRequesterContext(options);
   const wa = getWhatsAppStatus(requester) || {};
   const phase = String(wa.phase || "");
-  const sender = String(wa.sender || "");
-  const ready = ["ready", "authenticated"].includes(phase) || Boolean(sender);
+  const ready = ["ready", "authenticated"].includes(phase);
   if (!ready) {
     return [];
   }
