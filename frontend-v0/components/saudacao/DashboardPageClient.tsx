@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Calendar, GraduationCap, MessageCirclePlus, RefreshCcw } from "lucide-react"
+import { Calendar, Check, GraduationCap, MessageCirclePlus, RefreshCcw } from "lucide-react"
 import { AppHeader } from "@/components/saudacao/AppHeader"
 import { AppSidebar } from "@/components/saudacao/AppSidebar"
 import { SessionStatusCard, type SystemStatus } from "@/components/saudacao/SessionStatusCard"
@@ -204,6 +204,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const defaultScreenAppliedRef = useRef(false)
   const [isMounted, setIsMounted] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
+  const [showAuthTransition, setShowAuthTransition] = useState(false)
   const [activeItem, setActiveItem] = useState("")
   const [destinationOpen, setDestinationOpen] = useState(false)
   const [messagesOpen, setMessagesOpen] = useState(false)
@@ -217,6 +218,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const [allSchedulesOpen, setAllSchedulesOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(true)
   const [todayLabel, setTodayLabel] = useState("")
+  const [panelUserImageUrl, setPanelUserImageUrl] = useState(String(panelSession?.imageUrl || "").trim())
   const [statusData, setStatusData] = useState<DashboardStatusResponse | null>(null)
   const [statusError, setStatusError] = useState<string>("")
   const [statusPollingEnabled, setStatusPollingEnabled] = useState(true)
@@ -263,6 +265,19 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
       }
     })()
   }, [isMounted, refreshStatus, statusRequested])
+
+  useEffect(() => {
+    if (!isMounted || initialLoading) return
+    if (typeof window === "undefined") return
+    const authMarker = window.sessionStorage.getItem("saudacao.panel.just-authenticated")
+    if (!authMarker) return
+    window.sessionStorage.removeItem("saudacao.panel.just-authenticated")
+    setShowAuthTransition(true)
+    const timer = window.setTimeout(() => {
+      setShowAuthTransition(false)
+    }, 2800)
+    return () => window.clearTimeout(timer)
+  }, [initialLoading, isMounted])
 
   const runAction = useCallback(
     async (path: "/api/send-test" | "/api/send-now" | "/api/send-now-forced", fallbackMessage: string) => {
@@ -342,7 +357,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const panelUserName = String(panelSession?.username || "").trim() || "painel"
   const userName = panelUserName
   const userInitials = getUserInitials(panelUserName)
-  const userAvatar = String(panelSession?.imageUrl || "").trim() || undefined
+  const userAvatar = panelUserImageUrl || undefined
   const whatsappPhase = String(statusData?.whatsapp?.phase || "")
   const isSystemReady = whatsappPhase === "ready" || whatsappPhase === "authenticated" || Boolean(statusData?.whatsapp?.sender)
   const hasConfigPending = !hasRequiredConfig({
@@ -397,6 +412,53 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             </p>
           </div>
         </main>
+      </div>
+    )
+  }
+
+  if (showAuthTransition && !isSystemReady) {
+    return (
+      <div className="relative flex h-screen items-center justify-center overflow-hidden bg-background px-6" suppressHydrationWarning>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#e8f5ec,transparent_42%),linear-gradient(180deg,#f8fbf8_0%,#eff5f0_100%)]" />
+        <div className="absolute inset-0 backdrop-blur-[5px]" />
+
+        <div className="relative z-10 flex w-full max-w-5xl items-center justify-center">
+          <div className="w-full max-w-md rounded-[2rem] border border-green-200/70 bg-white/90 px-10 py-12 text-center shadow-[0_24px_80px_rgba(20,74,45,0.14)] backdrop-blur-xl">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-green-700/12 bg-green-50">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-700 text-white shadow-lg">
+                <Check className="h-8 w-8" strokeWidth={3} />
+              </div>
+            </div>
+
+            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-green-700/70">
+              Acesso liberado
+            </p>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground">
+              Usuário autenticado
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              A conta <span className="font-semibold text-foreground">{panelUserName}</span> foi validada com sucesso.
+              Agora vamos verificar a sessão do WhatsApp.
+            </p>
+
+            <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-border bg-secondary/55 px-4 py-2.5 text-sm text-foreground">
+              {userAvatar ? (
+                <span className="h-9 w-9 overflow-hidden rounded-full border border-border" aria-hidden="true">
+                  <img src={userAvatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                </span>
+              ) : (
+                <span
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
+                  style={{ background: "oklch(0.44 0.12 155)" }}
+                  aria-hidden="true"
+                >
+                  {userInitials}
+                </span>
+              )}
+              <span className="font-medium">{userName}</span>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -706,6 +768,9 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
           if (activeItem === "users") setActiveItem("")
         }}
         currentUsername={panelUserName}
+        onCurrentUserUpdated={(payload) => {
+          setPanelUserImageUrl(String(payload?.imageUrl || "").trim())
+        }}
       />
       <ScheduleModal
         open={scheduleOpen}

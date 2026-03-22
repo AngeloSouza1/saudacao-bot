@@ -34,14 +34,16 @@ interface UsersModalProps {
   open: boolean
   onClose: () => void
   currentUsername: string
+  onCurrentUserUpdated?: (payload: { username: string; imageUrl?: string }) => void
 }
 
-export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) {
+export function UsersModal({ open, onClose, currentUsername, onCurrentUserUpdated }: UsersModalProps) {
   const [users, setUsers] = useState<PanelUser[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [feedback, setFeedback] = useState("")
+  const [deleteCandidate, setDeleteCandidate] = useState<PanelUser | null>(null)
   const [editingUsername, setEditingUsername] = useState("")
   const [formUsername, setFormUsername] = useState("")
   const [formPassword, setFormPassword] = useState("")
@@ -89,7 +91,7 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
       }
 
       if (isEditing) {
-        await requestJson(`/api/users/${encodeURIComponent(editingUsername)}`, {
+        const payload = await requestJson<{ user?: PanelUser }>(`/api/users/${encodeURIComponent(editingUsername)}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -99,6 +101,13 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
             imageUrl: formImageUrl.trim(),
           }),
         })
+        const updatedUser = payload?.user
+        if (updatedUser && editingUsername === currentUsername) {
+          onCurrentUserUpdated?.({
+            username: updatedUser.username,
+            imageUrl: updatedUser.imageUrl,
+          })
+        }
         setFeedback("Usuário atualizado com sucesso.")
       } else {
         await requestJson("/api/users", {
@@ -123,10 +132,7 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
     }
   }
 
-  async function handleDelete(username: string) {
-    const confirmed = window.confirm(`Deseja realmente excluir o usuário "${username}"?`)
-    if (!confirmed) return
-
+  async function confirmDelete(username: string) {
     setSaving(true)
     setError("")
     setFeedback("")
@@ -137,6 +143,7 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
       if (editingUsername === username) {
         resetForm()
       }
+      setDeleteCandidate(null)
       setFeedback("Usuário excluído com sucesso.")
       await loadUsers()
     } catch (nextError) {
@@ -159,10 +166,10 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
       subtitle="Cadastro, edição e remoção de acessos ao painel"
       size="lg"
       icon={<UserRoundCog className="h-5 w-5 text-primary" />}
-      bodyClassName="bg-muted/10"
+      bodyClassName="overflow-hidden bg-muted/10"
     >
-      <div className="grid gap-0 md:grid-cols-[1.2fr_0.95fr]">
-        <section className="border-b border-border p-6 md:border-r md:border-b-0">
+      <div className="grid h-[72vh] max-h-[72vh] gap-0 md:grid-cols-[1.2fr_0.95fr]">
+        <section className="flex min-h-0 flex-col border-b border-border p-6 md:border-r md:border-b-0">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Acessos cadastrados</h3>
@@ -191,7 +198,8 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
               Nenhum usuário cadastrado.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="min-h-0 h-full flex-1 overflow-y-auto pr-2">
+              <div className="space-y-3">
               {users.map((user) => {
                 const isCurrent = user.username === currentUsername
                 return (
@@ -240,7 +248,7 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
                         <button
                           type="button"
                           onClick={() => {
-                            void handleDelete(user.username)
+                            setDeleteCandidate(user)
                           }}
                           disabled={isCurrent}
                           className="rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-1.5 text-xs font-semibold text-status-err transition-colors hover:bg-destructive/10"
@@ -252,11 +260,12 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
                   </article>
                 )
               })}
+              </div>
             </div>
           )}
         </section>
 
-        <section className="p-6">
+        <section className="flex flex-col p-6">
           <div className="mb-4">
             <h3 className="text-sm font-semibold text-foreground">
               {isEditing ? `Editando ${editingUsername}` : "Novo usuário"}
@@ -337,6 +346,44 @@ export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) 
           />
         </section>
       </div>
+
+      {deleteCandidate ? (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-foreground/12 p-4 backdrop-blur-[1px]">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl">
+            <div className="border-b border-border px-5 py-4">
+              <h3 className="text-base font-semibold text-foreground">Excluir usuário</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Deseja realmente excluir o usuário "{deleteCandidate.username}"?
+              </p>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-sm text-muted-foreground">
+                Esta ação remove o acesso ao painel imediatamente.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-border bg-muted/20 px-5 py-4">
+              <button
+                type="button"
+                onClick={() => setDeleteCandidate(null)}
+                disabled={saving}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void confirmDelete(deleteCandidate.username)
+                }}
+                disabled={saving}
+                className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-status-err transition-colors hover:bg-destructive/20 disabled:opacity-60"
+              >
+                {saving ? "Excluindo..." : "Excluir usuário"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </ModalShell>
   )
 }

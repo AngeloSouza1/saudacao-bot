@@ -31,6 +31,7 @@ export function LoginPage() {
         username: username.trim(),
         password,
       })
+      window.sessionStorage.setItem("saudacao.panel.just-authenticated", "1")
       window.location.reload()
     } catch (err) {
       setError(String((err as Error)?.message || "Falha ao entrar no painel."))

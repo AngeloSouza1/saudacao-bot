@@ -30,25 +30,24 @@ function getLimiterState(ip: string) {
 export async function POST(request: Request) {
   const clientIp = getClientIp(request)
   const limiterState = getLimiterState(clientIp)
-  if (limiterState.count >= MAX_LOGIN_ATTEMPTS) {
-    return NextResponse.json(
-      { ok: false, error: "Muitas tentativas de login. Aguarde alguns minutos e tente novamente." },
-      {
-        status: 429,
-        headers: {
-          "Cache-Control": "no-store",
-          "Retry-After": String(Math.max(1, Math.ceil((limiterState.resetAt - Date.now()) / 1000))),
-        },
-      }
-    )
-  }
-
   const body = await request.json().catch(() => ({}))
   const username = String(body?.username || "").trim()
   const password = String(body?.password || "")
 
   const authenticatedUser = await validatePanelCredentials(username, password)
   if (!authenticatedUser) {
+    if (limiterState.count >= MAX_LOGIN_ATTEMPTS) {
+      return NextResponse.json(
+        { ok: false, error: "Muitas tentativas de login. Aguarde alguns minutos e tente novamente." },
+        {
+          status: 429,
+          headers: {
+            "Cache-Control": "no-store",
+            "Retry-After": String(Math.max(1, Math.ceil((limiterState.resetAt - Date.now()) / 1000))),
+          },
+        }
+      )
+    }
     limiterState.count += 1
     return NextResponse.json(
       { ok: false, error: "Usuário ou senha inválidos." },
