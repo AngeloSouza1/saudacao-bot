@@ -1,20 +1,9 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto"
+import { createHmac, timingSafeEqual } from "node:crypto"
 import { cookies } from "next/headers"
+import { findStoredPanelUser, type PanelUserRole, validateStoredPanelCredentials } from "@/lib/panel-users"
 
 export const PANEL_AUTH_COOKIE = "saudacao_panel_session"
 const PANEL_SESSION_MAX_AGE_SECONDS = 60 * 60 * 8
-
-function getPanelUser() {
-  return String(process.env.PANEL_LOGIN_USER || "admin").trim()
-}
-
-function getPanelPassword() {
-  return String(process.env.PANEL_LOGIN_PASSWORD || "admin").trim()
-}
-
-function getPanelPasswordSha256() {
-  return String(process.env.PANEL_LOGIN_PASSWORD_SHA256 || "").trim().toLowerCase()
-}
 
 function getSessionSecret() {
   return String(process.env.PANEL_SESSION_SECRET || "saudacao-bot-panel-secret").trim()
@@ -24,10 +13,6 @@ function signValue(value: string) {
   return createHmac("sha256", getSessionSecret()).update(value).digest("hex")
 }
 
-function sha256(value: string) {
-  return createHash("sha256").update(value).digest("hex")
-}
-
 function safeEquals(left: string, right: string) {
   const leftBuffer = Buffer.from(String(left))
   const rightBuffer = Buffer.from(String(right))
@@ -35,24 +20,16 @@ function safeEquals(left: string, right: string) {
   return timingSafeEqual(leftBuffer, rightBuffer)
 }
 
-export function validatePanelCredentials(username: string, password: string) {
-  const normalizedUser = String(username || "").trim()
-  const normalizedPassword = String(password || "")
-  if (!safeEquals(normalizedUser, getPanelUser())) return false
-
-  const configuredPasswordHash = getPanelPasswordSha256()
-  if (configuredPasswordHash) {
-    return safeEquals(sha256(normalizedPassword), configuredPasswordHash)
-  }
-
-  return safeEquals(normalizedPassword, getPanelPassword())
+export async function validatePanelCredentials(username: string, password: string) {
+  return await validateStoredPanelCredentials(username, password)
 }
 
-export function buildPanelSessionValue(username: string) {
+export function buildPanelSessionValue(username: string, role: PanelUserRole) {
   const normalizedUser = String(username || "").trim()
   const payload = Buffer.from(
     JSON.stringify({
       u: normalizedUser,
+      r: role,
       exp: Date.now() + PANEL_SESSION_MAX_AGE_SECONDS * 1000,
     })
   ).toString("base64url")
@@ -60,33 +37,41 @@ export function buildPanelSessionValue(username: string) {
   return `${payload}.${signature}`
 }
 
-export function isPanelSessionValid(value: string) {
+export async function readPanelSessionValue(value: string) {
   const raw = String(value || "").trim()
-  if (!raw) return false
+  if (!raw) return null
 
   const separatorIndex = raw.lastIndexOf(".")
-  if (separatorIndex <= 0) return false
+  if (separatorIndex <= 0) return null
 
   const payload = raw.slice(0, separatorIndex)
   const signature = raw.slice(separatorIndex + 1)
-  if (!payload || !signature) return false
+  if (!payload || !signature) return null
 
   const expected = Buffer.from(signValue(payload))
   const received = Buffer.from(signature)
-  if (expected.length !== received.length) return false
-  if (!timingSafeEqual(expected, received)) return false
+  if (expected.length !== received.length) return null
+  if (!timingSafeEqual(expected, received)) return null
 
   try {
     const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
       u?: string
+      r?: PanelUserRole
       exp?: number
     }
-    if (!session?.u || !session?.exp) return false
-    if (!safeEquals(session.u, getPanelUser())) return false
-    if (session.exp < Date.now()) return false
-    return true
+    if (!session?.u || !session?.exp) return null
+    if (session.exp < Date.now()) return null
+    const user = await findStoredPanelUser(session.u)
+    if (!user) return null
+    return {
+      authenticated: true as const,
+      username: user.username,
+      role: user.role,
+      isAdmin: user.role === "admin",
+      imageUrl: user.imageUrl,
+    }
   } catch {
-    return false
+    return null
   }
 }
 
@@ -103,8 +88,13 @@ export function getPanelCookieOptions(maxAge = PANEL_SESSION_MAX_AGE_SECONDS) {
 export async function getPanelSession() {
   const store = await cookies()
   const value = String(store.get(PANEL_AUTH_COOKIE)?.value || "")
+  const session = await readPanelSessionValue(value)
+  if (session) return session
   return {
-    authenticated: isPanelSessionValid(value),
-    username: getPanelUser(),
+    authenticated: false as const,
+    username: "",
+    role: null,
+    isAdmin: false,
+    imageUrl: "",
   }
 }

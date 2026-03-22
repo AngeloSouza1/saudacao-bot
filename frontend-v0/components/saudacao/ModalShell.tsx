@@ -109,6 +109,7 @@ export function UnderlineInput({
   error,
   required = false,
   inputClassName = "",
+  disabled = false,
 }: {
   label: string
   value: string
@@ -119,6 +120,7 @@ export function UnderlineInput({
   error?: string
   required?: boolean
   inputClassName?: string
+  disabled?: boolean
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -130,9 +132,10 @@ export function UnderlineInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        disabled={disabled}
         className={`bg-transparent border-0 border-b-2 outline-none py-1.5 text-sm text-foreground placeholder:text-muted-foreground/50 transition-colors ${
           error ? "border-status-err focus:border-status-err" : "border-input focus:border-primary"
-        } ${inputClassName}`}
+        } disabled:cursor-not-allowed disabled:opacity-60 ${inputClassName}`}
       />
       {error ? <p className="text-[11px] text-status-err">{error}</p> : null}
       {!error && hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}

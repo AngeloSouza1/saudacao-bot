@@ -7,5 +7,5 @@ export default async function DashboardPage() {
   if (!session.authenticated) {
     return <LoginPage />
   }
-  return <DashboardPageClient />
+  return <DashboardPageClient panelSession={session} />
 }

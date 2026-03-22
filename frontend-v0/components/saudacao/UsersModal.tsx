@@ -1,0 +1,342 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { Shield, UserRound, UserRoundCog, UserRoundPlus } from "lucide-react"
+import { ModalActions, ModalShell, UnderlineInput } from "@/components/saudacao/ModalShell"
+
+type PanelUser = {
+  username: string
+  role: "admin" | "user"
+  imageUrl?: string
+  createdAt: string
+  updatedAt: string
+}
+
+async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    cache: "no-store",
+    ...init,
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(String(data?.error || "Falha ao processar solicitação."))
+  }
+  return data as T
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return "não informado"
+  return date.toLocaleString("pt-BR")
+}
+
+interface UsersModalProps {
+  open: boolean
+  onClose: () => void
+  currentUsername: string
+}
+
+export function UsersModal({ open, onClose, currentUsername }: UsersModalProps) {
+  const [users, setUsers] = useState<PanelUser[]>([])
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
+  const [feedback, setFeedback] = useState("")
+  const [editingUsername, setEditingUsername] = useState("")
+  const [formUsername, setFormUsername] = useState("")
+  const [formPassword, setFormPassword] = useState("")
+  const [formImageUrl, setFormImageUrl] = useState("")
+  const [formRole, setFormRole] = useState<"admin" | "user">("user")
+
+  const isEditing = Boolean(editingUsername)
+
+  async function loadUsers() {
+    setLoading(true)
+    setError("")
+    try {
+      const payload = await requestJson<{ users?: PanelUser[] }>("/api/users")
+      setUsers(Array.isArray(payload?.users) ? payload.users : [])
+    } catch (nextError) {
+      setError(String((nextError as Error)?.message || "Falha ao carregar usuários."))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!open) return
+    void loadUsers()
+  }, [open])
+
+  function resetForm() {
+    setEditingUsername("")
+    setFormUsername("")
+    setFormPassword("")
+    setFormImageUrl("")
+    setFormRole("user")
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    setError("")
+    setFeedback("")
+    try {
+      if (!formUsername.trim()) {
+        throw new Error("Informe o nome de usuário.")
+      }
+      if (!isEditing && formPassword.length < 4) {
+        throw new Error("Informe uma senha com ao menos 4 caracteres.")
+      }
+
+      if (isEditing) {
+        await requestJson(`/api/users/${encodeURIComponent(editingUsername)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: formUsername.trim(),
+            password: formPassword,
+            role: formRole,
+            imageUrl: formImageUrl.trim(),
+          }),
+        })
+        setFeedback("Usuário atualizado com sucesso.")
+      } else {
+        await requestJson("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: formUsername.trim(),
+            password: formPassword,
+            role: formRole,
+            imageUrl: formImageUrl.trim(),
+          }),
+        })
+        setFeedback("Usuário criado com sucesso.")
+      }
+
+      resetForm()
+      await loadUsers()
+    } catch (nextError) {
+      setError(String((nextError as Error)?.message || "Falha ao salvar usuário."))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete(username: string) {
+    const confirmed = window.confirm(`Deseja realmente excluir o usuário "${username}"?`)
+    if (!confirmed) return
+
+    setSaving(true)
+    setError("")
+    setFeedback("")
+    try {
+      await requestJson(`/api/users/${encodeURIComponent(username)}`, {
+        method: "DELETE",
+      })
+      if (editingUsername === username) {
+        resetForm()
+      }
+      setFeedback("Usuário excluído com sucesso.")
+      await loadUsers()
+    } catch (nextError) {
+      setError(String((nextError as Error)?.message || "Falha ao excluir usuário."))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <ModalShell
+      open={open}
+      onClose={() => {
+        resetForm()
+        setError("")
+        setFeedback("")
+        onClose()
+      }}
+      title="Usuários"
+      subtitle="Cadastro, edição e remoção de acessos ao painel"
+      size="lg"
+      icon={<UserRoundCog className="h-5 w-5 text-primary" />}
+      bodyClassName="bg-muted/10"
+    >
+      <div className="grid gap-0 md:grid-cols-[1.2fr_0.95fr]">
+        <section className="border-b border-border p-6 md:border-r md:border-b-0">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Acessos cadastrados</h3>
+              <p className="text-xs text-muted-foreground">Somente admins visualizam e gerenciam esta lista.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                resetForm()
+                setError("")
+                setFeedback("")
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <UserRoundPlus size={14} />
+              Novo
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
+              Carregando usuários...
+            </div>
+          ) : users.length === 0 ? (
+            <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
+              Nenhum usuário cadastrado.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {users.map((user) => {
+                const isCurrent = user.username === currentUsername
+                return (
+                  <article key={user.username} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          {user.imageUrl ? (
+                            <span className="inline-flex h-9 w-9 overflow-hidden rounded-xl border border-border bg-muted">
+                              <img src={user.imageUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                            </span>
+                          ) : (
+                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                              {user.role === "admin" ? <Shield size={16} /> : <UserRound size={16} />}
+                            </span>
+                          )}
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-foreground">{user.username}</p>
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                              {user.role === "admin" ? "Administrador" : "Usuário"}
+                              {isCurrent ? " · sessão atual" : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-[11px] text-muted-foreground">
+                          Criado em {formatDateTime(user.createdAt)}<br />
+                          Atualizado em {formatDateTime(user.updatedAt)}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingUsername(user.username)
+                            setFormUsername(user.username)
+                            setFormPassword("")
+                            setFormImageUrl(String(user.imageUrl || ""))
+                            setFormRole(user.role)
+                            setError("")
+                            setFeedback("")
+                          }}
+                          className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void handleDelete(user.username)
+                          }}
+                          disabled={isCurrent}
+                          className="rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-1.5 text-xs font-semibold text-status-err transition-colors hover:bg-destructive/10"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        <section className="p-6">
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground">
+              {isEditing ? `Editando ${editingUsername}` : "Novo usuário"}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Defina credenciais e nível de acesso ao painel.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            <UnderlineInput
+              label="Usuário"
+              value={formUsername}
+              onChange={setFormUsername}
+              placeholder="ex.: joao.silva"
+              required
+              disabled={editingUsername === currentUsername}
+            />
+
+            <div className="space-y-2">
+            <UnderlineInput
+              label={isEditing ? "Nova senha" : "Senha"}
+              value={formPassword}
+                onChange={setFormPassword}
+                placeholder={isEditing ? "deixe em branco para manter" : "mínimo 4 caracteres"}
+                type="password"
+                hint={isEditing ? "Se deixar em branco, a senha atual será mantida." : undefined}
+              required={!isEditing}
+            />
+
+            <UnderlineInput
+              label="Link da imagem"
+              value={formImageUrl}
+              onChange={setFormImageUrl}
+              placeholder="https://exemplo.com/avatar.jpg"
+              hint="Opcional. Será usado como avatar do usuário no painel."
+            />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Perfil</label>
+              <select
+                value={formRole}
+                onChange={(event) => setFormRole(event.target.value === "admin" ? "admin" : "user")}
+                disabled={editingUsername === currentUsername}
+                className="rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary"
+              >
+                <option value="user">Usuário</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+
+            {error ? (
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {error}
+              </div>
+            ) : null}
+
+            {feedback ? (
+              <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                {feedback}
+              </div>
+            ) : null}
+          </div>
+
+          <ModalActions
+            onCancel={() => {
+              resetForm()
+              setError("")
+              setFeedback("")
+            }}
+            onConfirm={() => {
+              void handleSave()
+            }}
+            confirmLabel={saving ? "Salvando..." : isEditing ? "Salvar alterações" : "Criar usuário"}
+            confirmDisabled={saving}
+            cancelLabel={isEditing ? "Cancelar edição" : "Limpar"}
+          />
+        </section>
+      </div>
+    </ModalShell>
+  )
+}

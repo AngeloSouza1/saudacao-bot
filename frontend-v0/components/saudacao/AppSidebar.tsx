@@ -11,6 +11,7 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -28,10 +29,12 @@ interface SidebarProps {
   onOpenSchedule: () => void
   onOpenMessages: () => void
   onOpenHistory: () => void
+  onOpenUsers: () => void
   activeItem: string
   setActiveItem: (id: string) => void
   shortcutsOpen: boolean
   onToggleShortcuts: () => void
+  canManageUsers?: boolean
 }
 
 export function AppSidebar({
@@ -40,10 +43,12 @@ export function AppSidebar({
   onOpenSchedule,
   onOpenMessages,
   onOpenHistory,
+  onOpenUsers,
   activeItem,
   setActiveItem,
   shortcutsOpen,
   onToggleShortcuts,
+  canManageUsers = false,
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(true)
 
@@ -89,6 +94,15 @@ export function AppSidebar({
       subtitle: "Ciclos anteriores",
       onClick: onOpenHistory,
     },
+    ...(canManageUsers
+      ? [{
+          id: "users",
+          icon: <Users size={18} />,
+          title: "Usuário",
+          subtitle: "Controle de acessos",
+          onClick: onOpenUsers,
+        } satisfies SidebarItem]
+      : []),
     {
       id: "shortcuts",
       icon: <Sparkles size={18} />,

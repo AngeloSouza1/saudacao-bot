@@ -13,6 +13,7 @@ import { AllSchedulesModal } from "@/components/saudacao/AllSchedulesModal"
 import { MessagesModal } from "@/components/saudacao/MessagesModal"
 import { HistoryModal } from "@/components/saudacao/HistoryModal"
 import { CycleModal } from "@/components/saudacao/CycleModal"
+import { UsersModal } from "@/components/saudacao/UsersModal"
 import { hasRequiredConfig } from "@/lib/validation"
 
 type DashboardStatusResponse = {
@@ -24,6 +25,7 @@ type DashboardStatusResponse = {
   config?: {
     turma?: string
     instituicao?: string
+    agendaSemanal?: Record<string, Array<{ data?: string; hora?: string; materia?: string }>>
     antecedenciaMin?: number
     diasUteisApenas?: boolean
     defaultGreetingMessage?: string
@@ -188,7 +190,17 @@ function mapGreetingItems(data: DashboardStatusResponse | null, limit = 12): Gre
   })
 }
 
-export default function DashboardPageClient() {
+type DashboardPageClientProps = {
+  panelSession: {
+    authenticated: true
+    username: string
+    role: "admin" | "user"
+    isAdmin: boolean
+    imageUrl?: string
+  }
+}
+
+export default function DashboardPageClient({ panelSession }: DashboardPageClientProps) {
   const defaultScreenAppliedRef = useRef(false)
   const [isMounted, setIsMounted] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
@@ -199,6 +211,7 @@ export default function DashboardPageClient() {
   const [configOpen, setConfigOpen] = useState(false)
   const [cycleOpen, setCycleOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [usersOpen, setUsersOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [scheduleInitialSection, setScheduleInitialSection] = useState<"students" | "lessons" | null>(null)
   const [allSchedulesOpen, setAllSchedulesOpen] = useState(false)
@@ -326,11 +339,10 @@ export default function DashboardPageClient() {
 
   const cycleName = String(statusData?.cycle?.active?.name || "").trim()
   const cycleLabel = cycleName ? `Ciclo atual: ${cycleName}` : "Sem ciclo ativo"
-  const userName =
-    String(statusData?.whatsapp?.userName || "").trim() ||
-    (statusData?.whatsapp?.sender ? `+${statusData.whatsapp.sender}` : "Sem sessão")
-  const userInitials = getUserInitials(userName)
-  const userAvatar = String(statusData?.whatsapp?.userAvatar || "").trim() || undefined
+  const panelUserName = String(panelSession?.username || "").trim() || "painel"
+  const userName = panelUserName
+  const userInitials = getUserInitials(panelUserName)
+  const userAvatar = String(panelSession?.imageUrl || "").trim() || undefined
   const whatsappPhase = String(statusData?.whatsapp?.phase || "")
   const isSystemReady = whatsappPhase === "ready" || whatsappPhase === "authenticated" || Boolean(statusData?.whatsapp?.sender)
   const hasConfigPending = !hasRequiredConfig({
@@ -370,7 +382,7 @@ export default function DashboardPageClient() {
       <div className="flex h-screen flex-col overflow-hidden bg-background" suppressHydrationWarning>
         <AppHeader
           cycleLabel="Carregando painel"
-          userName="Aguardando sessão"
+          userName={panelUserName}
           userInitials="SB"
         />
 
@@ -475,12 +487,12 @@ export default function DashboardPageClient() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background" suppressHydrationWarning>
-      <AppHeader
-        cycleLabel={cycleLabel}
-        userName={userName}
-        userInitials={userInitials}
-        userAvatar={userAvatar}
-      />
+        <AppHeader
+          cycleLabel={cycleLabel}
+          userName={userName}
+          userInitials={userInitials}
+          userAvatar={userAvatar}
+        />
 
       <div className="flex flex-1 min-h-0">
         <AppSidebar
@@ -488,6 +500,7 @@ export default function DashboardPageClient() {
           onOpenMessages={() => setMessagesOpen(true)}
           onOpenConfig={() => setConfigOpen(true)}
           onOpenHistory={() => setHistoryOpen(true)}
+          onOpenUsers={() => setUsersOpen(true)}
           onOpenSchedule={() => {
             setScheduleInitialSection(null)
             setScheduleOpen(true)
@@ -496,6 +509,7 @@ export default function DashboardPageClient() {
           setActiveItem={setActiveItem}
           shortcutsOpen={shortcutsOpen}
           onToggleShortcuts={() => setShortcutsOpen((prev) => !prev)}
+          canManageUsers={panelSession.isAdmin}
         />
 
         <main className="flex-1 overflow-y-auto p-6">
@@ -684,6 +698,14 @@ export default function DashboardPageClient() {
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
         items={Array.isArray(statusData?.cycle?.history) ? statusData?.cycle?.history : []}
+      />
+      <UsersModal
+        open={usersOpen}
+        onClose={() => {
+          setUsersOpen(false)
+          if (activeItem === "users") setActiveItem("")
+        }}
+        currentUsername={panelUserName}
       />
       <ScheduleModal
         open={scheduleOpen}

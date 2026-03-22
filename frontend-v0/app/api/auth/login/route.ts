@@ -47,7 +47,8 @@ export async function POST(request: Request) {
   const username = String(body?.username || "").trim()
   const password = String(body?.password || "")
 
-  if (!validatePanelCredentials(username, password)) {
+  const authenticatedUser = await validatePanelCredentials(username, password)
+  if (!authenticatedUser) {
     limiterState.count += 1
     return NextResponse.json(
       { ok: false, error: "Usuário ou senha inválidos." },
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
   loginAttempts.delete(clientIp)
   response.cookies.set({
     name: PANEL_AUTH_COOKIE,
-    value: buildPanelSessionValue(username),
+    value: buildPanelSessionValue(authenticatedUser.username, authenticatedUser.role),
     ...getPanelCookieOptions(),
   })
 
