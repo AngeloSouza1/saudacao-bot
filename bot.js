@@ -909,8 +909,9 @@ function formatAgendaLine(item) {
 }
 
 function buildAgendaListMessage(config, state, activeCycle) {
+  const resolvedScheduleSummary = getScheduleSummaryForPreview(config);
   const sortedSummary = sortPreviewSummaryLikeLessonsModal(
-    getScheduleSummaryForPreview(config),
+    resolvedScheduleSummary,
     state
   );
   const agenda = buildSchedulePreview(
@@ -956,8 +957,9 @@ function isAgendaItemDone(item, index, doneCount, revertedSet) {
 
 function getLinkedStudentsFromCycleView(config, state, activeCycle, pendingOnly = false) {
   const cycleId = String(activeCycle?.id || "no-cycle");
+  const resolvedScheduleSummary = getScheduleSummaryForPreview(config);
   const sortedSummary = sortPreviewSummaryLikeLessonsModal(
-    getScheduleSummaryForPreview(config),
+    resolvedScheduleSummary,
     state
   );
   const preview = buildSchedulePreview(
@@ -1142,8 +1144,9 @@ function consumeAlunoFromGlobalQueue(state, alunos, aluno) {
 function pickAlunoFromActiveCyclePreview(config, state, activeCycle) {
   if (!activeCycle) return "";
   const cycleId = String(activeCycle?.id || "no-cycle");
+  const resolvedScheduleSummary = getScheduleSummaryForPreview(config);
   const sortedSummary = sortPreviewSummaryLikeLessonsModal(
-    getScheduleSummaryForPreview(config),
+    resolvedScheduleSummary,
     state
   );
   const preview = buildSchedulePreview(
@@ -1173,8 +1176,9 @@ function pickAgendaItemForCurrentDispatch(config, state, activeCycle, aula, targ
   if (!activeCycle || !aula) return null;
 
   const cycleId = String(activeCycle?.id || "no-cycle");
+  const resolvedScheduleSummary = getScheduleSummaryForPreview(config);
   const sortedSummary = sortPreviewSummaryLikeLessonsModal(
-    getScheduleSummaryForPreview(config),
+    resolvedScheduleSummary,
     state
   );
   const preview = buildSchedulePreview(
@@ -1859,7 +1863,6 @@ export async function ensureInitialized() {
   saveState(getStateNormalized());
 
   if (!initialized) {
-    await initWhatsApp();
     initialized = true;
   }
 }
@@ -1945,7 +1948,7 @@ export function getDashboardState(options = {}) {
     timezone: TZ,
     initialized,
     schedulerStarted,
-    scheduleSummary,
+    scheduleSummary: getScheduleSummaryForPreview(config),
     settings,
     config: publicConfig,
     state,

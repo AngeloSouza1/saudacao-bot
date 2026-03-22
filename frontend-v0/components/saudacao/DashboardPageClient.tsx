@@ -701,7 +701,22 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                   Ciclo ativo{todayLabel ? ` · ${todayLabel}` : ""}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap justify-end">
+                {statusData?.cycle?.active ? (
+                  <div
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs ${
+                      activeCycleOwnerReady
+                        ? "border border-green-200 bg-green-50 text-green-800"
+                        : "border border-destructive/30 bg-destructive/10 text-destructive"
+                    }`}
+                  >
+                    <span className={`h-2 w-2 rounded-full ${activeCycleOwnerReady ? "bg-status-ok" : "bg-status-err"}`} />
+                    <span className="font-medium">
+                      Responsável: {activeCycleOwner || "não definido"}
+                      {currentUserOwnsCycle ? " · você" : ""}
+                    </span>
+                  </div>
+                ) : null}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span
                     className={`w-2 h-2 rounded-full inline-block ${isSystemReady ? "bg-status-ok animate-pulse" : "bg-status-warn"}`}
@@ -732,20 +747,6 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             {hasConfigPending ? (
               <div className="rounded-xl border border-status-warn/40 bg-yellow-50 px-4 py-3 text-sm text-amber-700">
                 Pendências obrigatórias: revise Destino, Configuração e Agenda (mínimo 1 aula) antes do envio.
-              </div>
-            ) : null}
-            {statusData?.cycle?.active ? (
-              <div
-                className={`rounded-xl px-4 py-3 text-sm ${
-                  activeCycleOwnerReady
-                    ? "border border-green-200 bg-green-50 text-green-800"
-                    : "border border-destructive/30 bg-destructive/10 text-destructive"
-                }`}
-              >
-                <span className="font-semibold">Responsável pelo ciclo:</span>{" "}
-                <span>{activeCycleOwner || "não definido"}</span>
-                {currentUserOwnsCycle ? " · você é o responsável atual." : activeCycleOwner ? " · os envios usam a sessão desse usuário." : ""}
-                {!activeCycleOwnerReady ? " A sessão do responsável está offline ou aguardando QR Code." : ""}
               </div>
             ) : null}
             {isViewer ? (
