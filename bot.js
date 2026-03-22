@@ -35,6 +35,16 @@ let lastManualSendType = "";
 const MANUAL_SEND_COOLDOWN_MS = Number(process.env.MANUAL_SEND_COOLDOWN_MS || 15000);
 const FORCED_SEND_COOLDOWN_MS = Number(process.env.FORCED_SEND_COOLDOWN_MS || 60000);
 
+function resolveRequesterContext(options = {}) {
+  const username = String(options?.username || "").trim().toLowerCase();
+  return username ? { username } : {};
+}
+
+function resolveCycleOwnerContext(activeCycle, fallbackOptions = {}) {
+  const ownerUsername = String(activeCycle?.ownerUsername || "").trim().toLowerCase();
+  return ownerUsername ? { username: ownerUsername } : resolveRequesterContext(fallbackOptions);
+}
+
 function bootstrapLastRun() {
   if (fs.existsSync(lastRunPath)) {
     try {
@@ -191,14 +201,16 @@ function buildCycleName(customName, reason = "manual") {
   return `${prefix} ${stamp}`;
 }
 
-function createCycleSnapshotFromCurrentState(reason = "bootstrap", customName = "") {
+function createCycleSnapshotFromCurrentState(reason = "bootstrap", customName = "", options = {}) {
   const config = loadConfig();
   const state = getStateNormalized();
   const totalAlunos = getCycleCapacity(config);
+  const ownerUsername = String(options?.username || "").trim().toLowerCase();
 
   return {
     id: makeCycleId(),
     name: buildCycleName(customName, reason),
+    ownerUsername,
     status: "active",
     reason,
     createdAt: new Date().toISOString(),
@@ -1351,7 +1363,7 @@ function resolveMessageMediaConfig(config, kind = "default", overrides = {}) {
   };
 }
 
-async function sendBotMessage(text, cardData = null, messageKind = "default") {
+async function sendBotMessage(text, cardData = null, messageKind = "default", options = {}) {
   const settings = loadSettings();
   const config = loadConfig();
   const studentImagePath = getStudentImageForName(config, cardData?.aluno);
@@ -1379,7 +1391,7 @@ async function sendBotMessage(text, cardData = null, messageKind = "default") {
     backgroundColor,
     backgroundImagePath,
     cardData
-  });
+  }, resolveRequesterContext(options));
 
   saveLastRun({
     type: "custom",
@@ -1404,7 +1416,7 @@ async function sendBotMessage(text, cardData = null, messageKind = "default") {
   return message;
 }
 
-export async function sendCustomMessageToTarget(targetType, targetValue, template, overrides = {}) {
+export async function sendCustomMessageToTarget(targetType, targetValue, template, overrides = {}, options = {}) {
   const config = loadConfig();
   const kind = String(targetType || "student").trim();
   const turma = String(config.turma || "").trim();
@@ -1455,7 +1467,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
       backgroundColor,
       backgroundImagePath,
       cardData: { turma, instituicao, aluno: "", materia: "", titulo: "", professor: "", horario: "" }
-    });
+    }, resolveRequesterContext(options));
     saveLastRun({
       type: "custom_group",
       skipped: false,
@@ -1503,7 +1515,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
     backgroundColor,
     backgroundImagePath,
     cardData: { turma, instituicao, aluno: alunoNome, materia: "", titulo: "", professor: "", horario: "" }
-  });
+  }, resolveRequesterContext(options));
   saveLastRun({
     type: "custom_student",
     skipped: false,
@@ -1581,14 +1593,14 @@ async function withManualSendLock(task, type = "manual") {
   }
 }
 
-export async function runNow() {
+export async function runNow(options = {}) {
   return await withManualSendLock(async () => {
     const { config } = assertSendConfig();
-    return await runScheduledDispatch(config);
+    return await runScheduledDispatch(config, resolveRequesterContext(options));
   }, "now");
 }
 
-export async function runNowForced() {
+export async function runNowForced(options = {}) {
   return await withManualSendLock(async () => {
     const { config } = assertSendConfig();
     const state = getStateNormalized();
@@ -1606,6 +1618,7 @@ export async function runNowForced() {
     let itemKeyFromCycle = "";
     const cycles = completeActiveCycleIfNeeded(loadCycles());
     const active = getActiveCycle(cycles);
+    const cycleContext = resolveCycleOwnerContext(active, options);
     if (active) {
       const picked = pickAlunoFromActiveCyclePreview(config, state, active);
       aluno = String(picked?.aluno || "").trim();
@@ -1628,7 +1641,7 @@ export async function runNowForced() {
       aluno: String(aluno || ""),
       horario: String(aula.hora || "")
     };
-    const message = await sendBotMessage(text, cardData);
+    const message = await sendBotMessage(text, cardData, "default", cycleContext);
     markCycleMessageSent(aluno, itemKeyFromCycle);
 
     saveLastRun({
@@ -1644,9 +1657,9 @@ export async function runNowForced() {
   }, "forced");
 }
 
-export async function runTest() {
+export async function runTest(options = {}) {
   assertSendConfig();
-  const message = await sendBotMessage("Teste do saudação-bot via WhatsApp Web.");
+  const message = await sendBotMessage("Teste do saudação-bot via WhatsApp Web.", null, "default", resolveRequesterContext(options));
   saveLastRun({
     type: "test",
     skipped: false,
@@ -1656,19 +1669,20 @@ export async function runTest() {
   return message;
 }
 
-export async function sendAgendaListToDestination() {
+export async function sendAgendaListToDestination(options = {}) {
   const { config, settings } = assertSendConfig();
   const state = getStateNormalized();
   const cycles = completeActiveCycleIfNeeded(loadCycles());
   saveCycles(cycles);
   const activeCycle = getActiveCycle(cycles);
+  const cycleContext = resolveCycleOwnerContext(activeCycle, options);
   const text = buildAgendaListMessage(config, state, activeCycle);
   const message = await sendText({
     to: settings.to,
     groupId: settings.groupId,
     groupName: settings.groupName,
     text
-  });
+  }, cycleContext);
 
   saveLastRun({
     type: "agenda_list",
@@ -1757,11 +1771,12 @@ export function startScheduler() {
   schedulerStarted = true;
 }
 
-async function runScheduledDispatch(config) {
+async function runScheduledDispatch(config, options = {}) {
   const state = getStateNormalized();
   const cyclesPayload = completeActiveCycleIfNeeded(loadCycles());
   saveCycles(cyclesPayload);
   const activeCycle = getActiveCycle(cyclesPayload);
+  const cycleContext = resolveCycleOwnerContext(activeCycle, options);
   const d = diaSemanaNumero();
   if (!isDiaPermitido(config, d)) {
     saveLastRun({
@@ -1786,7 +1801,7 @@ async function runScheduledDispatch(config) {
 
   if (aulasDoDia.length === 0) {
     const text = buildNoClassMessage();
-    const message = await sendBotMessage(text, null, "no-class");
+    const message = await sendBotMessage(text, null, "no-class", cycleContext);
     saveLastRun({
       type: "scheduled",
       skipped: false,
@@ -1822,7 +1837,7 @@ async function runScheduledDispatch(config) {
     aluno: String(aluno || ""),
     horario: String(aula.hora || "")
   };
-  const message = await sendBotMessage(text, cardData, "default");
+  const message = await sendBotMessage(text, cardData, "default", cycleContext);
   markCycleMessageSent(aluno, itemKeyFromCycle);
 
   saveLastRun({
@@ -1857,24 +1872,36 @@ export async function ensureService() {
   }
 }
 
-export async function reconnectWhatsApp() {
-  const client = await initWhatsApp();
+export async function reconnectWhatsApp(options = {}) {
+  const requester = resolveRequesterContext(options);
+  const client = await initWhatsApp(requester);
   initialized = true;
   return {
     connected: Boolean(client),
-    whatsapp: getWhatsAppStatus()
+    whatsapp: getWhatsAppStatus(requester)
   };
 }
 
-export function getDashboardState() {
+export function getDashboardState(options = {}) {
+  const requester = resolveRequesterContext(options);
+  if (requester.username) {
+    void initWhatsApp(requester).catch(() => {
+      // O status detalhado da falha será refletido na próxima leitura via getWhatsAppStatus.
+    });
+  }
   const config = loadConfig();
   const settings = loadSettings();
   const state = getStateNormalized();
-  const whatsapp = getWhatsAppStatus();
+  const whatsapp = getWhatsAppStatus(requester);
   const loggedStudentMatch = findLoggedStudentMatch(config, whatsapp?.sender);
   const cycles = completeActiveCycleIfNeeded(loadCycles());
   saveCycles(cycles);
   const activeCycle = getActiveCycle(cycles);
+  const activeCycleOwnerUsername = String(activeCycle?.ownerUsername || "").trim().toLowerCase();
+  const activeCycleOwnerWhatsapp = activeCycleOwnerUsername ? getWhatsAppStatus({ username: activeCycleOwnerUsername }) : null;
+  const activeCycleOwnerReady =
+    ["ready", "authenticated"].includes(String(activeCycleOwnerWhatsapp?.phase || "")) ||
+    Boolean(String(activeCycleOwnerWhatsapp?.sender || "").trim());
   if (
     activeCycle &&
     (
@@ -1918,7 +1945,16 @@ export function getDashboardState() {
     config: publicConfig,
     state,
     cycle: {
-      active: activeCycle,
+      active: activeCycle
+        ? {
+            ...activeCycle,
+            ownerUsername: activeCycleOwnerUsername,
+            ownerSessionReady: activeCycleOwnerReady,
+            ownerSessionPhase: String(activeCycleOwnerWhatsapp?.phase || ""),
+            ownerSessionSender: String(activeCycleOwnerWhatsapp?.sender || ""),
+            currentUserOwnsCycle: Boolean(activeCycleOwnerUsername) && activeCycleOwnerUsername === requester.username
+          }
+        : activeCycle,
       canStartNew: !activeCycle,
       history: getCycleHistory(cycles, 200)
     },
@@ -1936,14 +1972,24 @@ export function getDashboardState() {
   };
 }
 
-export function createNewCycle(customName = "") {
+export function createNewCycle(customName = "", options = {}) {
+  const requester = resolveRequesterContext(options);
+  const requesterWhatsapp = getWhatsAppStatus(requester);
+  const requesterReady =
+    ["ready", "authenticated"].includes(String(requesterWhatsapp?.phase || "")) ||
+    Boolean(String(requesterWhatsapp?.sender || "").trim());
+
+  if (requester.username && !requesterReady) {
+    throw new Error("Conecte sua própria sessão do WhatsApp antes de criar um novo ciclo.");
+  }
+
   const payload = completeActiveCycleIfNeeded(loadCycles());
   const active = getActiveCycle(payload);
   if (active) {
     throw new Error("Já existe um ciclo ativo. Finalize o ciclo atual para criar um novo.");
   }
 
-  const cycle = createCycleSnapshotFromCurrentState("manual", customName);
+  const cycle = createCycleSnapshotFromCurrentState("manual", customName, requester);
   payload.activeCycleId = cycle.id;
   payload.cycles.push(cycle);
   saveCycles(payload);
@@ -2559,8 +2605,9 @@ export function updateAgendaEditorJson(payload) {
   return getAgendaEditorJson();
 }
 
-export async function getGroups() {
-  const wa = getWhatsAppStatus() || {};
+export async function getGroups(options = {}) {
+  const requester = resolveRequesterContext(options);
+  const wa = getWhatsAppStatus(requester) || {};
   const phase = String(wa.phase || "");
   const sender = String(wa.sender || "");
   const ready = ["ready", "authenticated"].includes(phase) || Boolean(sender);
@@ -2569,7 +2616,7 @@ export async function getGroups() {
   }
 
   return await Promise.race([
-    listGroups(),
+    listGroups(requester),
     new Promise((_, reject) => setTimeout(() => reject(new Error("timeout_groups")), 15000))
   ]);
 }

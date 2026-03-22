@@ -20,6 +20,8 @@ interface CycleModalProps {
   cycleTotalAlunos?: number
   students?: string[]
   scheduleSummary?: Array<{ data?: string; dia?: string | number; horario?: string; materia?: string }>
+  currentUsername?: string
+  currentUserWhatsappReady?: boolean
   onSaved?: () => Promise<void> | void
 }
 
@@ -125,6 +127,8 @@ export function CycleModal({
   cycleTotalAlunos = 0,
   students = [],
   scheduleSummary = [],
+  currentUsername = "",
+  currentUserWhatsappReady = false,
   onSaved,
 }: CycleModalProps) {
   const wasOpenRef = useRef(false)
@@ -192,6 +196,9 @@ export function CycleModal({
     }
     if (cycleLabelValue && cycleLabelValue.length < 3) {
       nextErrors.cycleLabel = "Use ao menos 3 caracteres para nomear o ciclo."
+    }
+    if (!cycleActive && !currentUserWhatsappReady) {
+      nextErrors.session = "Conecte sua sessão do WhatsApp antes de criar um novo ciclo."
     }
 
     setFieldErrors(nextErrors)
@@ -262,6 +269,24 @@ export function CycleModal({
       size="xl"
     >
       <div className="px-6 py-6 flex flex-col gap-6">
+        <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Responsável pelo ciclo
+          </p>
+          <p className="mt-2 text-sm text-foreground">
+            O usuário <span className="font-semibold">{currentUsername || "atual"}</span> será o responsável pelos envios deste ciclo.
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            As saudações automáticas e manuais usarão a sessão de WhatsApp desse responsável.
+          </p>
+        </div>
+
+        {!cycleActive && !currentUserWhatsappReady ? (
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            Sua sessão do WhatsApp ainda não está pronta. Escaneie o QR Code e aguarde a conexão antes de iniciar o ciclo.
+          </div>
+        ) : null}
+
         <div className="rounded-2xl border border-border bg-muted/20 p-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Ponto de partida
@@ -316,6 +341,7 @@ export function CycleModal({
               error={fieldErrors.cycleLabel}
             />
           </div>
+          {fieldErrors.session ? <p className="mt-3 text-[11px] text-status-err">{fieldErrors.session}</p> : null}
         </div>
 
         <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
@@ -353,6 +379,7 @@ export function CycleModal({
         onConfirm={handlePrimaryAction}
         confirmLabel={cycleActive ? "Reiniciar ciclo" : "Iniciar ciclo"}
         loading={loading || cancelCycleLoading}
+        confirmDisabled={!cycleActive && !currentUserWhatsappReady}
       />
 
       <ModalShell

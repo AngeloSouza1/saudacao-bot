@@ -10,45 +10,81 @@ dotenv.config();
 
 const { Client, LocalAuth, MessageMedia } = whatsappWeb;
 const dataRootDir = path.resolve(process.env.SAUDACAO_DATA_DIR || process.cwd());
+const DEFAULT_SESSION_KEY = "system";
+const sessionRegistry = new Map();
 
-let clientPromise;
-let currentClient;
-let authenticatedLogged = false;
-let readyLogged = false;
-const status = {
-  phase: "idle",
-  transportState: "",
-  sender: "",
-  userName: "",
-  userAvatar: "",
-  lastError: "",
-  qrAvailable: false,
-  qrText: "",
-  qrImageDataUrl: ""
-};
+function createInitialStatus() {
+  return {
+    phase: "idle",
+    transportState: "",
+    sender: "",
+    userName: "",
+    userAvatar: "",
+    lastError: "",
+    qrAvailable: false,
+    qrText: "",
+    qrImageDataUrl: ""
+  };
+}
+
+function normalizeSessionKey(rawValue) {
+  const normalized = String(rawValue || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalized || DEFAULT_SESSION_KEY;
+}
+
+function resolveSessionKey(options = {}) {
+  return normalizeSessionKey(options?.username || options?.sessionKey || DEFAULT_SESSION_KEY);
+}
+
+function getSessionContext(options = {}) {
+  const sessionKey = resolveSessionKey(options);
+  if (!sessionRegistry.has(sessionKey)) {
+    sessionRegistry.set(sessionKey, {
+      key: sessionKey,
+      clientPromise: undefined,
+      currentClient: undefined,
+      authenticatedLogged: false,
+      readyLogged: false,
+      status: createInitialStatus()
+    });
+  }
+  return sessionRegistry.get(sessionKey);
+}
 
 function isHeadlessMode() {
   return process.env.WHATSAPP_HEADLESS !== "false";
 }
 
-function getSessionName() {
+function getBaseSessionName() {
   return process.env.WHATSAPP_SESSION_NAME || "saudacao-bot";
 }
 
-function getSessionDir() {
-  return path.join(dataRootDir, ".wwebjs_auth", `session-${getSessionName()}`);
+function getClientId(sessionKey) {
+  const base = getBaseSessionName();
+  return sessionKey === DEFAULT_SESSION_KEY ? base : `${base}-${sessionKey}`;
 }
 
-function hasSavedSession() {
-  return fs.existsSync(getSessionDir());
+function getSessionDir(options = {}) {
+  const sessionKey = resolveSessionKey(options);
+  return path.join(dataRootDir, ".wwebjs_auth", `session-${getClientId(sessionKey)}`);
 }
 
-function clearSavedSession() {
-  const sessionDir = getSessionDir();
+function hasSavedSession(options = {}) {
+  return fs.existsSync(getSessionDir(options));
+}
+
+function clearSavedSession(options = {}) {
+  const sessionKey = resolveSessionKey(options);
+  const sessionDir = getSessionDir({ sessionKey });
 
   if (fs.existsSync(sessionDir)) {
     fs.rmSync(sessionDir, { recursive: true, force: true });
-    console.log(`🧹 Sessão local removida: ${sessionDir}`);
+    console.log(`🧹 Sessão local removida (${sessionKey}): ${sessionDir}`);
   }
 }
 
@@ -69,7 +105,9 @@ function fromChatId(chatId) {
   return String(chatId || "").replace(/@c\.us$/, "");
 }
 
-async function refreshCurrentUserProfile(client) {
+async function refreshCurrentUserProfile(client, context) {
+  const session = context || getSessionContext();
+  const status = session.status;
   const wid = String(client?.info?.wid?._serialized || "").trim();
   const sender = fromChatId(wid);
   status.sender = sender;
@@ -204,12 +242,15 @@ function detectChromeExecutablePath() {
   return "";
 }
 
-function createClient() {
-  const sessionDir = getSessionDir();
-  const savedSession = hasSavedSession();
+function createClient(options = {}) {
+  const session = getSessionContext(options);
+  const sessionKey = session.key;
+  const status = session.status;
+  const sessionDir = getSessionDir({ sessionKey });
+  const savedSession = hasSavedSession({ sessionKey });
   const executablePath = detectChromeExecutablePath();
 
-  console.log(`🔄 Inicializando WhatsApp Web (sessão: ${getSessionName()})`);
+  console.log(`🔄 Inicializando WhatsApp Web (sessão: ${getClientId(sessionKey)})`);
   console.log(`🖥️ Navegador interno em modo ${isHeadlessMode() ? "oculto" : "visível"}.`);
   console.log(
     savedSession
@@ -222,7 +263,7 @@ function createClient() {
 
   const client = new Client({
     authStrategy: new LocalAuth({
-      clientId: getSessionName(),
+      clientId: getClientId(sessionKey),
       dataPath: path.join(dataRootDir, ".wwebjs_auth")
     }),
     puppeteer: {
@@ -233,8 +274,8 @@ function createClient() {
   });
 
   client.on("qr", (qr) => {
-    authenticatedLogged = false;
-    readyLogged = false;
+    session.authenticatedLogged = false;
+    session.readyLogged = false;
     status.phase = "qr";
     status.sender = "";
     status.userName = "";
@@ -269,10 +310,10 @@ function createClient() {
     status.qrText = "";
     status.qrImageDataUrl = "";
     status.lastError = "";
-    await refreshCurrentUserProfile(client);
-    if (!readyLogged) {
-      console.log("✅ WhatsApp Web conectado.");
-      readyLogged = true;
+    await refreshCurrentUserProfile(client, session);
+    if (!session.readyLogged) {
+      console.log(`✅ WhatsApp Web conectado (${sessionKey}).`);
+      session.readyLogged = true;
     }
   });
 
@@ -284,16 +325,16 @@ function createClient() {
     status.lastError = "";
     status.userName = "";
     status.userAvatar = "";
-    if (!authenticatedLogged) {
-      console.log("🔐 Sessão autenticada.");
-      authenticatedLogged = true;
+    if (!session.authenticatedLogged) {
+      console.log(`🔐 Sessão autenticada (${sessionKey}).`);
+      session.authenticatedLogged = true;
     }
   });
 
   client.on("auth_failure", (message) => {
     status.phase = "auth_failure";
     status.lastError = String(message || "");
-    console.error("❌ Falha de autenticação do WhatsApp Web:", message);
+    console.error(`❌ Falha de autenticação do WhatsApp Web (${sessionKey}):`, message);
   });
 
   client.on("change_state", (state) => {
@@ -301,7 +342,7 @@ function createClient() {
     if (!["ready", "authenticated"].includes(String(status.phase || ""))) {
       status.phase = `state:${state}`;
     }
-    console.log(`ℹ️ Estado do cliente: ${state}`);
+    console.log(`ℹ️ Estado do cliente (${sessionKey}): ${state}`);
   });
 
   client.on("disconnected", (reason) => {
@@ -313,37 +354,41 @@ function createClient() {
     status.qrAvailable = false;
     status.qrText = "";
     status.qrImageDataUrl = "";
-    console.warn("⚠️ WhatsApp Web desconectado:", reason);
-    clientPromise = undefined;
-    currentClient = undefined;
-    authenticatedLogged = false;
-    readyLogged = false;
+    console.warn(`⚠️ WhatsApp Web desconectado (${sessionKey}):`, reason);
+    session.clientPromise = undefined;
+    session.currentClient = undefined;
+    session.authenticatedLogged = false;
+    session.readyLogged = false;
   });
 
   return client;
 }
 
-export async function initWhatsApp() {
-  if (!clientPromise) {
+export async function initWhatsApp(options = {}) {
+  const session = getSessionContext(options);
+  const sessionKey = session.key;
+  const status = session.status;
+
+  if (!session.clientPromise) {
     status.phase = "initializing";
     status.lastError = "";
-    const client = createClient();
-    currentClient = client;
-    clientPromise = new Promise((resolve, reject) => {
+    const client = createClient({ sessionKey });
+    session.currentClient = client;
+    session.clientPromise = new Promise((resolve, reject) => {
       client.once("ready", () => resolve(client));
       client.once("auth_failure", (error) => reject(new Error(error)));
       client.initialize().catch(reject);
     });
   } else {
-    console.log("♻️ Reaproveitando cliente WhatsApp Web já inicializado.");
+    console.log(`♻️ Reaproveitando cliente WhatsApp Web já inicializado (${sessionKey}).`);
   }
 
   try {
-    return await clientPromise;
+    return await session.clientPromise;
   } catch (error) {
     const errorMessage = String(error?.message || error);
     const isSessionContextError =
-      hasSavedSession() && errorMessage.includes("Execution context was destroyed");
+      hasSavedSession({ sessionKey }) && errorMessage.includes("Execution context was destroyed");
     const isBrowserLockError = errorMessage.includes("The browser is already running for");
 
     if (isBrowserLockError) {
@@ -363,32 +408,34 @@ export async function initWhatsApp() {
     console.warn("⚠️ A sessão salva falhou ao carregar. Vou resetar a sessão local e pedir um novo QR Code.");
 
     try {
-      await currentClient?.destroy();
+      await session.currentClient?.destroy();
     } catch {
       // Ignora falha ao destruir cliente anterior.
     }
 
-    clearSavedSession();
-    clientPromise = undefined;
-    currentClient = undefined;
-    authenticatedLogged = false;
-    readyLogged = false;
+    clearSavedSession({ sessionKey });
+    session.clientPromise = undefined;
+    session.currentClient = undefined;
+    session.authenticatedLogged = false;
+    session.readyLogged = false;
     status.phase = "resetting_session";
-    return initWhatsApp();
+    return initWhatsApp({ sessionKey });
   }
 }
 
-export function getWhatsAppStatus() {
-  return { ...status };
+export function getWhatsAppStatus(options = {}) {
+  const session = getSessionContext(options);
+  return { ...session.status };
 }
 
-export async function listGroups() {
-  const phase = String(status.phase || "");
+export async function listGroups(options = {}) {
+  const session = getSessionContext(options);
+  const phase = String(session.status.phase || "");
   if (!["ready", "authenticated"].includes(phase)) {
     throw new Error("WhatsApp não está pronto para listar grupos.");
   }
 
-  const client = currentClient || await initWhatsApp();
+  const client = session.currentClient || await initWhatsApp({ sessionKey: session.key });
   const chats = await Promise.race([
     client.getChats(),
     new Promise((_, reject) => setTimeout(() => reject(new Error("Tempo limite ao ler grupos do WhatsApp.")), 20000))
@@ -730,8 +777,9 @@ export async function sendText({
   backgroundColor,
   backgroundImagePath,
   cardData
-}) {
-  const client = await initWhatsApp();
+}, options = {}) {
+  const session = getSessionContext(options);
+  const client = await initWhatsApp({ sessionKey: session.key });
   const destination = await resolveDestination(client, { to, groupId, groupName });
 
   const me = client.info?.wid?._serialized || "desconhecido@c.us";

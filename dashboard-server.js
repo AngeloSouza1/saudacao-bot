@@ -142,6 +142,12 @@ function readBody(req) {
   });
 }
 
+function getPanelRequester(req) {
+  return {
+    username: String(req.headers?.["x-panel-user"] || "").trim().toLowerCase()
+  };
+}
+
 function pageHtml() {
   return `<!doctype html>
 <html lang="pt-BR">
@@ -200,14 +206,16 @@ function pageHtml() {
 
 async function handleApi(req, res, pathname) {
   try {
+    const requester = getPanelRequester(req);
+
     if (req.method === "GET" && pathname === "/api/status") {
-      sendJson(res, 200, getDashboardState());
+      sendJson(res, 200, getDashboardState(requester));
       return true;
     }
 
     if (req.method === "GET" && pathname === "/api/groups") {
       try {
-        const groups = await getGroups();
+        const groups = await getGroups(requester);
         sendJson(res, 200, { groups, waiting: false });
       } catch (error) {
         sendJson(res, 200, {
@@ -220,13 +228,13 @@ async function handleApi(req, res, pathname) {
     }
 
     if (req.method === "POST" && pathname === "/api/send-test") {
-      await runTest();
+      await runTest(requester);
       sendJson(res, 200, { ok: true, message: "Teste enviado." });
       return true;
     }
 
     if (req.method === "POST" && pathname === "/api/send-agenda-list") {
-      await sendAgendaListToDestination();
+      await sendAgendaListToDestination(requester);
       sendJson(res, 200, { ok: true, message: "Lista de agendamentos enviada pelo WhatsApp." });
       return true;
     }
@@ -237,7 +245,7 @@ async function handleApi(req, res, pathname) {
         imagePath: body?.imagePath,
         mediaFileName: body?.mediaFileName,
         bannerTitle: body?.bannerTitle
-      });
+      }, requester);
       sendJson(res, 200, { ok: true, message: "Mensagem personalizada enviada com sucesso." });
       return true;
     }
@@ -272,7 +280,7 @@ async function handleApi(req, res, pathname) {
         });
         return true;
       }
-      const state = getDashboardState();
+      const state = getDashboardState(requester);
       if (!state?.cycle?.active) {
         sendJson(res, 400, {
           ok: false,
@@ -283,7 +291,7 @@ async function handleApi(req, res, pathname) {
       apiSendNowInFlight = true;
       apiAnyManualSendInFlight = true;
       try {
-        const result = await runNow();
+        const result = await runNow(requester);
         apiSendNowLastAt = Date.now();
         apiAnyManualSendLastAt = apiSendNowLastAt;
         if (result) {
@@ -291,7 +299,7 @@ async function handleApi(req, res, pathname) {
           return true;
         }
 
-        const refreshed = getDashboardState();
+        const refreshed = getDashboardState(requester);
         const reason = String(refreshed?.lastRun?.reason || "");
         const reasonMap = {
           fora_de_dia_util: "Nenhum envio: hoje não é dia útil.",
@@ -339,7 +347,7 @@ async function handleApi(req, res, pathname) {
         });
         return true;
       }
-      const state = getDashboardState();
+      const state = getDashboardState(requester);
       if (!state?.cycle?.active) {
         sendJson(res, 400, {
           ok: false,
@@ -350,14 +358,14 @@ async function handleApi(req, res, pathname) {
       apiSendNowForcedInFlight = true;
       apiAnyManualSendInFlight = true;
       try {
-        const result = await runNowForced();
+        const result = await runNowForced(requester);
         apiSendNowForcedLastAt = Date.now();
         apiAnyManualSendLastAt = apiSendNowForcedLastAt;
         if (result) {
           sendJson(res, 200, { ok: true, sent: true, message: "Envio forçado executado." });
           return true;
         }
-        const refreshed = getDashboardState();
+        const refreshed = getDashboardState(requester);
         const reason = String(refreshed?.lastRun?.reason || "");
         const reasonMap = {
           fora_de_dia_util: "Nenhum envio: hoje não é dia útil.",
@@ -376,7 +384,7 @@ async function handleApi(req, res, pathname) {
     }
 
     if (req.method === "POST" && pathname === "/api/whatsapp/reconnect") {
-      await reconnectWhatsApp();
+      await reconnectWhatsApp(requester);
       sendJson(res, 200, {
         ok: true,
         message: "Reconexão solicitada. Se necessário, escaneie o QR Code."
@@ -429,7 +437,7 @@ async function handleApi(req, res, pathname) {
 
     if (req.method === "POST" && pathname === "/api/cycle/new") {
       const body = await readBody(req);
-      const cycle = createNewCycle(body?.name);
+      const cycle = createNewCycle(body?.name, requester);
       sendJson(res, 200, { ok: true, cycle, message: "Novo ciclo criado com sucesso." });
       return true;
     }

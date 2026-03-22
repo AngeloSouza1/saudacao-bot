@@ -80,6 +80,11 @@ type DashboardStatusResponse = {
       name?: string
       sentCount?: number
       totalAlunos?: number
+      ownerUsername?: string
+      ownerSessionReady?: boolean
+      ownerSessionPhase?: string
+      ownerSessionSender?: string
+      currentUserOwnsCycle?: boolean
     } | null
     history?: Array<{
       id?: string
@@ -443,6 +448,11 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const userAvatar = panelUserImageUrl || undefined
   const whatsappPhase = String(statusData?.whatsapp?.phase || "")
   const isSystemReady = whatsappPhase === "ready" || whatsappPhase === "authenticated" || Boolean(statusData?.whatsapp?.sender)
+  const activeCycleOwner = String(statusData?.cycle?.active?.ownerUsername || "").trim()
+  const activeCycleOwnerReady = statusData?.cycle?.active
+    ? Boolean(statusData?.cycle?.active?.ownerSessionReady)
+    : true
+  const currentUserOwnsCycle = Boolean(statusData?.cycle?.active?.currentUserOwnsCycle)
   const hasConfigPending = !hasRequiredConfig({
     turma: statusData?.config?.turma,
     instituicao: statusData?.config?.instituicao,
@@ -450,7 +460,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
     to: statusData?.settings?.to,
     scheduleCount: Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary.length : 0,
   })
-  const disableManualSend = !statusData?.cycle?.active || !isSystemReady || hasConfigPending
+  const disableManualSend = !statusData?.cycle?.active || !activeCycleOwnerReady || hasConfigPending
   const isViewer = panelSession.role === "viewer"
   const viewerHelp = VIEWER_HELP[viewerFeature]
   const showSessionCard = activeItem === "session"
@@ -723,6 +733,20 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 Pendências obrigatórias: revise Destino, Configuração e Agenda (mínimo 1 aula) antes do envio.
               </div>
             ) : null}
+            {statusData?.cycle?.active ? (
+              <div
+                className={`rounded-xl px-4 py-3 text-sm ${
+                  activeCycleOwnerReady
+                    ? "border border-green-200 bg-green-50 text-green-800"
+                    : "border border-destructive/30 bg-destructive/10 text-destructive"
+                }`}
+              >
+                <span className="font-semibold">Responsável pelo ciclo:</span>{" "}
+                <span>{activeCycleOwner || "não definido"}</span>
+                {currentUserOwnsCycle ? " · você é o responsável atual." : activeCycleOwner ? " · os envios usam a sessão desse usuário." : ""}
+                {!activeCycleOwnerReady ? " A sessão do responsável está offline ou aguardando QR Code." : ""}
+              </div>
+            ) : null}
             {isViewer ? (
               <div className="rounded-2xl border border-primary/20 bg-[linear-gradient(180deg,rgba(237,247,240,0.95),rgba(229,241,233,0.9))] px-5 py-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/70">Modo visualização</p>
@@ -854,6 +878,8 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
         cycleTotalAlunos={Number(statusData?.cycle?.active?.totalAlunos || 0)}
         students={Array.isArray(statusData?.config?.alunos) ? statusData?.config?.alunos : []}
         scheduleSummary={Array.isArray(statusData?.scheduleSummary) ? statusData?.scheduleSummary : []}
+        currentUsername={panelUserName}
+        currentUserWhatsappReady={isSystemReady}
         onSaved={refreshStatus}
       />
       <MessagesModal

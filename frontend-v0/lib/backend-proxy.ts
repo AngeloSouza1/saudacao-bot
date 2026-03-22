@@ -38,6 +38,7 @@ export async function proxyToBackend(
   const headers: Record<string, string> = { Accept: "application/json" }
   const auth = getBackendAuthHeader()
   if (auth) headers.Authorization = auth
+  headers["X-Panel-User"] = String(session.username || "").trim()
   if (typeof body !== "undefined") {
     headers["Content-Type"] = "application/json; charset=utf-8"
   }
