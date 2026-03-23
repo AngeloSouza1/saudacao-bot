@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "cycle_1774189788071_cbuvoc",
+  "activeCycleId": "cycle_1774266739085_6lgmpl",
   "cycles": [
     {
       "id": "cycle_1774027212623_3ss328",
@@ -527,9 +527,86 @@
     {
       "id": "cycle_1774189788071_cbuvoc",
       "name": "Novo ciclo 22/03/2026, 11:29 · início 23/03/2026",
-      "status": "active",
+      "status": "completed",
       "reason": "manual",
       "createdAt": "2026-03-22T14:29:48.083Z",
+      "completedAt": "2026-03-23T11:13:00.487Z",
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-23T11:13:00.366Z",
+      "ownerUsername": "admin",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774264380588_1pdg5f",
+      "name": "Novo ciclo 22/03/2026, 11:29 · início 23/03/2026",
+      "ownerUsername": "admin",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-23T11:13:00.588Z",
+      "completedAt": "2026-03-23T11:22:37.522Z",
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-23T11:22:37.486Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774264957547_lrmmcv",
+      "name": "Novo ciclo 22/03/2026, 11:29 · início 23/03/2026",
+      "ownerUsername": "admin",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-23T11:22:37.548Z",
+      "completedAt": "2026-03-23T11:22:53.718Z",
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-23T11:22:53.679Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774264973745_xbnmo0",
+      "name": "Novo ciclo 22/03/2026, 11:29 · início 23/03/2026",
+      "ownerUsername": "admin",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-23T11:22:53.745Z",
+      "completedAt": "2026-03-23T11:52:18.937Z",
+      "start": {
+        "idxAluno": 8,
+        "idxAula": 0,
+        "dataInicio": "2026-03-23"
+      },
+      "sentCount": 0,
+      "totalAlunos": 7,
+      "updatedAt": "2026-03-23T11:52:18.755Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774266739085_6lgmpl",
+      "name": "Novo ciclo 22/03/2026, 11:29 · início 23/03/2026",
+      "ownerUsername": "admin",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-23T11:52:19.086Z",
       "completedAt": null,
       "start": {
         "idxAluno": 8,
@@ -538,8 +615,7 @@
       },
       "sentCount": 0,
       "totalAlunos": 7,
-      "updatedAt": "2026-03-22T14:40:11.213Z",
-      "ownerUsername": "admin"
+      "updatedAt": "2026-03-23T11:52:19.090Z"
     }
   ]
 }

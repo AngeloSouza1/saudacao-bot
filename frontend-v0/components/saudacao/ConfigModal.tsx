@@ -12,6 +12,7 @@ interface ConfigModalProps {
     turma?: string
     instituicao?: string
     antecedenciaMin?: number
+    horarioEnvio?: string
     diasUteisApenas?: boolean
     lockTimeoutMin?: number
     lockConfigured?: boolean
@@ -39,7 +40,7 @@ export function ConfigModal({
   const wasOpenRef = useRef(false)
   const [turma, setTurma] = useState("RiseCode")
   const [instituicao, setInstituicao] = useState("AlphaTech")
-  const [antecedenciaMin, setAntecedenciaMin] = useState("600")
+  const [horarioEnvio, setHorarioEnvio] = useState("19:55")
   const [diasUteisApenas, setDiasUteisApenas] = useState("true")
   const [lockPassword, setLockPassword] = useState("")
   const [lockTimeoutMin, setLockTimeoutMin] = useState("1")
@@ -51,7 +52,7 @@ export function ConfigModal({
     if (open && !wasOpenRef.current) {
       setTurma(String(initialConfig?.turma || ""))
       setInstituicao(String(initialConfig?.instituicao || ""))
-      setAntecedenciaMin(String(Number(initialConfig?.antecedenciaMin ?? 0)))
+      setHorarioEnvio(String(initialConfig?.horarioEnvio || "19:55"))
       setDiasUteisApenas(String(Boolean(initialConfig?.diasUteisApenas)))
       setLockPassword("")
       setLockTimeoutMin(String(Number(initialConfig?.lockTimeoutMin ?? 15)))
@@ -65,7 +66,6 @@ export function ConfigModal({
     const nextErrors: Record<string, string> = {}
     const turmaValue = normalizeText(turma)
     const instituicaoValue = normalizeText(instituicao)
-    const antecedenciaValue = Number(antecedenciaMin || 0)
     const lockTimeoutValue = Number(lockTimeoutMin || 0)
     const lockPasswordValue = normalizeText(lockPassword)
 
@@ -75,8 +75,8 @@ export function ConfigModal({
     if (instituicaoValue.length < 2 || isNullWord(instituicaoValue)) {
       nextErrors.instituicao = "Instituição inválida."
     }
-    if (!Number.isFinite(antecedenciaValue) || antecedenciaValue < 0 || antecedenciaValue > 10080) {
-      nextErrors.antecedenciaMin = "Antecedência inválida (0 a 10080)."
+    if (!/^\d{2}:\d{2}$/.test(horarioEnvio)) {
+      nextErrors.horarioEnvio = "Horário inválido. Use HH:MM."
     }
     if (!Number.isFinite(lockTimeoutValue) || lockTimeoutValue < 1 || lockTimeoutValue > 240) {
       nextErrors.lockTimeoutMin = "Tempo de bloqueio inválido (1 a 240)."
@@ -94,7 +94,7 @@ export function ConfigModal({
       await postJson("/api/config", {
         turma: turma.trim(),
         instituicao: instituicao.trim(),
-        antecedenciaMin: Number(antecedenciaMin || 0),
+        horarioEnvio: horarioEnvio.trim(),
         diasUteisApenas: diasUteisApenas === "true",
         lockTimeoutMin: Number(lockTimeoutMin || 15),
         ...(lockPassword.trim() ? { lockPassword: lockPassword.trim() } : {}),
@@ -135,11 +135,14 @@ export function ConfigModal({
             </p>
             <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
               <UnderlineInput
-                label="Antecedência (min)"
-                value={antecedenciaMin}
-                onChange={setAntecedenciaMin}
-                type="number"
-                error={fieldErrors.antecedenciaMin}
+                label="Horário de envio"
+                value={horarioEnvio}
+                onChange={setHorarioEnvio}
+                type="text"
+                placeholder="Ex.: 19:55"
+                hint="Informe a hora exata no formato HH:MM."
+                error={fieldErrors.horarioEnvio}
+                inputClassName="font-mono"
               />
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dias úteis apenas</label>
@@ -151,6 +154,9 @@ export function ConfigModal({
                   <option value="true">Sim</option>
                   <option value="false">Não</option>
                 </select>
+                <p className="text-[11px] text-muted-foreground">
+                  Define a hora exata em que o envio automático será disparado nos dias com aula.
+                </p>
               </div>
               <UnderlineInput
                 label="Senha de bloqueio"

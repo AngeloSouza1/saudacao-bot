@@ -528,6 +528,35 @@ function buildCronForAula(hora, antecedenciaMin = 0) {
   return { cronHour, cronMinute };
 }
 
+function getConfiguredDispatchTime(config) {
+  const explicit = String(config?.horarioEnvio || "").trim();
+  if (explicit) {
+    const { hours, minutes } = parseHora(explicit);
+    return {
+      hours,
+      minutes,
+      label: `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+    };
+  }
+
+  const entries = getAgendaEntriesByConfig(config || {});
+  const firstLessonHour = String(entries[0]?.aula?.hora || "").trim();
+  if (firstLessonHour) {
+    const { cronHour, cronMinute } = buildCronForAula(firstLessonHour, Number(config?.antecedenciaMin || 0));
+    return {
+      hours: cronHour,
+      minutes: cronMinute,
+      label: `${String(cronHour).padStart(2, "0")}:${String(cronMinute).padStart(2, "0")}`
+    };
+  }
+
+  return {
+    hours: 19,
+    minutes: 55,
+    label: "19:55"
+  };
+}
+
 function getAgendaEntries(config) {
   const entries = [];
 
@@ -1718,12 +1747,14 @@ export function startScheduler() {
   scheduleSummary = [];
   const scheduledSlots = new Set();
   const weekdaysWithClass = new Set();
+  const dispatchTime = getConfiguredDispatchTime(config);
 
   for (const { dia, aula } of getAgendaEntriesByConfig(config)) {
     weekdaysWithClass.add(String(dia));
-    const { cronHour, cronMinute } = buildCronForAula(aula.hora, config.antecedenciaMin || 0);
+    const cronHour = dispatchTime.hours;
+    const cronMinute = dispatchTime.minutes;
     const expression = `${cronMinute} ${cronHour} * * ${dia}`;
-    const label = `${String(cronHour).padStart(2, "0")}:${String(cronMinute).padStart(2, "0")}`;
+    const label = dispatchTime.label;
     const slotKey = `${dia}|${cronHour}|${cronMinute}`;
 
     // Evita disparo duplicado no mesmo dia/horário quando há várias aulas no mesmo slot.
@@ -1743,7 +1774,7 @@ export function startScheduler() {
       data: String(aula.data || ""),
       dia,
       horario: aula.hora,
-      horarioDisparo: label,
+    horarioDisparo: label,
       titulo: String(aula.titulo || ""),
       materia: aula.materia,
       professor: aula.professor
@@ -2142,6 +2173,10 @@ export function updateConfig(partial) {
     turma: partial.turma ?? current.turma,
     instituicao: partial.instituicao ?? current.instituicao,
     antecedenciaMin: Number(partial.antecedenciaMin ?? current.antecedenciaMin),
+    horarioEnvio:
+      partial && Object.prototype.hasOwnProperty.call(partial, "horarioEnvio")
+        ? String(partial.horarioEnvio ?? "").trim()
+        : String(current?.horarioEnvio ?? "").trim(),
     diasUteisApenas: asBoolean(
       partial?.diasUteisApenas,
       asBoolean(current?.diasUteisApenas, false)
@@ -2252,6 +2287,11 @@ export function updateConfig(partial) {
     next.lockTimeoutMin = Math.floor(timeout);
   } else if (!Number.isFinite(Number(next.lockTimeoutMin))) {
     next.lockTimeoutMin = 15;
+  }
+
+  if (next.horarioEnvio) {
+    const { hours, minutes } = parseHora(next.horarioEnvio);
+    next.horarioEnvio = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   }
 
   if (partial && Object.prototype.hasOwnProperty.call(partial, "lockPassword")) {
