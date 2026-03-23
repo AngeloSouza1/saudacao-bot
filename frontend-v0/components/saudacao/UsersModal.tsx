@@ -164,11 +164,11 @@ export function UsersModal({ open, onClose, currentUsername, onCurrentUserUpdate
       }}
       title="Usuários"
       subtitle="Cadastro, edição e remoção de acessos ao painel"
-      size="lg"
+      size="xl"
       icon={<UserRoundCog className="h-5 w-5 text-primary" />}
       bodyClassName="overflow-hidden bg-muted/10"
     >
-      <div className="grid h-[72vh] max-h-[72vh] gap-0 md:grid-cols-[1.2fr_0.95fr]">
+      <div className="grid h-[78vh] max-h-[78vh] gap-0 md:grid-cols-[1.25fr_1fr]">
         <section className="flex min-h-0 flex-col border-b border-border p-6 md:border-r md:border-b-0">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>

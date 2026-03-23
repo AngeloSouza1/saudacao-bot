@@ -117,7 +117,7 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out relative shrink-0",
+        "relative flex h-full min-h-0 shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out",
         collapsed ? "w-16" : "w-60"
       )}
       aria-label="Menu lateral"
@@ -204,13 +204,16 @@ export function AppSidebar({
       </nav>
 
       {/* Footer */}
-      {!collapsed && (
-        <div className="px-4 py-4 border-t border-sidebar-border">
-          <p className="text-[10px] text-muted-foreground text-center">
-            Saudação Bot v2.2.1
-          </p>
-        </div>
-      )}
+      <div className={cn("border-t border-sidebar-border", collapsed ? "px-1 py-3" : "px-4 py-4")}>
+        <p
+          className={cn(
+            "text-muted-foreground text-center",
+            collapsed ? "text-[9px] leading-tight" : "text-[10px]"
+          )}
+        >
+          {collapsed ? "v2.2.1" : "Saudação Bot v2.2.1"}
+        </p>
+      </div>
     </aside>
   )
 }
