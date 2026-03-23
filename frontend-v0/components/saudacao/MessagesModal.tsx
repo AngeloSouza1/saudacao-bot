@@ -7,6 +7,7 @@ import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
 interface MessagesModalProps {
   open: boolean
   onClose: () => void
+  previewMode?: boolean
   initialEditorType?: "default" | "no-class" | "custom"
   initialTurma?: string
   initialInstituicao?: string
@@ -211,6 +212,7 @@ function mediaByEditorType<T>(
 export function MessagesModal({
   open,
   onClose,
+  previewMode = false,
   initialEditorType = "default",
   initialTurma,
   initialInstituicao,
@@ -573,6 +575,7 @@ export function MessagesModal({
       <ModalShell
         open={open}
         onClose={onClose}
+        previewMode={previewMode}
         title="Mensagens"
         subtitle="Mensagem padrão e mensagens de avisos"
         icon={<MessagesSquare size={16} className="text-primary" />}

@@ -28,6 +28,7 @@ interface SidebarProps {
   onOpenConfig: () => void
   onOpenSchedule: () => void
   onOpenMessages: () => void
+  onOpenSession: () => void
   onOpenHistory: () => void
   onOpenUsers: () => void
   activeItem: string
@@ -42,6 +43,7 @@ export function AppSidebar({
   onOpenConfig,
   onOpenSchedule,
   onOpenMessages,
+  onOpenSession,
   onOpenHistory,
   onOpenUsers,
   activeItem,
@@ -86,6 +88,7 @@ export function AppSidebar({
       icon: <MessageSquare size={18} />,
       title: "Sessão",
       subtitle: "Status da conexão",
+      onClick: onOpenSession,
     },
     {
       id: "history",

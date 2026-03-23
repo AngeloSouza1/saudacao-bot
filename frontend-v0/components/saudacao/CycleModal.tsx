@@ -7,6 +7,7 @@ import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
 interface CycleModalProps {
   open: boolean
   onClose: () => void
+  previewMode?: boolean
   initialState?: {
     idxAluno?: number
     idxAula?: number
@@ -119,6 +120,7 @@ function buildLessonOptionsFromSummary(scheduleSummary: CycleModalProps["schedul
 export function CycleModal({
   open,
   onClose,
+  previewMode = false,
   initialState,
   initialConfig,
   cycleActive = false,
@@ -263,6 +265,7 @@ export function CycleModal({
     <ModalShell
       open={open}
       onClose={onClose}
+      previewMode={previewMode}
       title="Ciclo"
       subtitle="Início, reinício e controle do ciclo"
       icon={<RefreshCcw size={16} className="text-primary" />}

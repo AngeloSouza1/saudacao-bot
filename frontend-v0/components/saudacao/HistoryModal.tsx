@@ -17,6 +17,7 @@ interface CycleHistoryItem {
 interface HistoryModalProps {
   open: boolean
   onClose: () => void
+  previewMode?: boolean
   items?: CycleHistoryItem[]
 }
 
@@ -28,11 +29,12 @@ function formatDateTime(value?: string | null) {
   return date.toLocaleString("pt-BR")
 }
 
-export function HistoryModal({ open, onClose, items = [] }: HistoryModalProps) {
+export function HistoryModal({ open, onClose, previewMode = false, items = [] }: HistoryModalProps) {
   return (
     <ModalShell
       open={open}
       onClose={onClose}
+      previewMode={previewMode}
       title="Histórico"
       subtitle="Ciclos anteriores e status de execução"
       icon={<History size={16} className="text-primary" />}

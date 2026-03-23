@@ -8,6 +8,7 @@ import { isNullWord, normalizeText } from "@/lib/validation"
 interface ConfigModalProps {
   open: boolean
   onClose: () => void
+  previewMode?: boolean
   initialConfig?: {
     turma?: string
     instituicao?: string
@@ -34,6 +35,7 @@ async function postJson(url: string, body: unknown) {
 export function ConfigModal({
   open,
   onClose,
+  previewMode = false,
   initialConfig,
   onSaved,
 }: ConfigModalProps) {
@@ -113,6 +115,7 @@ export function ConfigModal({
       <ModalShell
         open={open}
         onClose={onClose}
+        previewMode={previewMode}
         title="Configuração"
         subtitle="Ciclo, regras e segurança"
         icon={<Settings size={16} className="text-primary" />}

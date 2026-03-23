@@ -266,6 +266,111 @@ const VIEWER_HELP: Record<string, { title: string; description: string; guidance
   },
 }
 
+const VIEWER_LAYOUTS: Record<string, { eyebrow: string; sections: Array<{ label: string; value: string }> }> = {
+  session: {
+    eyebrow: "Visão da sessão",
+    sections: [
+      { label: "Status da conexão", value: "Mostra se o WhatsApp está pronto, aguardando QR ou com erro." },
+      { label: "QR Code", value: "Exibe o código de autenticação quando a sessão ainda não foi conectada." },
+      { label: "Ações operacionais", value: "Permite testar envio ou reconectar a sessão no perfil administrativo." },
+    ],
+  },
+  schedule: {
+    eyebrow: "Visão da agenda",
+    sections: [
+      { label: "Base de alunos", value: "Controla a ordem dos participantes usados no ciclo." },
+      { label: "Aulas e datas", value: "Define quando cada envio deve acontecer na operação." },
+      { label: "Estrutura do ciclo", value: "Liga alunos, agenda e previsão de próximas saudações." },
+    ],
+  },
+  messages: {
+    eyebrow: "Visão das mensagens",
+    sections: [
+      { label: "Mensagem padrão", value: "Texto principal usado nas saudações automáticas." },
+      { label: "Aviso sem aula", value: "Modelo enviado quando não existe aula programada." },
+      { label: "Mensagem personalizada", value: "Fluxo manual para envios específicos fora da rotina principal." },
+    ],
+  },
+  destination: {
+    eyebrow: "Visão do destino",
+    sections: [
+      { label: "Número ou grupo", value: "Define para onde a aplicação envia as mensagens." },
+      { label: "Validação do canal", value: "Garante que o envio esteja apontando para o destino correto." },
+      { label: "Bloqueio de alteração", value: "Protege essa configuração com senha quando necessário." },
+    ],
+  },
+  config: {
+    eyebrow: "Visão da configuração",
+    sections: [
+      { label: "Identidade", value: "Turma e instituição usadas em mensagens e banners." },
+      { label: "Horário de envio", value: "Determina a hora exata do disparo automático." },
+      { label: "Regras de segurança", value: "Define bloqueios e parâmetros gerais do painel." },
+    ],
+  },
+  history: {
+    eyebrow: "Visão do histórico",
+    sections: [
+      { label: "Ciclos anteriores", value: "Lista execuções já concluídas ou canceladas." },
+      { label: "Totais processados", value: "Mostra alunos enviados e andamento de cada ciclo." },
+      { label: "Rastreabilidade", value: "Ajuda a entender quando e como a operação ocorreu." },
+    ],
+  },
+  shortcuts: {
+    eyebrow: "Visão dos atalhos",
+    sections: [
+      { label: "Mensagem personalizada", value: "Abre rapidamente o envio manual." },
+      { label: "Aluno e aula", value: "Atalhos para manutenção da base operacional." },
+      { label: "Ciclo", value: "Acesso rápido para iniciar ou revisar o ciclo atual." },
+    ],
+  },
+  "custom-message": {
+    eyebrow: "Visão do envio manual",
+    sections: [
+      { label: "Editor da mensagem", value: "Monta o conteúdo do envio fora do fluxo automático." },
+      { label: "Mídia e banner", value: "Permite personalizar imagem, fundo e nome do arquivo." },
+      { label: "Destinatário", value: "Escolhe aluno ou grupo para receber a mensagem." },
+    ],
+  },
+  students: {
+    eyebrow: "Visão do cadastro de alunos",
+    sections: [
+      { label: "Lista de participantes", value: "Base usada para montar a ordem do ciclo." },
+      { label: "WhatsApp e imagem", value: "Dados de contato e avatar usados na operação." },
+      { label: "Manutenção do cadastro", value: "Permite criar, editar e remover alunos." },
+    ],
+  },
+  lessons: {
+    eyebrow: "Visão das aulas",
+    sections: [
+      { label: "Datas e horários", value: "Define quando cada aula acontece." },
+      { label: "Matéria e professor", value: "Contextualiza o envio para cada encontro." },
+      { label: "Agenda semanal", value: "Organiza a sequência que alimenta o scheduler." },
+    ],
+  },
+  cycle: {
+    eyebrow: "Visão do ciclo",
+    sections: [
+      { label: "Responsável do ciclo", value: "Define qual sessão de WhatsApp será usada nos envios." },
+      { label: "Fila prevista", value: "Mostra a ordem dos próximos alunos do ciclo atual." },
+      { label: "Acompanhamento", value: "Permite iniciar, reiniciar e acompanhar o progresso." },
+    ],
+  },
+}
+
+const VIEWER_FOCUS: Record<string, { zone: "sidebar" | "content" | "shortcuts"; top: string; left?: string; right?: string; width: string; height: string; tip: string }> = {
+  schedule: { zone: "sidebar", top: "188px", left: "10px", width: "220px", height: "58px", tip: "Acesse a Agenda por este item da navegação lateral." },
+  messages: { zone: "sidebar", top: "246px", left: "10px", width: "220px", height: "58px", tip: "A área de Mensagens fica neste item da barra lateral." },
+  destination: { zone: "sidebar", top: "304px", left: "10px", width: "220px", height: "58px", tip: "Use este item para configurar o destino dos envios." },
+  config: { zone: "sidebar", top: "362px", left: "10px", width: "220px", height: "58px", tip: "A Configuração do sistema fica aqui na navegação lateral." },
+  session: { zone: "sidebar", top: "420px", left: "10px", width: "220px", height: "58px", tip: "A visão de Sessão é aberta por este item." },
+  history: { zone: "sidebar", top: "478px", left: "10px", width: "220px", height: "58px", tip: "O Histórico fica neste item da navegação." },
+  shortcuts: { zone: "sidebar", top: "536px", left: "10px", width: "220px", height: "58px", tip: "Ative ou recolha os atalhos rápidos por este item." },
+  "custom-message": { zone: "shortcuts", top: "100px", right: "18px", width: "74px", height: "50px", tip: "Este atalho abre o envio de mensagem personalizada." },
+  students: { zone: "shortcuts", top: "152px", right: "18px", width: "74px", height: "50px", tip: "Aqui fica o atalho para o cadastro de alunos." },
+  lessons: { zone: "shortcuts", top: "204px", right: "18px", width: "74px", height: "50px", tip: "Este atalho leva à manutenção das aulas." },
+  cycle: { zone: "shortcuts", top: "256px", right: "18px", width: "74px", height: "50px", tip: "Use este atalho para abrir o controle do ciclo." },
+}
+
 export default function DashboardPageClient({ panelSession }: DashboardPageClientProps) {
   const defaultScreenAppliedRef = useRef(false)
   const qrScreenSeenRef = useRef(false)
@@ -296,6 +401,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const [statusPollingEnabled, setStatusPollingEnabled] = useState(true)
   const [statusRequested, setStatusRequested] = useState(false)
   const [viewerFeature, setViewerFeature] = useState<string>("session")
+  const [showViewerIntro, setShowViewerIntro] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -472,8 +578,22 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
   const disableManualSend = !statusData?.cycle?.active || !activeCycleOwnerReady || hasConfigPending
   const isViewer = panelSession.role === "viewer"
   const viewerHelp = VIEWER_HELP[viewerFeature]
-  const showSessionCard = activeItem === "session"
+  const viewerLayout = VIEWER_LAYOUTS[viewerFeature] || VIEWER_LAYOUTS.session
+  const viewerFocus = VIEWER_FOCUS[viewerFeature] || VIEWER_FOCUS.session
+  const viewerShowsScheduleModal = isViewer && ["schedule", "students", "lessons"].includes(viewerFeature)
+  const viewerShowsMessagesModal = isViewer && ["messages", "custom-message"].includes(viewerFeature)
+  const viewerShowsDestinationModal = isViewer && viewerFeature === "destination"
+  const viewerShowsConfigModal = isViewer && viewerFeature === "config"
+  const viewerShowsHistoryModal = isViewer && viewerFeature === "history"
+  const viewerShowsCycleModal = isViewer && viewerFeature === "cycle"
+  const showSessionCard = activeItem === "session" || (isViewer && viewerFeature === "session")
   const showShortcutsCard = shortcutsOpen
+
+  useEffect(() => {
+    if (!isMounted || initialLoading) return
+    if (!isViewer) return
+    setShowViewerIntro(true)
+  }, [initialLoading, isMounted, isViewer])
 
   useLayoutEffect(() => {
     if (initialLoading) return
@@ -705,30 +825,63 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
           userAvatar={userAvatar}
         />
 
+      {isViewer ? <div className="pointer-events-none fixed inset-0 z-30 bg-slate-950/30" /> : null}
+
+      {isViewer && showViewerIntro ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-[1.75rem] border border-emerald-200/80 bg-white/98 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/75">Modo de visita</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Como navegar</h2>
+            <p className="mt-3 text-sm leading-6 text-foreground/85">
+              Este acesso é uma visita guiada. Use o menu lateral para trocar de funcionalidade e entender onde cada recurso fica na aplicação.
+            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Ao selecionar um item, você verá o modal ou a área real correspondente junto com a explicação do recurso, sem alterar dados do sistema.
+            </p>
+            <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/80 px-3 py-2.5 text-sm text-emerald-950">
+              Comece pela barra lateral e siga a explicação exibida no Tutorial guiado.
+            </div>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowViewerIntro(false)}
+                className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-green-deep"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-1 min-h-0">
-        <AppSidebar
-          onOpenDestination={() => (isViewer ? setViewerFeature("destination") : setDestinationOpen(true))}
-          onOpenMessages={() => (isViewer ? setViewerFeature("messages") : setMessagesOpen(true))}
-          onOpenConfig={() => (isViewer ? setViewerFeature("config") : setConfigOpen(true))}
-          onOpenHistory={() => (isViewer ? setViewerFeature("history") : setHistoryOpen(true))}
-          onOpenUsers={() => setUsersOpen(true)}
-          onOpenSchedule={() => {
-            if (isViewer) {
-              setViewerFeature("schedule")
-              return
-            }
-            setScheduleInitialSection(null)
-            setScheduleOpen(true)
-          }}
-          activeItem={activeItem}
-          setActiveItem={setActiveItem}
-          shortcutsOpen={shortcutsOpen}
-          onToggleShortcuts={() => setShortcutsOpen((prev) => !prev)}
-          canManageUsers={panelSession.isAdmin}
-        />
+        <div className={isViewer ? "relative z-40" : ""}>
+          <AppSidebar
+            onOpenDestination={() => (isViewer ? setViewerFeature("destination") : setDestinationOpen(true))}
+            onOpenMessages={() => (isViewer ? setViewerFeature("messages") : setMessagesOpen(true))}
+            onOpenConfig={() => (isViewer ? setViewerFeature("config") : setConfigOpen(true))}
+            onOpenSession={() => (isViewer ? setViewerFeature("session") : setActiveItem("session"))}
+            onOpenHistory={() => (isViewer ? setViewerFeature("history") : setHistoryOpen(true))}
+            onOpenUsers={() => setUsersOpen(true)}
+            onOpenSchedule={() => {
+              if (isViewer) {
+                setViewerFeature("schedule")
+                return
+              }
+              setScheduleInitialSection(null)
+              setScheduleOpen(true)
+            }}
+            activeItem={activeItem}
+            setActiveItem={setActiveItem}
+            shortcutsOpen={shortcutsOpen}
+            onToggleShortcuts={() => setShortcutsOpen((prev) => !prev)}
+            canManageUsers={panelSession.isAdmin}
+          />
+        </div>
 
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-6xl mx-auto flex flex-col gap-6">
+          <div className="relative max-w-6xl mx-auto">
+            <div className={`flex flex-col gap-6 transition-all ${isViewer ? "pointer-events-none select-none" : ""}`}>
             <div className="flex items-baseline justify-between gap-4 flex-wrap">
               <div>
                 <h1 className="text-3xl font-bold text-foreground tracking-tight text-balance">Painel Operacional</h1>
@@ -784,17 +937,9 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 Pendências obrigatórias: revise Destino, Configuração e Agenda (mínimo 1 aula) antes do envio.
               </div>
             ) : null}
-            {isViewer ? (
-              <div className="rounded-2xl border border-primary/20 bg-[linear-gradient(180deg,rgba(237,247,240,0.95),rgba(229,241,233,0.9))] px-5 py-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/70">Modo visualização</p>
-                <h2 className="mt-1 text-lg font-semibold text-foreground">{viewerHelp?.title || "Painel demonstrativo"}</h2>
-                <p className="mt-1.5 text-sm leading-6 text-foreground/80">{viewerHelp?.description}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{viewerHelp?.guidance}</p>
-              </div>
-            ) : null}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               {showSessionCard ? (
-                <div className="lg:h-[560px]">
+                <div className={`lg:h-[560px] ${isViewer && viewerFeature === "session" ? "relative z-40" : ""}`}>
                   <SessionStatusCard
                     statusRows={statusRows}
                     qrAvailable={Boolean(statusData?.whatsapp?.qrAvailable)}
@@ -814,12 +959,49 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 <UpcomingGreetingsCard items={greetingItems} onOpenAll={() => setAllSchedulesOpen(true)} />
               </div>
             </div>
+            </div>
+
+            {isViewer && !showViewerIntro ? (
+              <div
+                className="pointer-events-none fixed z-[80] max-w-[21rem] rounded-[1.5rem] border border-emerald-200/80 bg-white/96 p-3.5 shadow-[0_20px_70px_rgba(16,24,40,0.16)]"
+                style={{ right: "112px", top: "110px" }}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/75">Tutorial guiado</p>
+                <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+                  {viewerHelp?.title || "Painel demonstrativo"}
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-foreground/85">
+                  {viewerHelp?.description}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {viewerHelp?.guidance}
+                </p>
+                <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/80 px-3 py-2.5 text-sm text-emerald-950">
+                  {viewerFocus.tip}
+                </div>
+                <div className="mt-3 space-y-2 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-3 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/70">
+                    {viewerLayout.eyebrow}
+                  </p>
+                  {viewerLayout.sections.map((section) => (
+                    <div key={section.label} className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        {section.label}
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-slate-700">
+                        {section.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         </main>
       </div>
 
       {showShortcutsCard ? (
-        <aside className="fixed right-3 top-[86px] bottom-4 z-40 w-[90px] rounded-2xl bg-transparent px-2 py-3 flex flex-col">
+        <aside className={`fixed right-3 top-[86px] bottom-4 z-40 w-[90px] rounded-2xl bg-transparent px-2 py-3 flex flex-col transition-all ${isViewer ? "pointer-events-none" : ""}`}>
           <div className="mt-1 flex flex-col gap-2">
             <button
               onClick={() => {
@@ -893,20 +1075,23 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
       ) : null}
 
       <DestinationModal
-        open={destinationOpen}
+        open={destinationOpen || viewerShowsDestinationModal}
         onClose={() => setDestinationOpen(false)}
+        previewMode={isViewer}
         initialValues={statusData?.settings}
         onSaved={refreshStatus}
       />
       <ConfigModal
-        open={configOpen}
+        open={configOpen || viewerShowsConfigModal}
         onClose={() => setConfigOpen(false)}
+        previewMode={isViewer}
         initialConfig={statusData?.config}
         onSaved={refreshStatus}
       />
       <CycleModal
-        open={cycleOpen}
+        open={cycleOpen || viewerShowsCycleModal}
         onClose={() => setCycleOpen(false)}
+        previewMode={isViewer}
         initialConfig={statusData?.config}
         initialState={statusData?.state}
         cycleActive={Boolean(statusData?.cycle?.active)}
@@ -920,12 +1105,13 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
         onSaved={refreshStatus}
       />
       <MessagesModal
-        open={messagesOpen}
+        open={messagesOpen || viewerShowsMessagesModal}
         onClose={() => {
           setMessagesOpen(false)
           setMessagesInitialEditorType("default")
         }}
-        initialEditorType={messagesInitialEditorType}
+        previewMode={isViewer}
+        initialEditorType={viewerFeature === "custom-message" ? "custom" : messagesInitialEditorType}
         initialTurma={String(statusData?.config?.turma || "")}
         initialInstituicao={String(statusData?.config?.instituicao || "")}
         initialDefaultMessage={String(statusData?.config?.defaultGreetingMessage || "")}
@@ -954,8 +1140,9 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
         onSaved={refreshStatus}
       />
       <HistoryModal
-        open={historyOpen}
+        open={historyOpen || viewerShowsHistoryModal}
         onClose={() => setHistoryOpen(false)}
+        previewMode={isViewer}
         items={Array.isArray(statusData?.cycle?.history) ? statusData?.cycle?.history : []}
       />
       <UsersModal
@@ -970,13 +1157,14 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
         }}
       />
       <ScheduleModal
-        open={scheduleOpen}
+        open={scheduleOpen || viewerShowsScheduleModal}
         onClose={() => {
           setScheduleOpen(false)
           setScheduleInitialSection(null)
         }}
+        previewMode={isViewer}
         onSaved={refreshStatus}
-        initialSection={scheduleInitialSection}
+        initialSection={viewerFeature === "students" ? "students" : viewerFeature === "lessons" ? "lessons" : scheduleInitialSection}
         cycleActive={Boolean(statusData?.cycle?.active)}
       />
       <AllSchedulesModal

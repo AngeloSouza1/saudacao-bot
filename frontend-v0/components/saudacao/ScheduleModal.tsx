@@ -26,6 +26,7 @@ interface Lesson {
 interface ScheduleModalProps {
   open: boolean
   onClose: () => void
+  previewMode?: boolean
   onSaved?: () => Promise<void> | void
   initialSection?: AgendaSection
   cycleActive?: boolean
@@ -164,7 +165,7 @@ function forceCleanFilterInput(input: HTMLInputElement | null, nextValue = "") {
   })
 }
 
-export function ScheduleModal({ open, onClose, onSaved, initialSection = null, cycleActive = false }: ScheduleModalProps) {
+export function ScheduleModal({ open, onClose, previewMode = false, onSaved, initialSection = null, cycleActive = false }: ScheduleModalProps) {
   const studentFilterInputRef = useRef<HTMLInputElement | null>(null)
   const [activeSection, setActiveSection] = useState<AgendaSection>(null)
   const [studentName, setStudentName] = useState("")
@@ -627,6 +628,7 @@ export function ScheduleModal({ open, onClose, onSaved, initialSection = null, c
     <ModalShell
       open={open}
       onClose={onClose}
+      previewMode={previewMode}
       title="Editor de Agenda"
       subtitle="Aulas, histórico e acompanhamento"
       icon={<Calendar size={16} className="text-primary" />}

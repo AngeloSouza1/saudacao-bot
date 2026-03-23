@@ -14,6 +14,7 @@ interface ModalShellProps {
   icon?: ReactNode
   bodyClassName?: string
   headerActions?: ReactNode
+  previewMode?: boolean
 }
 
 export function ModalShell({
@@ -26,6 +27,7 @@ export function ModalShell({
   icon,
   bodyClassName,
   headerActions,
+  previewMode = false,
 }: ModalShellProps) {
   if (!open) return null
 
@@ -40,7 +42,7 @@ export function ModalShell({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className={cn("fixed inset-0 z-50 flex items-center justify-center p-4", previewMode ? "pointer-events-none" : "")}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
@@ -48,7 +50,7 @@ export function ModalShell({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-transparent"
-        onClick={onClose}
+        onClick={previewMode ? undefined : onClose}
         aria-hidden="true"
       />
 

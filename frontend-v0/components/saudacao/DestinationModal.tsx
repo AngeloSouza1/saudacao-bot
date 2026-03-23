@@ -8,6 +8,7 @@ import { isNullWord, isValidPhoneFallback, normalizeText } from "@/lib/validatio
 interface DestinationModalProps {
   open: boolean
   onClose: () => void
+  previewMode?: boolean
   initialValues?: {
     to?: string
     groupId?: string
@@ -32,7 +33,7 @@ async function postJson(url: string, body: unknown) {
   return payload
 }
 
-export function DestinationModal({ open, onClose, initialValues, onSaved }: DestinationModalProps) {
+export function DestinationModal({ open, onClose, previewMode = false, initialValues, onSaved }: DestinationModalProps) {
   const [to, setTo] = useState("")
   const [groupName, setGroupName] = useState("")
   const [groups, setGroups] = useState<GroupOption[]>([])
@@ -148,6 +149,7 @@ export function DestinationModal({ open, onClose, initialValues, onSaved }: Dest
     <ModalShell
       open={open}
       onClose={onClose}
+      previewMode={previewMode}
       title="Destino"
       subtitle="Grupo, contato e envio"
       icon={<Users size={16} className="text-primary" />}
