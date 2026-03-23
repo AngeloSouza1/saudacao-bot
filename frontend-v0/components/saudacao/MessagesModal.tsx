@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { CircleHelp, Eye, FileText, MessagesSquare, Megaphone, MessageCircleMore, Pencil } from "lucide-react"
 import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
+import { ScheduledMessagesModal } from "./ScheduledMessagesModal"
 
 interface MessagesModalProps {
   open: boolean
@@ -265,6 +266,7 @@ export function MessagesModal({
   const [modelHelpOpen, setModelHelpOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [variablesHelpOpen, setVariablesHelpOpen] = useState(false)
+  const [scheduledMessagesOpen, setScheduledMessagesOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [sendCustomLoading, setSendCustomLoading] = useState(false)
   const [customTargetType, setCustomTargetType] = useState<"student" | "group">("student")
@@ -636,6 +638,23 @@ export function MessagesModal({
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
               Clique para montar um terceiro modelo de mensagem customizada.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setScheduledMessagesOpen(true)
+              setFeedback("")
+            }}
+            className="rounded-2xl border border-border bg-muted/20 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
+          >
+            <div className="flex items-center gap-2">
+              <MessagesSquare size={16} className="text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Mensagens programadas</h3>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Agende mensagens independentes do ciclo para um grupo específico, com data e hora definidas.
             </p>
           </button>
 
@@ -1028,6 +1047,14 @@ export function MessagesModal({
           cancelLabel=""
         />
       </ModalShell>
+
+      <ScheduledMessagesModal
+        open={scheduledMessagesOpen}
+        onClose={() => setScheduledMessagesOpen(false)}
+        previewMode={previewMode}
+        groups={groups}
+        onSaved={onSaved}
+      />
     </>
   )
 }

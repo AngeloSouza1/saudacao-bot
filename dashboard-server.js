@@ -19,6 +19,10 @@ import {
   runNow,
   runNowForced,
   runTest,
+  listScheduledMessages,
+  saveScheduledMessage,
+  cancelScheduledMessage,
+  deleteScheduledMessage,
   sendCustomMessageToTarget,
   sendAgendaListToDestination,
   swapPendingStudents,
@@ -247,6 +251,32 @@ async function handleApi(req, res, pathname) {
         bannerTitle: body?.bannerTitle
       }, requester);
       sendJson(res, 200, { ok: true, message: "Mensagem personalizada enviada com sucesso." });
+      return true;
+    }
+
+    if (req.method === "GET" && pathname === "/api/scheduled-messages") {
+      sendJson(res, 200, { items: listScheduledMessages() });
+      return true;
+    }
+
+    if (req.method === "POST" && pathname === "/api/scheduled-messages/save") {
+      const body = await readBody(req);
+      const item = saveScheduledMessage(body, requester);
+      sendJson(res, 200, { ok: true, item, message: "Mensagem programada salva com sucesso." });
+      return true;
+    }
+
+    if (req.method === "POST" && pathname === "/api/scheduled-messages/cancel") {
+      const body = await readBody(req);
+      const item = cancelScheduledMessage(body?.id);
+      sendJson(res, 200, { ok: true, item, message: "Mensagem programada cancelada." });
+      return true;
+    }
+
+    if (req.method === "POST" && pathname === "/api/scheduled-messages/delete") {
+      const body = await readBody(req);
+      deleteScheduledMessage(body?.id);
+      sendJson(res, 200, { ok: true, message: "Mensagem programada excluída." });
       return true;
     }
 

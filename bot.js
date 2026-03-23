@@ -14,6 +14,7 @@ const statePath = resolveDataPath("state.json");
 const settingsPath = resolveDataPath("settings.json");
 const cyclesPath = resolveDataPath("cycles.json");
 const lastRunPath = resolveDataPath("last-run.json");
+const scheduledMessagesPath = resolveDataPath("scheduled-messages.json");
 const weekdayMap = {
   Sun: 0,
   Mon: 1,
@@ -167,6 +168,167 @@ function loadSettings() {
 
 function saveSettings(settings) {
   writeJson(settingsPath, settings);
+}
+
+function bootstrapScheduledMessages() {
+  if (fs.existsSync(scheduledMessagesPath)) {
+    return;
+  }
+  writeJson(scheduledMessagesPath, []);
+}
+
+function loadScheduledMessages() {
+  bootstrapScheduledMessages();
+  const raw = readJson(scheduledMessagesPath);
+  return Array.isArray(raw) ? raw : [];
+}
+
+function saveScheduledMessages(items) {
+  writeJson(scheduledMessagesPath, Array.isArray(items) ? items : []);
+}
+
+function makeScheduledMessageId() {
+  return `scheduled_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function parseScheduledDateTime(dateValue, timeValue) {
+  const date = String(dateValue || "").trim();
+  const time = String(timeValue || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error("Data inválida. Use o formato YYYY-MM-DD.");
+  }
+  const { hours, minutes } = parseHora(time);
+  const parsed = new Date(`${date}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error("Data ou horário inválido para o agendamento.");
+  }
+  return {
+    date,
+    time: `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`,
+    scheduledAt: parsed.toISOString()
+  };
+}
+
+export function listScheduledMessages() {
+  return loadScheduledMessages()
+    .slice()
+    .sort((a, b) => String(a?.scheduledAt || "").localeCompare(String(b?.scheduledAt || "")));
+}
+
+export function saveScheduledMessage(payload = {}, options = {}) {
+  const requester = resolveRequesterContext(options);
+  const items = loadScheduledMessages();
+  const id = String(payload?.id || "").trim();
+  const title = String(payload?.title || "").trim();
+  const groupName = String(payload?.groupName || "").trim();
+  const template = String(payload?.template || "").trim();
+
+  if (title.length < 2) {
+    throw new Error("Informe um título para a mensagem programada.");
+  }
+  if (groupName.length < 2) {
+    throw new Error("Informe o grupo de destino.");
+  }
+  if (!template) {
+    throw new Error("Informe o conteúdo da mensagem.");
+  }
+
+  const dateTime = parseScheduledDateTime(payload?.scheduledDate, payload?.scheduledTime);
+  const nowIso = new Date().toISOString();
+  const existing = id ? items.find((item) => String(item?.id || "") === id) : null;
+  const next = {
+    id: existing?.id || makeScheduledMessageId(),
+    title,
+    groupName,
+    template,
+    scheduledDate: dateTime.date,
+    scheduledTime: dateTime.time,
+    scheduledAt: dateTime.scheduledAt,
+    status: "pending",
+    createdBy: existing?.createdBy || requester.username || "",
+    createdAt: existing?.createdAt || nowIso,
+    updatedAt: nowIso,
+    sentAt: null,
+    canceledAt: null,
+    error: "",
+    messageId: ""
+  };
+
+  const filtered = items.filter((item) => String(item?.id || "") !== next.id);
+  filtered.push(next);
+  saveScheduledMessages(filtered);
+  return next;
+}
+
+export function cancelScheduledMessage(id) {
+  const itemId = String(id || "").trim();
+  if (!itemId) {
+    throw new Error("Agendamento não informado.");
+  }
+  const items = loadScheduledMessages();
+  const current = items.find((item) => String(item?.id || "") === itemId);
+  if (!current) {
+    throw new Error("Mensagem programada não encontrada.");
+  }
+  current.status = "canceled";
+  current.canceledAt = new Date().toISOString();
+  current.updatedAt = current.canceledAt;
+  saveScheduledMessages(items);
+  return current;
+}
+
+export function deleteScheduledMessage(id) {
+  const itemId = String(id || "").trim();
+  if (!itemId) {
+    throw new Error("Agendamento não informado.");
+  }
+  const items = loadScheduledMessages();
+  const before = items.length;
+  const next = items.filter((item) => String(item?.id || "") !== itemId);
+  if (next.length === before) {
+    throw new Error("Mensagem programada não encontrada.");
+  }
+  saveScheduledMessages(next);
+  return { ok: true };
+}
+
+async function processDueScheduledMessages(now = new Date()) {
+  const items = loadScheduledMessages();
+  let changed = false;
+
+  for (const item of items) {
+    const status = String(item?.status || "");
+    if (status !== "pending") continue;
+    const scheduledAt = new Date(String(item?.scheduledAt || ""));
+    if (Number.isNaN(scheduledAt.getTime()) || scheduledAt.getTime() > now.getTime()) {
+      continue;
+    }
+
+    try {
+      const message = await sendCustomMessageToTarget(
+        "group",
+        String(item?.groupName || ""),
+        String(item?.template || ""),
+        {},
+        { username: String(item?.createdBy || "").trim().toLowerCase() }
+      );
+      item.status = "sent";
+      item.sentAt = new Date().toISOString();
+      item.updatedAt = item.sentAt;
+      item.error = "";
+      item.messageId = message?.id?._serialized || "";
+      changed = true;
+    } catch (error) {
+      item.status = "failed";
+      item.updatedAt = new Date().toISOString();
+      item.error = String(error?.message || error || "Falha ao enviar mensagem programada.");
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    saveScheduledMessages(items);
+  }
 }
 
 function makeCycleId() {
@@ -1749,6 +1911,15 @@ export function startScheduler() {
   const weekdaysWithClass = new Set();
   const dispatchTime = getConfiguredDispatchTime(config);
 
+  const scheduledMessagesJob = cron.schedule("* * * * *", async () => {
+    try {
+      await processDueScheduledMessages();
+    } catch (error) {
+      console.error(error);
+    }
+  }, { timezone: TZ });
+  scheduledJobs.push(scheduledMessagesJob);
+
   for (const { dia, aula } of getAgendaEntriesByConfig(config)) {
     weekdaysWithClass.add(String(dia));
     const cronHour = dispatchTime.hours;
@@ -1891,6 +2062,7 @@ export async function ensureInitialized() {
   assertAppConfig();
   bootstrapCycles();
   bootstrapLastRun();
+  bootstrapScheduledMessages();
   saveState(getStateNormalized());
 
   if (!initialized) {
