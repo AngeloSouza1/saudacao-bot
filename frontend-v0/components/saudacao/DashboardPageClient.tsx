@@ -874,7 +874,14 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
             activeItem={activeItem}
             setActiveItem={setActiveItem}
             shortcutsOpen={shortcutsOpen}
-            onToggleShortcuts={() => setShortcutsOpen((prev) => !prev)}
+            onToggleShortcuts={() => {
+              if (isViewer) {
+                setViewerFeature("shortcuts")
+                setShortcutsOpen(true)
+                return
+              }
+              setShortcutsOpen((prev) => !prev)
+            }}
             canManageUsers={panelSession.isAdmin}
           />
         </div>
@@ -1001,7 +1008,7 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
       </div>
 
       {showShortcutsCard ? (
-        <aside className={`fixed right-3 top-[86px] bottom-4 z-40 w-[90px] rounded-2xl bg-transparent px-2 py-3 flex flex-col transition-all ${isViewer ? "pointer-events-none" : ""}`}>
+        <aside className={`fixed right-3 top-[86px] bottom-4 z-40 w-[90px] rounded-2xl px-2 py-3 flex flex-col transition-all ${isViewer ? "pointer-events-none" : ""} ${isViewer && viewerFeature === "shortcuts" ? "border border-emerald-200/90 bg-[linear-gradient(180deg,rgba(236,253,245,0.9),rgba(240,253,250,0.72))] shadow-[0_14px_38px_rgba(16,24,40,0.12)] backdrop-blur-sm" : "bg-transparent"}`}>
           <div className="mt-1 flex flex-col gap-2">
             <button
               onClick={() => {
@@ -1012,12 +1019,12 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 setMessagesInitialEditorType("custom")
                 setMessagesOpen(true)
               }}
-              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              className={`group w-full rounded-xl px-3 py-2.5 text-left transition ${isViewer && viewerFeature === "shortcuts" ? "border border-emerald-200/80 bg-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" : "bg-transparent hover:bg-muted/40"}`}
               title="Mensagem personalizada"
               aria-label="Mensagem personalizada"
             >
               <span className="inline-flex w-full items-center justify-center">
-                <MessageCirclePlus size={18} className="text-primary" />
+                <MessageCirclePlus size={18} className={isViewer && viewerFeature === "shortcuts" ? "text-emerald-700" : "text-primary"} />
               </span>
             </button>
             <button
@@ -1029,12 +1036,12 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 setScheduleInitialSection("students")
                 setScheduleOpen(true)
               }}
-              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              className={`group w-full rounded-xl px-3 py-2.5 text-left transition ${isViewer && viewerFeature === "shortcuts" ? "border border-emerald-200/80 bg-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" : "bg-transparent hover:bg-muted/40"}`}
               title="Aluno"
               aria-label="Aluno"
             >
               <span className="inline-flex w-full items-center justify-center">
-                <GraduationCap size={18} className="text-primary" />
+                <GraduationCap size={18} className={isViewer && viewerFeature === "shortcuts" ? "text-emerald-700" : "text-primary"} />
               </span>
             </button>
             <button
@@ -1046,12 +1053,12 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 setScheduleInitialSection("lessons")
                 setScheduleOpen(true)
               }}
-              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              className={`group w-full rounded-xl px-3 py-2.5 text-left transition ${isViewer && viewerFeature === "shortcuts" ? "border border-emerald-200/80 bg-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" : "bg-transparent hover:bg-muted/40"}`}
               title="Aula"
               aria-label="Aula"
             >
               <span className="inline-flex w-full items-center justify-center">
-                <Calendar size={18} className="text-primary" />
+                <Calendar size={18} className={isViewer && viewerFeature === "shortcuts" ? "text-emerald-700" : "text-primary"} />
               </span>
             </button>
             <button
@@ -1062,12 +1069,12 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
                 }
                 setCycleOpen(true)
               }}
-              className="group w-full rounded-xl bg-transparent px-3 py-2.5 text-left transition hover:bg-muted/40"
+              className={`group w-full rounded-xl px-3 py-2.5 text-left transition ${isViewer && viewerFeature === "shortcuts" ? "border border-emerald-200/80 bg-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" : "bg-transparent hover:bg-muted/40"}`}
               title="Ciclo"
               aria-label="Ciclo"
             >
               <span className="inline-flex w-full items-center justify-center">
-                <RefreshCcw size={18} className="text-primary" />
+                <RefreshCcw size={18} className={isViewer && viewerFeature === "shortcuts" ? "text-emerald-700" : "text-primary"} />
               </span>
             </button>
           </div>

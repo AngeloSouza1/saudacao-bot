@@ -1,7 +1,8 @@
 {
-  "type": "agenda_list",
+  "type": "scheduled",
   "skipped": false,
-  "destination": "grupo teste",
-  "messageId": "true_120363423174718536@g.us_3EB08D60E19B67A84704B7_167435021877452@lid",
-  "sentAt": "2026-03-21T22:58:59.325Z"
+  "aluno": "João Marcos Basilio Sales",
+  "materia": "Redes e Internet",
+  "messageId": "true_120363407433046278@g.us_3EB09073A93C5AA6BFE9A7_138469896626257@lid",
+  "sentAt": "2026-03-23T12:00:06.642Z"
 }
