@@ -9,6 +9,11 @@ interface ScheduledMessageItem {
   title?: string
   groupName?: string
   template?: string
+  imagePath?: string
+  mediaFileName?: string
+  bannerTitle?: string
+  backgroundColor?: string
+  backgroundImagePath?: string
   scheduledDate?: string
   scheduledTime?: string
   scheduledAt?: string
@@ -46,6 +51,15 @@ function formatPtBr(iso: string) {
   return date.toLocaleString("pt-BR")
 }
 
+function formatStatusLabel(status: string) {
+  const normalized = String(status || "").trim().toLowerCase()
+  if (normalized === "pending") return "Pendente"
+  if (normalized === "sent") return "Enviada"
+  if (normalized === "failed") return "Falhou"
+  if (normalized === "canceled") return "Cancelada"
+  return normalized || "Pendente"
+}
+
 export function ScheduledMessagesModal({
   open,
   onClose,
@@ -63,6 +77,11 @@ export function ScheduledMessagesModal({
   const [scheduledDate, setScheduledDate] = useState("")
   const [scheduledTime, setScheduledTime] = useState("")
   const [template, setTemplate] = useState("")
+  const [imagePath, setImagePath] = useState("")
+  const [backgroundImagePath, setBackgroundImagePath] = useState("")
+  const [bannerTitle, setBannerTitle] = useState("")
+  const [mediaFileName, setMediaFileName] = useState("")
+  const [backgroundColor, setBackgroundColor] = useState("#123d37")
 
   const sortedGroups = useMemo(
     () =>
@@ -97,6 +116,11 @@ export function ScheduledMessagesModal({
     setScheduledDate("")
     setScheduledTime("")
     setTemplate("")
+    setImagePath("")
+    setBackgroundImagePath("")
+    setBannerTitle("")
+    setMediaFileName("")
+    setBackgroundColor("#123d37")
   }
 
   async function handleSave() {
@@ -112,6 +136,11 @@ export function ScheduledMessagesModal({
           scheduledDate,
           scheduledTime,
           template,
+          imagePath,
+          backgroundImagePath,
+          bannerTitle,
+          mediaFileName,
+          backgroundColor,
         }),
       })
       resetForm()
@@ -190,6 +219,58 @@ export function ScheduledMessagesModal({
             <UnderlineInput label="Data" type="date" value={scheduledDate} onChange={setScheduledDate} />
             <UnderlineInput label="Hora" type="time" value={scheduledTime} onChange={setScheduledTime} />
           </div>
+          <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Mídia do envio
+            </p>
+            <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1.05fr_1.2fr_1fr_1.3fr]">
+              <UnderlineInput
+                label="Banner / imagem"
+                value={imagePath}
+                onChange={setImagePath}
+                placeholder="https://site/imagem.jpg"
+                hint="Aceita arquivo local ou link."
+              />
+              <UnderlineInput
+                label="Imagem de fundo"
+                value={backgroundImagePath}
+                onChange={setBackgroundImagePath}
+                placeholder="https://site/fundo.jpg"
+                hint="Opcional. Usa esta imagem no fundo do banner."
+              />
+              <UnderlineInput
+                label="Título do banner"
+                value={bannerTitle}
+                onChange={setBannerTitle}
+                placeholder="Ex.: Aviso importante"
+                hint="Texto exibido ao lado da imagem no banner."
+              />
+              <UnderlineInput
+                label="Nome do arquivo"
+                value={mediaFileName}
+                onChange={setMediaFileName}
+                placeholder="aviso.png"
+                hint="Opcional. Define o nome do arquivo enviado."
+              />
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Cor de fundo
+                </label>
+                <div className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2">
+                  <input
+                    type="color"
+                    value={backgroundColor || "#123d37"}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                  />
+                  <span className="font-mono text-sm text-foreground">{backgroundColor || "#123d37"}</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Define a cor do fundo do banner desta mensagem.
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="mt-4">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mensagem</label>
             <textarea
@@ -207,22 +288,31 @@ export function ScheduledMessagesModal({
             >
               Limpar
             </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-green-deep disabled:opacity-60"
-            >
-              {editingId ? "Salvar alterações" : "Agendar mensagem"}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                Fechar
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-green-deep disabled:opacity-60"
+              >
+                {editingId ? "Salvar alterações" : "Agendar mensagem"}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-muted/20 p-4">
+        <div className="flex min-h-0 flex-col rounded-2xl border border-border bg-muted/20 p-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Agendamentos salvos
           </p>
-          <div className="mt-4 max-h-[480px] space-y-3 overflow-y-auto pr-1">
+          <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 max-h-[70vh]">
             {loading ? (
               <p className="text-sm text-muted-foreground">Carregando mensagens programadas...</p>
             ) : items.length ? (
@@ -234,9 +324,12 @@ export function ScheduledMessagesModal({
                       <p className="text-sm text-muted-foreground">
                         {String(item.groupName || "Sem grupo")} · {String(item.scheduledDate || "--")} às {String(item.scheduledTime || "--:--")}
                       </p>
+                      {item.imagePath ? (
+                        <p className="mt-1 text-xs text-muted-foreground">Com mídia configurada</p>
+                      ) : null}
                     </div>
                     <span className="rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      {String(item.status || "pending")}
+                      {formatStatusLabel(String(item.status || "pending"))}
                     </span>
                   </div>
                   <p className="mt-3 line-clamp-3 text-sm leading-6 text-foreground/80">{String(item.template || "")}</p>
@@ -246,7 +339,7 @@ export function ScheduledMessagesModal({
                     {item.sentAt ? <p>Enviada em: {formatPtBr(String(item.sentAt || ""))}</p> : null}
                     {item.error ? <p className="mt-1 text-destructive">{String(item.error || "")}</p> : null}
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -256,30 +349,38 @@ export function ScheduledMessagesModal({
                         setScheduledDate(String(item.scheduledDate || ""))
                         setScheduledTime(String(item.scheduledTime || ""))
                         setTemplate(String(item.template || ""))
+                        setImagePath(String(item.imagePath || ""))
+                        setBackgroundImagePath(String(item.backgroundImagePath || ""))
+                        setBannerTitle(String(item.bannerTitle || ""))
+                        setMediaFileName(String(item.mediaFileName || ""))
+                        setBackgroundColor(String(item.backgroundColor || "#123d37") || "#123d37")
                         setFeedback("")
                       }}
-                      className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-foreground transition-colors hover:border-primary hover:text-primary"
+                      aria-label="Editar"
+                      title="Editar"
                     >
                       <Pencil size={14} />
-                      Editar
                     </button>
                     {String(item.status || "") === "pending" ? (
                       <button
                         type="button"
                         onClick={() => void handleCancel(String(item.id || ""))}
-                        className="inline-flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-destructive/30 bg-destructive/5 text-destructive transition-colors hover:bg-destructive/10"
+                        aria-label="Cancelar"
+                        title="Cancelar"
                       >
                         <XCircle size={14} />
-                        Cancelar
                       </button>
                     ) : null}
                     <button
                       type="button"
                       onClick={() => void handleDelete(String(item.id || ""))}
-                      className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-destructive hover:text-destructive"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-foreground transition-colors hover:border-destructive hover:text-destructive"
+                      aria-label="Excluir"
+                      title="Excluir"
                     >
                       <Trash2 size={14} />
-                      Excluir
                     </button>
                   </div>
                 </div>
@@ -292,7 +393,6 @@ export function ScheduledMessagesModal({
       </div>
 
       {feedback ? <p className="px-6 pb-3 text-sm text-foreground">{feedback}</p> : null}
-      <ModalActions onCancel={onClose} onConfirm={onClose} confirmLabel="Fechar" cancelLabel="" />
     </ModalShell>
   )
 }

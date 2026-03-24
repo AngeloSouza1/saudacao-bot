@@ -241,6 +241,11 @@ export function saveScheduledMessage(payload = {}, options = {}) {
     title,
     groupName,
     template,
+    imagePath: String(payload?.imagePath || "").trim(),
+    mediaFileName: String(payload?.mediaFileName || "").trim(),
+    bannerTitle: String(payload?.bannerTitle || "").trim(),
+    backgroundColor: String(payload?.backgroundColor || "").trim(),
+    backgroundImagePath: String(payload?.backgroundImagePath || "").trim(),
     scheduledDate: dateTime.date,
     scheduledTime: dateTime.time,
     scheduledAt: dateTime.scheduledAt,
@@ -309,7 +314,14 @@ async function processDueScheduledMessages(now = new Date()) {
         "group",
         String(item?.groupName || ""),
         String(item?.template || ""),
-        {},
+        {
+          imagePath: String(item?.imagePath || "").trim(),
+          mediaFileName: String(item?.mediaFileName || "").trim(),
+          bannerTitle: String(item?.bannerTitle || item?.title || "").trim(),
+          backgroundColor: String(item?.backgroundColor || "").trim(),
+          backgroundImagePath: String(item?.backgroundImagePath || "").trim(),
+          imageStyle: "banner",
+        },
         { username: String(item?.createdBy || "").trim().toLowerCase() }
       );
       item.status = "sent";
@@ -1628,7 +1640,9 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
     config.mediaAsDocument ?? process.env.WHATSAPP_MEDIA_AS_DOCUMENT ?? "false"
   ).toLowerCase() === "true";
   const mediaFileName = mediaConfig.mediaFileName;
-  const imageStyle = String(config.imageStyle || process.env.WHATSAPP_IMAGE_STYLE || "banner").trim();
+  const imageStyle = String(
+    overrides.imageStyle ?? config.imageStyle ?? process.env.WHATSAPP_IMAGE_STYLE ?? "banner"
+  ).trim();
   const settings = loadSettings();
 
   if (kind === "group") {
