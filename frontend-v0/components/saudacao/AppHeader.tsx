@@ -19,7 +19,7 @@ export function AppHeader({ cycleLabel, userName, userInitials, userAvatar }: Ap
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border shadow-sm">
+    <header className="sticky top-0 z-40 border-b border-[#b8d7c3]/60 bg-[linear-gradient(180deg,rgba(231,244,235,0.98)_0%,rgba(246,251,247,0.98)_100%)] backdrop-blur-md shadow-sm">
       <div className="flex items-center justify-between px-6 py-3 gap-4">
         {/* Left: Logo + Title */}
         <div className="flex items-center gap-4 min-w-0">

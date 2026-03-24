@@ -62,7 +62,7 @@ export function ModalShell({
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-border bg-card px-6 py-3 shrink-0">
+        <div className="flex items-start justify-between border-b border-[#b8d7c3]/60 bg-[linear-gradient(180deg,rgba(231,244,235,0.98)_0%,rgba(246,251,247,0.98)_100%)] px-6 py-3 shrink-0">
           <div className="flex items-center gap-3">
             {icon && (
               <div className="w-9 h-9 rounded-xl border border-primary/10 bg-primary/10 flex items-center justify-center">

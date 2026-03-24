@@ -24,7 +24,7 @@ export function UpcomingGreetingsCard({ items, onOpenAll }: UpcomingGreetingsCar
   return (
     <div className="flex flex-col bg-card rounded-2xl border border-border shadow-sm overflow-hidden h-full">
       {/* Sticky header */}
-      <div className="sticky top-0 z-10 px-6 py-4 border-b border-border bg-card flex items-center gap-3 shrink-0">
+      <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-[#b8d7c3]/60 bg-[linear-gradient(180deg,rgba(231,244,235,0.98)_0%,rgba(246,251,247,0.98)_100%)] px-6 py-4 shrink-0">
         <div className="w-8 h-8 rounded-lg bg-gold-light flex items-center justify-center">
           <Bell size={16} className="text-accent-foreground" />
         </div>
