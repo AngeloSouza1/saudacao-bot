@@ -18,15 +18,6 @@
         "hora": "20:00"
       }
     ],
-    "2": [
-      {
-        "data": "2026-03-24",
-        "titulo": "A Comunicação Oral II",
-        "materia": "Soft Skills",
-        "professor": "Prof. Flávia",
-        "hora": "20:00"
-      }
-    ],
     "3": [
       {
         "data": "2026-03-25",
@@ -208,23 +199,23 @@
   ],
   "defaultGreetingMessage": "Turma: *{{turmaLinha}}*\nMatéria: *{{materia}}*\nTítulo: *{{titulo}}*\nProfessor: *{{professor}}*\nAluno: *{{alunoNome}}*\nHorário: *{{horario}}*\n\nOlá, *{{alunoNome}}*! Chegou a sua vez de fazer a saudação de hoje. Contamos com você!\n\n*Texto sugerido (ler no início):*\n\n*Modelo simples:*\n*1. Cumprimento*\n_“Bom dia, professor.” ou “Boa tarde, professor.”_\n\n*2. Identificação da turma*\n_“Somos a turma [nome ou curso].”_\n\n*3. Situação de presença*\n_“Hoje estamos com a turma completa.” ou “Hoje tivemos algumas ausências, mas a maioria está presente.”_\n\n*4. Transição para a aula*\n_“A turma está pronta para a aula. Pode começar quando quiser.”_\n\n*Estrutura resumida:*\n_Cumprimento → Turma → Presença → Passar a palavra_\n\n*Exemplo pronto para usar:*\n_“{{exemploPronto}}”_\n*— {{alunoNome}} ({{materia}})*",
   "defaultNoClassMessage": "*📢 Aviso da turma*\n\nTurma: *{{turmaLinha}}*\n\n{{cumprimento}}, pessoal.\n\n*HOJE NÃO HAVERÁ AULA.*\n\nAproveitem este tempo para colocar os estudos em dia, revisar os conteúdos já vistos e reforçar os pontos que ainda geram dúvida.\n\nUma boa revisão hoje pode fazer diferença no entendimento das próximas aulas.\n\n*Sigam firmes nos estudos. Constância e dedicação trazem resultado.*",
-  "customMessageTemplate": "Olá, *{{alunoNome}}*!\n\nEsta é uma mensagem personalizada do Saudação Bot.\n\nTurma: *{{turmaLinha}}*\nMatéria: *{{materia}}*\nProfessor: *{{professor}}*\nHorário: *{{horario}}*",
+  "customMessageTemplate": "\n*🏁TEMA do ME do Encontro 3:*  SEGURANÇA DA INFORMAÇÃO EM UNIVERSIDADES AMERICANAS.\n\n*Palavras chave:* Como funciona o estudo nos Estados Unidos (opções, instituições, bolsas), Como conseguir estudar nos EUA (5-steps), * Onde estudar Segurança da Informação.\n\n*Data:*  _25/03 de 2026 com Inicio às 14hUTC-3_\n\nContamos com o comprometimento e a dedicação de todos.\nAtenciosamente.\n\n_*A jornada será desafiadora, mas a transformação é real.*_\n",
   "bannerTitle": "ola",
   "greetingImagePath": "risecode.png",
   "greetingMediaFileName": "Saudacao.png",
   "greetingBannerTitle": "Saudação de Hoje",
   "greetingBackgroundColor": "#123d37",
-  "greetingBackgroundImagePath": "",
+  "greetingBackgroundImagePath": "fundo.png",
   "noClassImagePath": "risecode.png",
   "noClassMediaFileName": "aviso.png",
   "noClassBannerTitle": "Aviso!",
   "noClassBackgroundColor": "#133d37",
-  "noClassBackgroundImagePath": "",
-  "customImagePath": "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "noClassBackgroundImagePath": "fundo-aviso.png",
+  "customImagePath": "risecode.png",
   "customMediaFileName": "personalizada.png",
-  "customBannerTitle": "Mensagem Teste!",
+  "customBannerTitle": "Palestra!!",
   "customBackgroundColor": "#050505",
-  "customBackgroundImagePath": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "customBackgroundImagePath": "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   "backgroundColor": "",
   "backgroundImagePath": "",
   "horarioEnvio": "09:00"

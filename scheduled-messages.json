@@ -1,0 +1,24 @@
+[
+  {
+    "id": "scheduled_1774369109539_vbie05",
+    "title": "Palestra",
+    "groupName": "Turma 7G2.2",
+    "template": "*🏁TEMA do ME do Encontro 3:*  SEGURANÇA DA INFORMAÇÃO EM UNIVERSIDADES AMERICANAS.\n\n*Palavras chave:* Como funciona o estudo nos Estados Unidos (opções, instituições, bolsas), Como conseguir estudar nos EUA (5-steps), * Onde estudar Segurança da Informação.\n\n*Data:*  _25/03 de 2026 com Inicio às 14hUTC-3_\n\nContamos com o comprometimento e a dedicação de todos.\nAtenciosamente.\n\n_*A jornada será desafiadora, mas a transformação é real.*_",
+    "imagePath": "risecode.png",
+    "mediaFileName": "aviso.png",
+    "bannerTitle": "Palestra!!!",
+    "backgroundColor": "#123d37",
+    "backgroundImagePath": "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "scheduledDate": "2026-03-25",
+    "scheduledTime": "11:00",
+    "scheduledAt": "2026-03-25T14:00:00.000Z",
+    "status": "canceled",
+    "createdBy": "admin",
+    "createdAt": "2026-03-24T16:18:29.539Z",
+    "updatedAt": "2026-03-24T17:11:28.047Z",
+    "sentAt": null,
+    "canceledAt": "2026-03-24T17:11:28.047Z",
+    "error": "",
+    "messageId": ""
+  }
+]

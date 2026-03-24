@@ -1,8 +1,8 @@
 {
   "idxAluno": 9,
-  "idxAula": 0,
-  "dataInicio": "2026-03-23",
-  "updatedAt": "2026-03-23T12:00:06.640Z",
+  "idxAula": 1,
+  "dataInicio": "2026-03-25",
+  "updatedAt": "2026-03-24T16:20:20.627Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
     "João Vitor Gomes Oliveira Rodrigues Resende",
@@ -25,7 +25,8 @@
     "Denis Junior",
     "Enzo Duarte",
     "Felipe Moreira",
-    "Jaynni Nascimento"
+    "Jaynni Nascimento",
+    "João Marcos Basilio Sales"
   ],
   "confirmacaoEnvio": {
     "confirmado": false,
@@ -33,14 +34,8 @@
     "confirmadoEm": ""
   },
   "revertidosEfetivados": [],
-  "efetivacoesManuais": [
-    {
-      "itemKey": "cycle_1774266739085_6lgmpl|2026-03-23T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "João Marcos Basilio Sales"
-    }
-  ],
+  "efetivacoesManuais": [],
   "ordemVinculadaCiclo": [
-    "João Marcos Basilio Sales",
     "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
@@ -48,7 +43,5 @@
     "Laís Oliveira",
     "Luana Costa"
   ],
-  "efetivadosCiclo": [
-    "João Marcos Basilio Sales"
-  ]
+  "efetivadosCiclo": []
 }
