@@ -705,43 +705,43 @@ function wrapBannerTitle(rawTitle, maxLineLength = 22, maxLines = 3) {
 }
 
 async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
-  const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1200);
-  const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 460);
+  const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1080);
+  const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 300);
   const titleLines = wrapBannerTitle(
     String(bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "🤖 Saudação de hoje").trim() || "🤖 Saudação de hoje"
   );
   const backgroundColor = String(cardData?.backgroundColor || process.env.WHATSAPP_BANNER_BG_COLOR || "#123d37").trim() || "#123d37";
   const backgroundImagePath = String(cardData?.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
   const hasBackgroundImage = Boolean(backgroundImagePath);
-  const titleFontSize = titleLines.length > 2 ? 52 : titleLines.length > 1 ? 58 : 66;
-  const titleStartY = titleLines.length > 1 ? 192 : 244;
-  const titleLineHeight = titleFontSize + 12;
+  const titleFontSize = titleLines.length > 2 ? 34 : titleLines.length > 1 ? 38 : 44;
+  const titleStartY = titleLines.length > 1 ? 126 : 162;
+  const titleLineHeight = titleFontSize + 10;
   const titleTspans = titleLines
     .map((line, index) => {
       const dy = index === 0 ? 0 : titleLineHeight;
-      return `<tspan x="448" dy="${dy}">${escapeXml(line)}</tspan>`;
+      return `<tspan x="270" dy="${dy}">${escapeXml(line)}</tspan>`;
     })
     .join("");
 
-  const mediaFrameWidth = 224;
-  const mediaFrameHeight = 224;
-  const mediaContentWidth = 212;
-  const mediaContentHeight = 212;
-  const mediaLeft = 64;
+  const mediaFrameWidth = 148;
+  const mediaFrameHeight = 148;
+  const mediaContentWidth = 136;
+  const mediaContentHeight = 136;
+  const mediaLeft = 58;
   const mediaTop = Math.max(0, Math.floor((height - mediaFrameHeight) / 2));
-  const mediaRadius = 28;
+  const mediaRadius = 22;
   const mediaContentLeft = Math.floor((mediaFrameWidth - mediaContentWidth) / 2);
   const mediaContentTop = Math.floor((mediaFrameHeight - mediaContentHeight) / 2);
-  const shadowWidth = mediaFrameWidth + 22;
-  const shadowHeight = mediaFrameHeight + 22;
-  const shadowLeft = mediaLeft - 11;
-  const shadowTop = mediaTop - 8;
+  const shadowWidth = mediaFrameWidth + 18;
+  const shadowHeight = mediaFrameHeight + 18;
+  const shadowLeft = mediaLeft - 9;
+  const shadowTop = mediaTop - 6;
   const mediaContentBackdropBuffer = Buffer.from(`
     <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="mediaInner" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="rgba(255,255,255,0.14)"/>
-          <stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
+          <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
         </linearGradient>
       </defs>
       <rect
@@ -749,7 +749,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
         y="${mediaContentTop}"
         width="${mediaContentWidth}"
         height="${mediaContentHeight}"
-        rx="24"
+        rx="18"
         fill="url(#mediaInner)"
         stroke="rgba(255,255,255,0.12)"
         stroke-width="1.5"
@@ -796,19 +796,19 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     .composite([{
       input: Buffer.from(`
         <svg width="${shadowWidth}" height="${shadowHeight}" xmlns="http://www.w3.org/2000/svg">
-          <rect x="11" y="8" width="${mediaFrameWidth}" height="${mediaFrameHeight}" rx="${mediaRadius}" fill="rgba(0,0,0,0.36)"/>
+          <rect x="9" y="6" width="${mediaFrameWidth}" height="${mediaFrameHeight}" rx="${mediaRadius}" fill="rgba(0,0,0,0.34)"/>
         </svg>
       `),
       top: 0,
       left: 0
     }])
-    .blur(12)
+    .blur(10)
     .png()
     .toBuffer();
   const mediaRingBuffer = Buffer.from(`
     <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="${mediaFrameWidth - 6}" height="${mediaFrameHeight - 6}" rx="${mediaRadius - 3}" fill="none" stroke="rgba(255,255,255,0.82)" stroke-width="4"/>
-      <rect x="12" y="12" width="${mediaFrameWidth - 24}" height="${mediaFrameHeight - 24}" rx="${mediaRadius - 10}" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="2"/>
+      <rect x="3" y="3" width="${mediaFrameWidth - 6}" height="${mediaFrameHeight - 6}" rx="${mediaRadius - 3}" fill="none" stroke="rgba(255,255,255,0.82)" stroke-width="3"/>
+      <rect x="10" y="10" width="${mediaFrameWidth - 20}" height="${mediaFrameHeight - 20}" rx="${mediaRadius - 9}" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
     </svg>
   `);
 
@@ -816,18 +816,18 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${hasBackgroundImage ? "rgba(15,34,48,0.22)" : "#0f2230"}"/>
-          <stop offset="100%" stop-color="${hasBackgroundImage ? "rgba(18,61,55,0.18)" : escapeXml(backgroundColor)}"/>
+          <stop offset="0%" stop-color="#0f2230"/>
+          <stop offset="100%" stop-color="${escapeXml(backgroundColor)}"/>
         </linearGradient>
         <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${hasBackgroundImage ? "rgba(8,24,34,0.26)" : "rgba(8,24,34,0.46)"}"/>
-          <stop offset="100%" stop-color="${hasBackgroundImage ? "rgba(8,24,34,0.06)" : "rgba(8,24,34,0.10)"}"/>
+          <stop offset="0%" stop-color="rgba(8,24,34,0.56)"/>
+          <stop offset="100%" stop-color="rgba(8,24,34,0.20)"/>
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>
-      <rect x="22" y="22" width="${width - 44}" height="${height - 44}" rx="18" fill="url(#panel)" stroke="rgba(125,255,210,0.24)" stroke-width="3"/>
-      <rect x="332" y="58" width="${width - 390}" height="${height - 116}" rx="24" fill="${hasBackgroundImage ? "rgba(6,18,26,0.06)" : "rgba(6,18,26,0.14)"}"/>
-      <text x="356" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
+      <rect x="18" y="18" width="${width - 36}" height="${height - 36}" rx="18" fill="url(#panel)" stroke="rgba(125,255,210,0.22)" stroke-width="2.5"/>
+      <rect x="236" y="44" width="${width - 292}" height="${height - 88}" rx="20" fill="rgba(6,18,26,0.18)"/>
+      <text x="270" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
     </svg>
   `;
 
@@ -841,8 +841,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     const backgroundBuffer = await sharp(bgInput)
       .rotate()
       .resize({ width, height, fit: "cover", position: "centre" })
-      .modulate({ brightness: 0.9, saturation: 1.02 })
-      .blur(1)
+      .modulate({ brightness: 0.66, saturation: 1.0 })
+      .blur(2)
       .jpeg({ quality: 72, mozjpeg: true })
       .toBuffer();
     composites.push({ input: backgroundBuffer, top: 0, left: 0 });
@@ -863,7 +863,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
       { input: mediaFrameBuffer, top: mediaTop, left: mediaLeft },
       { input: mediaRingBuffer, top: mediaTop, left: mediaLeft }
     ])
-    .jpeg({ quality: 68, mozjpeg: true })
+    .jpeg({ quality: 70, mozjpeg: true })
     .toBuffer();
 
   return new MessageMedia("image/jpeg", bannerBuffer.toString("base64"), "saudacao-banner.jpg");
@@ -949,11 +949,12 @@ export async function sendText({
       throw new Error(`Imagem não encontrada: ${mediaFullPath}`);
     }
     let media;
+    let mediaInput;
+    const style = String(imageStyle || "").toLowerCase();
     try {
-      const mediaInput = mediaIsRemote
+      mediaInput = mediaIsRemote
         ? await fetchRemoteMediaBuffer(rawImagePath)
         : mediaFullPath;
-      const style = String(imageStyle || "").toLowerCase();
       if (style === "banner") {
         media = await buildBannerMediaFromInput(
           mediaInput,
@@ -966,12 +967,34 @@ export async function sendText({
         console.log("🖼️ Imagem otimizada para envio.");
       }
     } catch (error) {
-      console.warn("⚠️ Falha ao otimizar imagem; enviando original:", error?.message || error);
-      if (mediaIsRemote) {
-        const remoteBuffer = await fetchRemoteMediaBuffer(rawImagePath);
-        media = new MessageMedia("image/jpeg", remoteBuffer.toString("base64"), "saudacao-remota.jpg");
-      } else {
-        media = MessageMedia.fromFilePath(mediaFullPath);
+      console.warn("⚠️ Falha ao gerar banner principal; tentando fallback compacto:", error?.message || error);
+      try {
+        mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
+        if (style === "banner") {
+          media = await buildBannerMediaFromInput(
+            mediaInput,
+            { ...(cardData || {}), backgroundColor, backgroundImagePath: "" },
+            bannerTitle
+          );
+          console.log("🖼️ Banner compacto gerado no fallback sem imagem de fundo.");
+        } else {
+          media = await buildOptimizedMediaFromInput(mediaInput);
+          console.log("🖼️ Imagem otimizada gerada no fallback.");
+        }
+      } catch (fallbackError) {
+        console.warn("⚠️ Falha no fallback compacto; enviando mídia otimizada simples:", fallbackError?.message || fallbackError);
+        try {
+          mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
+          media = await buildOptimizedMediaFromInput(mediaInput);
+        } catch (optimizedError) {
+          console.warn("⚠️ Falha ao otimizar fallback; enviando original:", optimizedError?.message || optimizedError);
+          if (mediaIsRemote) {
+            const remoteBuffer = await fetchRemoteMediaBuffer(rawImagePath);
+            media = new MessageMedia("image/jpeg", remoteBuffer.toString("base64"), "saudacao-remota.jpg");
+          } else {
+            media = MessageMedia.fromFilePath(mediaFullPath);
+          }
+        }
       }
     }
     const sendAsDocument = Boolean(mediaAsDocument);

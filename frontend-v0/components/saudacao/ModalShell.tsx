@@ -1,8 +1,8 @@
 "use client"
 
-import { X } from "lucide-react"
+import { Bold, Code2, Italic, Link2, Pilcrow, Strikethrough, Video, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ReactNode } from "react"
+import { ReactNode, RefObject } from "react"
 
 interface ModalShellProps {
   open: boolean
@@ -33,11 +33,11 @@ export function ModalShell({
 
   const sizeClasses = {
     xs: "max-w-[26rem]",
-    sm: "max-w-sm",
-    md: "max-w-lg",
-    lg: "max-w-2xl",
-    xl: "max-w-[88rem]",
-    xxl: "max-w-[96vw]",
+    sm: "max-w-md",
+    md: "max-w-2xl",
+    lg: "max-w-4xl",
+    xl: "max-w-[94rem]",
+    xxl: "max-w-[98vw]",
   }
 
   return (
@@ -212,6 +212,124 @@ export function ModalActions({
       >
         {confirmLabel}
       </button>
+    </div>
+  )
+}
+
+function replaceTextareaSelection(
+  textarea: HTMLTextAreaElement,
+  nextValue: string,
+  selectionStart: number,
+  selectionEnd: number
+) {
+  requestAnimationFrame(() => {
+    textarea.focus()
+    textarea.setSelectionRange(selectionStart, selectionEnd)
+  })
+  return nextValue
+}
+
+function applyWrappedFormat(
+  value: string,
+  textarea: HTMLTextAreaElement,
+  marker: string,
+  placeholder: string,
+  onChange: (nextValue: string) => void
+) {
+  const start = textarea.selectionStart ?? value.length
+  const end = textarea.selectionEnd ?? value.length
+  const selected = value.slice(start, end) || placeholder
+  const nextValue = `${value.slice(0, start)}${marker}${selected}${marker}${value.slice(end)}`
+  onChange(replaceTextareaSelection(textarea, nextValue, start + marker.length, start + marker.length + selected.length))
+}
+
+function applyInsertedFormat(
+  value: string,
+  textarea: HTMLTextAreaElement,
+  snippet: string,
+  cursorOffset: number,
+  onChange: (nextValue: string) => void
+) {
+  const start = textarea.selectionStart ?? value.length
+  const end = textarea.selectionEnd ?? value.length
+  const nextValue = `${value.slice(0, start)}${snippet}${value.slice(end)}`
+  onChange(replaceTextareaSelection(textarea, nextValue, start + cursorOffset, start + cursorOffset))
+}
+
+export function WhatsAppFormattingToolbar({
+  value,
+  onChange,
+  textareaRef,
+}: {
+  value: string
+  onChange: (nextValue: string) => void
+  textareaRef: RefObject<HTMLTextAreaElement | null>
+}) {
+  const actions = [
+    {
+      label: "Negrito",
+      icon: Bold,
+      run: (textarea: HTMLTextAreaElement) => applyWrappedFormat(value, textarea, "*", "texto", onChange),
+    },
+    {
+      label: "Itálico",
+      icon: Italic,
+      run: (textarea: HTMLTextAreaElement) => applyWrappedFormat(value, textarea, "_", "texto", onChange),
+    },
+    {
+      label: "Riscado",
+      icon: Strikethrough,
+      run: (textarea: HTMLTextAreaElement) => applyWrappedFormat(value, textarea, "~", "texto", onChange),
+    },
+    {
+      label: "Monoespaçado",
+      icon: Code2,
+      run: (textarea: HTMLTextAreaElement) => applyWrappedFormat(value, textarea, "```", "texto", onChange),
+    },
+    {
+      label: "Quebra de linha",
+      icon: Pilcrow,
+      run: (textarea: HTMLTextAreaElement) => applyInsertedFormat(value, textarea, "\n", 1, onChange),
+    },
+    {
+      label: "Link",
+      icon: Link2,
+      run: (textarea: HTMLTextAreaElement) =>
+        applyInsertedFormat(value, textarea, "https://seu-link-aqui.com", "https://".length, onChange),
+    },
+    {
+      label: "Vídeo",
+      icon: Video,
+      run: (textarea: HTMLTextAreaElement) =>
+        applyInsertedFormat(value, textarea, "https://link-do-video", "https://".length, onChange),
+    },
+  ]
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-muted/20 px-3 py-3">
+      <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        Formatação WhatsApp
+      </span>
+      {actions.map((action) => {
+        const Icon = action.icon
+        return (
+          <button
+            key={action.label}
+            type="button"
+            onClick={() => {
+              const textarea = textareaRef.current
+              if (!textarea) return
+              action.run(textarea)
+            }}
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+            aria-label={action.label}
+            title={action.label}
+          >
+            <Icon size={14} />
+            <span>{action.label}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }

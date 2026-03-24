@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { CalendarClock, Pencil, Trash2, XCircle } from "lucide-react"
-import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
+import { ModalActions, ModalShell, UnderlineInput, WhatsAppFormattingToolbar } from "./ModalShell"
 
 interface ScheduledMessageItem {
   id: string
@@ -67,6 +67,7 @@ export function ScheduledMessagesModal({
   groups = [],
   onSaved,
 }: ScheduledMessagesModalProps) {
+  const templateTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [items, setItems] = useState<ScheduledMessageItem[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -273,10 +274,18 @@ export function ScheduledMessagesModal({
           </div>
           <div className="mt-4">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mensagem</label>
+            <div className="mt-2">
+              <WhatsAppFormattingToolbar
+                value={template}
+                onChange={setTemplate}
+                textareaRef={templateTextareaRef}
+              />
+            </div>
             <textarea
+              ref={templateTextareaRef}
               value={template}
               onChange={(e) => setTemplate(e.target.value)}
-              className="mt-2 min-h-[220px] w-full rounded-2xl border border-input bg-background px-4 py-4 text-[15px] leading-7 text-foreground outline-none transition-colors focus:border-primary"
+              className="mt-3 min-h-[220px] w-full rounded-2xl border border-input bg-background px-4 py-4 text-[15px] leading-7 text-foreground outline-none transition-colors focus:border-primary"
               placeholder="Digite a mensagem que será enviada para o grupo na data escolhida."
             />
           </div>

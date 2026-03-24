@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { CircleHelp, Eye, FileText, MessagesSquare, Megaphone, MessageCircleMore, Pencil } from "lucide-react"
-import { ModalActions, ModalShell, UnderlineInput } from "./ModalShell"
+import { ModalActions, ModalShell, UnderlineInput, WhatsAppFormattingToolbar } from "./ModalShell"
 import { ScheduledMessagesModal } from "./ScheduledMessagesModal"
 
 interface MessagesModalProps {
@@ -243,6 +243,7 @@ export function MessagesModal({
   onSaved,
 }: MessagesModalProps) {
   const wasOpenRef = useRef(false)
+  const editorTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editorType, setEditorType] = useState<"default" | "no-class" | "custom">("default")
   const [defaultMessage, setDefaultMessage] = useState(DEFAULT_MESSAGE_FALLBACK)
@@ -305,9 +306,8 @@ export function MessagesModal({
     setVariablesHelpOpen(false)
   }
 
-  const closeEditorToDashboard = () => {
+  const closeEditorToMessages = () => {
     resetEditorState()
-    onClose()
   }
 
   useEffect(() => {
@@ -409,7 +409,7 @@ export function MessagesModal({
       const payload = await persistMessagesConfig()
       if (onSaved) await onSaved()
       if (closeAfterSave) {
-        closeEditorToDashboard()
+        closeEditorToMessages()
       }
       setFeedback(String(payload?.message || "Mensagem padrão salva com sucesso."))
     } catch (error) {
@@ -676,7 +676,7 @@ export function MessagesModal({
 
       <ModalShell
         open={editorOpen}
-        onClose={closeEditorToDashboard}
+        onClose={closeEditorToMessages}
         title={currentEditorTitle}
         subtitle={currentEditorSubtitle}
         icon={<Pencil size={16} className="text-primary" />}
@@ -775,10 +775,16 @@ export function MessagesModal({
               </div>
             </div>
           </div>
+          <WhatsAppFormattingToolbar
+            value={currentMessage}
+            onChange={setCurrentMessage}
+            textareaRef={editorTextareaRef}
+          />
           <textarea
+            ref={editorTextareaRef}
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
-            className="min-h-[220px] w-full rounded-2xl border border-input bg-background px-4 py-4 font-mono text-[15px] leading-7 text-foreground outline-none transition-colors focus:border-primary"
+            className="mt-3 min-h-[220px] w-full rounded-2xl border border-input bg-background px-4 py-4 font-mono text-[15px] leading-7 text-foreground outline-none transition-colors focus:border-primary"
           />
 
           {editorType === "custom" ? (
@@ -873,7 +879,7 @@ export function MessagesModal({
           ) : null}
         </div>
         <ModalActions
-          onCancel={closeEditorToDashboard}
+          onCancel={closeEditorToMessages}
           onSecondaryConfirm={() => handleSaveDefaultMessage(false)}
           secondaryConfirmLabel="Salvar e continuar"
           onConfirm={() => handleSaveDefaultMessage(true)}
