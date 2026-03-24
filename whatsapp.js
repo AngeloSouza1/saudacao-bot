@@ -724,12 +724,11 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     .join("");
   const backgroundLayer = hasBackgroundImage
     ? `
-      <rect x="0" y="0" width="${width}" height="${height}" fill="${escapeXml(backgroundColor)}" opacity="0.16"/>
-      <rect x="0" y="0" width="${width}" height="${height}" fill="rgba(6,18,26,0.24)"/>
+      <rect x="0" y="0" width="${width}" height="${height}" fill="${escapeXml(backgroundColor)}" opacity="0.06"/>
     `
     : `<rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>`;
-  const outerPanelFill = hasBackgroundImage ? "rgba(8,24,34,0.42)" : "url(#panel)";
-  const contentPanelFill = hasBackgroundImage ? "rgba(6,18,26,0.12)" : "rgba(6,18,26,0.18)";
+  const outerPanelFill = hasBackgroundImage ? "rgba(255,255,255,0.08)" : "url(#panel)";
+  const contentPanelFill = hasBackgroundImage ? "rgba(255,255,255,0.03)" : "rgba(6,18,26,0.18)";
 
   const mediaFrameWidth = 148;
   const mediaFrameHeight = 148;
