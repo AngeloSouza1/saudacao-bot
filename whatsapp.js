@@ -743,6 +743,10 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const shadowHeight = mediaFrameHeight + 18;
   const shadowLeft = mediaLeft - 9;
   const shadowTop = mediaTop - 6;
+  const contentAreaLeft = 34;
+  const contentAreaTop = 28;
+  const contentAreaWidth = width - 68;
+  const contentAreaHeight = height - 56;
   const mediaContentBackdropBuffer = Buffer.from(`
     <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -833,7 +837,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
       </defs>
       ${backgroundLayer}
       <rect x="18" y="18" width="${width - 36}" height="${height - 36}" rx="18" fill="${outerPanelFill}" stroke="${outerPanelStroke}" stroke-width="2.5"/>
-      <rect x="34" y="40" width="${width - 68}" height="${height - 80}" rx="20" fill="${contentRowFill}" stroke="${contentRowStroke}" stroke-width="1.5"/>
+      <rect x="${contentAreaLeft}" y="${contentAreaTop}" width="${contentAreaWidth}" height="${contentAreaHeight}" rx="20" fill="${contentRowFill}" stroke="${contentRowStroke}" stroke-width="1.5"/>
       <text x="270" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
     </svg>
   `;
@@ -845,27 +849,46 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     if (!bgIsRemote && !fs.existsSync(String(bgInput || ""))) {
       throw new Error(`Imagem de fundo não encontrada: ${String(bgInput || "")}`);
     }
-    const backgroundBackdropBuffer = await sharp(bgInput)
+    const backgroundFilledBuffer = await sharp(bgInput)
       .rotate()
-      .resize({ width, height, fit: "cover", position: "centre" })
-      .modulate({ brightness: 0.96, saturation: 1.0 })
-      .blur(3.5)
-      .jpeg({ quality: 72, mozjpeg: true })
-      .toBuffer();
-    const backgroundContainedBuffer = await sharp(bgInput)
-      .rotate()
+      .trim()
       .resize({
-        width,
-        height,
-        fit: "contain",
+        width: contentAreaWidth,
+        height: contentAreaHeight,
+        fit: "cover",
         position: "centre",
         background: { r: 0, g: 0, b: 0, alpha: 0 }
+      })
+      .extend({
+        top: Math.round(contentAreaHeight * 0.08),
+        bottom: Math.round(contentAreaHeight * 0.08),
+        left: Math.round(contentAreaWidth * 0.08),
+        right: Math.round(contentAreaWidth * 0.08),
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      })
+      .resize({
+        width: contentAreaWidth,
+        height: contentAreaHeight,
+        fit: "cover",
+        position: "centre"
       })
       .modulate({ brightness: 1.0, saturation: 1.02 })
       .jpeg({ quality: 80, mozjpeg: true })
       .toBuffer();
-    composites.push({ input: backgroundBackdropBuffer, top: 0, left: 0 });
-    composites.push({ input: backgroundContainedBuffer, top: 0, left: 0 });
+    const backgroundAreaBuffer = await sharp({
+      create: {
+        width: contentAreaWidth,
+        height: contentAreaHeight,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      }
+    })
+      .composite([
+        { input: backgroundFilledBuffer, top: 0, left: 0 }
+      ])
+      .png()
+      .toBuffer();
+    composites.push({ input: backgroundAreaBuffer, top: contentAreaTop, left: contentAreaLeft });
   }
 
   const bannerBuffer = await sharp({

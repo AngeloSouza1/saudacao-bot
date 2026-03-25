@@ -984,17 +984,36 @@ export function MessagesModal({
 
               <div className="ml-auto max-w-[88%] rounded-[18px] rounded-tr-md bg-[#d9fdd3] px-4 py-3 text-[#111b21] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
                 <div
-                  className="mb-3 overflow-hidden rounded-2xl border border-emerald-300/50"
+                  className="relative mb-3 overflow-hidden rounded-2xl border border-emerald-300/50"
                   style={{
                     backgroundColor: currentBackgroundColor || "#123d37",
-                    backgroundImage: currentBackgroundImageIsRemote
-                      ? `linear-gradient(rgba(7, 25, 33, 0.58), rgba(7, 25, 33, 0.38)), url(${currentBackgroundImagePath})`
-                      : `linear-gradient(135deg, rgba(7, 25, 33, 0.10), rgba(7, 25, 33, 0.28))`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
                   }}
                 >
-                  <div className="flex items-center gap-4 rounded-2xl bg-[#071921]/25 px-4 py-4 backdrop-blur-[1px]">
+                  {currentBackgroundImageIsRemote ? (
+                    <>
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage: `url(${currentBackgroundImagePath})`,
+                          backgroundPosition: "center",
+                          backgroundSize: "cover",
+                          filter: "blur(10px)",
+                          transform: "scale(1.12)",
+                          opacity: 0.32,
+                        }}
+                      />
+                      <img
+                        src={currentBackgroundImagePath}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover"
+                        style={{ transform: "scale(1.1)" }}
+                        referrerPolicy="no-referrer"
+                      />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,25,33,0.10),rgba(7,25,33,0.28))]" />
+                  )}
+                  <div className="relative flex items-center gap-4 rounded-2xl px-4 py-4">
                     <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white/80 bg-white/10 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
                       {currentImageIsRemote ? (
                         <img

@@ -465,14 +465,26 @@ export function ScheduledMessagesModal({
                       style={{ background: backgroundColor || "#123d37" }}
                     >
                       {backgroundImagePath ? (
-                        <div
-                          className="absolute inset-0 opacity-20"
-                          style={{
-                            backgroundImage: `url(${backgroundImagePath})`,
-                            backgroundPosition: "center",
-                            backgroundSize: "cover",
-                          }}
-                        />
+                        <>
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              backgroundImage: `url(${backgroundImagePath})`,
+                              backgroundPosition: "center",
+                              backgroundSize: "cover",
+                              filter: "blur(10px)",
+                              transform: "scale(1.12)",
+                              opacity: 0.32,
+                            }}
+                          />
+                          <img
+                            src={backgroundImagePath}
+                            alt=""
+                            className="absolute inset-0 h-full w-full object-cover"
+                            style={{ transform: "scale(1.1)" }}
+                            referrerPolicy="no-referrer"
+                          />
+                        </>
                       ) : null}
                       {imagePath ? (
                         <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30 bg-white/80 shadow-sm">
