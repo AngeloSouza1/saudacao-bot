@@ -1035,6 +1035,16 @@ function getStudentImageForName(config, studentName) {
   return String(getStudentDetailByName(config, studentName)?.imagem || "").trim();
 }
 
+function getStudentMentionByName(config, studentName) {
+  const detail = getStudentDetailByName(config, studentName);
+  const digits = normalizeWhatsappDigits(detail?.whatsapp);
+  if (!digits) return null;
+  return {
+    digits,
+    mentionId: `${digits}@c.us`
+  };
+}
+
 function normalizeWhatsappDigits(value) {
   return String(value || "").replace(/\D/g, "");
 }
@@ -1574,6 +1584,8 @@ async function sendBotMessage(text, cardData = null, messageKind = "default", op
   const settings = loadSettings();
   const config = loadConfig();
   const studentImagePath = getStudentImageForName(config, cardData?.aluno);
+  const studentMention = messageKind === "default" ? getStudentMentionByName(config, cardData?.aluno) : null;
+  const isGroupDestination = Boolean(String(settings.groupId || "").trim() || String(settings.groupName || "").trim());
   const mediaConfig = resolveMessageMediaConfig(config, messageKind);
   const fallbackImagePath = mediaConfig.imagePath;
   const imagePath = studentImagePath || fallbackImagePath;
@@ -1585,11 +1597,14 @@ async function sendBotMessage(text, cardData = null, messageKind = "default", op
   ).toLowerCase() === "true";
   const mediaFileName = mediaConfig.mediaFileName;
   const imageStyle = String(config.imageStyle || process.env.WHATSAPP_IMAGE_STYLE || "banner").trim();
+  const messageText = studentMention && isGroupDestination
+    ? `📣 @${studentMention.digits} sua vez de fazer a saudação de hoje.\n\n${String(text || "")}`
+    : text;
   const message = await sendText({
     to: settings.to,
     groupId: settings.groupId,
     groupName: settings.groupName,
-    text,
+    text: messageText,
     imagePath,
     mediaAsDocument,
     mediaFileName,
@@ -1597,8 +1612,32 @@ async function sendBotMessage(text, cardData = null, messageKind = "default", op
     imageStyle,
     backgroundColor,
     backgroundImagePath,
-    cardData
+    cardData,
+    mentions: studentMention && isGroupDestination ? [studentMention.mentionId] : []
   }, resolveRequesterContext(options));
+
+  if (messageKind === "default" && studentMention && isGroupDestination) {
+    try {
+      await sendText({
+        to: studentMention.digits,
+        groupId: "",
+        groupName: "",
+        text: String(text || ""),
+        imagePath,
+        mediaAsDocument,
+        mediaFileName,
+        bannerTitle,
+        imageStyle,
+        backgroundColor,
+        backgroundImagePath,
+        cardData,
+        mentions: []
+      }, resolveRequesterContext(options));
+      console.log(`📨 Reforço enviado no privado para ${studentMention.digits}.`);
+    } catch (privateError) {
+      console.warn(`⚠️ Falha ao enviar reforço privado para ${studentMention.digits}:`, privateError?.message || privateError);
+    }
+  }
 
   saveLastRun({
     type: "custom",

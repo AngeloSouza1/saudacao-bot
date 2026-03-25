@@ -726,7 +726,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     ? ""
     : `<rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>`;
   const outerPanelFill = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "url(#panel)";
-  const outerPanelStroke = hasBackgroundImage ? "rgba(255,255,255,0.14)" : "rgba(125,255,210,0.22)";
+  const outerPanelStroke = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(125,255,210,0.22)";
   const contentRowFill = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(6,18,26,0.18)";
   const contentRowStroke = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(255,255,255,0.06)";
 
@@ -845,14 +845,27 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     if (!bgIsRemote && !fs.existsSync(String(bgInput || ""))) {
       throw new Error(`Imagem de fundo não encontrada: ${String(bgInput || "")}`);
     }
-    const backgroundBuffer = await sharp(bgInput)
+    const backgroundBackdropBuffer = await sharp(bgInput)
       .rotate()
       .resize({ width, height, fit: "cover", position: "centre" })
-      .modulate({ brightness: 0.985, saturation: 1.02 })
-      .blur(0.15)
+      .modulate({ brightness: 0.96, saturation: 1.0 })
+      .blur(3.5)
       .jpeg({ quality: 72, mozjpeg: true })
       .toBuffer();
-    composites.push({ input: backgroundBuffer, top: 0, left: 0 });
+    const backgroundContainedBuffer = await sharp(bgInput)
+      .rotate()
+      .resize({
+        width,
+        height,
+        fit: "contain",
+        position: "centre",
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      })
+      .modulate({ brightness: 1.0, saturation: 1.02 })
+      .jpeg({ quality: 80, mozjpeg: true })
+      .toBuffer();
+    composites.push({ input: backgroundBackdropBuffer, top: 0, left: 0 });
+    composites.push({ input: backgroundContainedBuffer, top: 0, left: 0 });
   }
 
   const bannerBuffer = await sharp({
@@ -938,7 +951,8 @@ export async function sendText({
   imageStyle,
   backgroundColor,
   backgroundImagePath,
-  cardData
+  cardData,
+  mentions
 }, options = {}) {
   const session = getSessionContext(options);
   const client = await initWhatsApp({ sessionKey: session.key });
@@ -1008,6 +1022,12 @@ export async function sendText({
     const options = {
       caption: String(text || "")
     };
+    const mentionList = Array.isArray(mentions)
+      ? mentions.map((item) => String(item || "").trim()).filter(Boolean)
+      : [];
+    if (mentionList.length > 0) {
+      options.mentions = mentionList;
+    }
     if (sendAsDocument) {
       options.sendMediaAsDocument = true;
     }
@@ -1017,7 +1037,14 @@ export async function sendText({
     }
     message = await client.sendMessage(destination.chatId, media, options);
   } else {
-    message = await client.sendMessage(destination.chatId, text);
+    const mentionList = Array.isArray(mentions)
+      ? mentions.map((item) => String(item || "").trim()).filter(Boolean)
+      : [];
+    if (mentionList.length > 0) {
+      message = await client.sendMessage(destination.chatId, String(text || ""), { mentions: mentionList });
+    } else {
+      message = await client.sendMessage(destination.chatId, text);
+    }
   }
   const ack = await waitForAck(client, message);
 
