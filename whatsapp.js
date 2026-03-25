@@ -648,7 +648,13 @@ function resolveMediaPath(imagePath) {
   const raw = String(imagePath || "").trim();
   if (!raw) return "";
   if (path.isAbsolute(raw)) return raw;
-  return path.resolve(process.cwd(), raw);
+  const cwdResolved = path.resolve(process.cwd(), raw);
+  if (fs.existsSync(cwdResolved)) return cwdResolved;
+
+  const dataResolved = path.resolve(dataRootDir, raw);
+  if (fs.existsSync(dataResolved)) return dataResolved;
+
+  return cwdResolved;
 }
 
 function isRemoteMediaUrl(imagePath) {
@@ -713,6 +719,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const backgroundColor = String(cardData?.backgroundColor || process.env.WHATSAPP_BANNER_BG_COLOR || "#123d37").trim() || "#123d37";
   const backgroundImagePath = String(cardData?.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
   const hasBackgroundImage = Boolean(backgroundImagePath);
+  const simpleBackgroundMode = Boolean(cardData?.simpleBackgroundMode);
   const titleFontSize = titleLines.length > 2 ? 34 : titleLines.length > 1 ? 38 : 44;
   const titleStartY = titleLines.length > 1 ? 126 : 162;
   const titleLineHeight = titleFontSize + 10;
@@ -725,10 +732,10 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const backgroundLayer = hasBackgroundImage
     ? ""
     : `<rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>`;
-  const outerPanelFill = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "url(#panel)";
-  const outerPanelStroke = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(125,255,210,0.22)";
-  const contentRowFill = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(6,18,26,0.18)";
-  const contentRowStroke = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(255,255,255,0.06)";
+  const outerPanelFill = hasBackgroundImage ? "none" : "url(#panel)";
+  const outerPanelStroke = hasBackgroundImage ? "none" : "rgba(125,255,210,0.22)";
+  const contentRowFill = hasBackgroundImage ? "none" : "rgba(6,18,26,0.18)";
+  const contentRowStroke = hasBackgroundImage ? "none" : "rgba(255,255,255,0.06)";
 
   const mediaFrameWidth = 148;
   const mediaFrameHeight = 148;
@@ -851,28 +858,14 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     }
     const backgroundFilledBuffer = await sharp(bgInput)
       .rotate()
-      .trim()
       .resize({
         width: contentAreaWidth,
         height: contentAreaHeight,
-        fit: "cover",
+        fit: "fill",
         position: "centre",
         background: { r: 0, g: 0, b: 0, alpha: 0 }
       })
-      .extend({
-        top: Math.round(contentAreaHeight * 0.08),
-        bottom: Math.round(contentAreaHeight * 0.08),
-        left: Math.round(contentAreaWidth * 0.08),
-        right: Math.round(contentAreaWidth * 0.08),
-        background: { r: 0, g: 0, b: 0, alpha: 0 }
-      })
-      .resize({
-        width: contentAreaWidth,
-        height: contentAreaHeight,
-        fit: "cover",
-        position: "centre"
-      })
-      .modulate({ brightness: 1.0, saturation: 1.02 })
+      .modulate(simpleBackgroundMode ? { brightness: 1.0, saturation: 1.0 } : { brightness: 1.02, saturation: 1.03 })
       .jpeg({ quality: 80, mozjpeg: true })
       .toBuffer();
     const backgroundAreaBuffer = await sharp({
@@ -1017,26 +1010,37 @@ export async function sendText({
         if (style === "banner") {
           media = await buildBannerMediaFromInput(
             mediaInput,
-            { ...(cardData || {}), backgroundColor, backgroundImagePath: "" },
+            { ...(cardData || {}), backgroundColor, backgroundImagePath, simpleBackgroundMode: true },
             bannerTitle
           );
-          console.log("🖼️ Banner compacto gerado no fallback sem imagem de fundo.");
+          console.log("🖼️ Banner compacto gerado no fallback mantendo imagem de fundo.");
         } else {
           media = await buildOptimizedMediaFromInput(mediaInput);
           console.log("🖼️ Imagem otimizada gerada no fallback.");
         }
       } catch (fallbackError) {
-        console.warn("⚠️ Falha no fallback compacto; enviando mídia otimizada simples:", fallbackError?.message || fallbackError);
+        console.warn("⚠️ Falha no fallback compacto com fundo; tentando sem fundo:", fallbackError?.message || fallbackError);
         try {
           mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
-          media = await buildOptimizedMediaFromInput(mediaInput);
-        } catch (optimizedError) {
-          console.warn("⚠️ Falha ao otimizar fallback; enviando original:", optimizedError?.message || optimizedError);
-          if (mediaIsRemote) {
-            const remoteBuffer = await fetchRemoteMediaBuffer(rawImagePath);
-            media = new MessageMedia("image/jpeg", remoteBuffer.toString("base64"), "saudacao-remota.jpg");
-          } else {
-            media = MessageMedia.fromFilePath(mediaFullPath);
+          media = await buildBannerMediaFromInput(
+            mediaInput,
+            { ...(cardData || {}), backgroundColor, backgroundImagePath: "" },
+            bannerTitle
+          );
+          console.log("🖼️ Banner compacto gerado no fallback sem imagem de fundo.");
+        } catch (bannerWithoutBgError) {
+          console.warn("⚠️ Falha no fallback do banner sem fundo; enviando mídia otimizada simples:", bannerWithoutBgError?.message || bannerWithoutBgError);
+          try {
+            mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
+            media = await buildOptimizedMediaFromInput(mediaInput);
+          } catch (optimizedError) {
+            console.warn("⚠️ Falha ao otimizar fallback; enviando original:", optimizedError?.message || optimizedError);
+            if (mediaIsRemote) {
+              const remoteBuffer = await fetchRemoteMediaBuffer(rawImagePath);
+              media = new MessageMedia("image/jpeg", remoteBuffer.toString("base64"), "saudacao-remota.jpg");
+            } else {
+              media = MessageMedia.fromFilePath(mediaFullPath);
+            }
           }
         }
       }

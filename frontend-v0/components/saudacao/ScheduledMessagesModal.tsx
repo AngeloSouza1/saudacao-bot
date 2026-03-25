@@ -60,6 +60,13 @@ function formatStatusLabel(status: string) {
   return normalized || "Pendente"
 }
 
+function resolvePreviewMediaUrl(value: string) {
+  const normalized = String(value || "").trim()
+  if (!normalized) return ""
+  if (/^(https?:)?\/\//i.test(normalized) || normalized.startsWith("data:")) return normalized
+  return `/api/media-preview?path=${encodeURIComponent(normalized)}`
+}
+
 export function ScheduledMessagesModal({
   open,
   onClose,
@@ -189,6 +196,8 @@ export function ScheduledMessagesModal({
   const hasPreviewContent = Boolean(String(template || "").trim())
   const previewTitle = String(title || "").trim() || "Mensagem programada"
   const previewGroup = String(groupName || "").trim() || "Grupo de destino"
+  const imagePreviewUrl = resolvePreviewMediaUrl(imagePath)
+  const backgroundImagePreviewUrl = resolvePreviewMediaUrl(backgroundImagePath)
 
   return (
     <>
@@ -464,12 +473,12 @@ export function ScheduledMessagesModal({
                       className="relative flex min-h-[108px] items-center gap-3 px-4 py-4"
                       style={{ background: backgroundColor || "#123d37" }}
                     >
-                      {backgroundImagePath ? (
+                      {backgroundImagePreviewUrl ? (
                         <>
                           <div
                             className="absolute inset-0"
                             style={{
-                              backgroundImage: `url(${backgroundImagePath})`,
+                              backgroundImage: `url(${backgroundImagePreviewUrl})`,
                               backgroundPosition: "center",
                               backgroundSize: "cover",
                               filter: "blur(10px)",
@@ -478,7 +487,7 @@ export function ScheduledMessagesModal({
                             }}
                           />
                           <img
-                            src={backgroundImagePath}
+                            src={backgroundImagePreviewUrl}
                             alt=""
                             className="absolute inset-0 h-full w-full object-cover"
                             style={{ transform: "scale(1.1)" }}
@@ -486,10 +495,10 @@ export function ScheduledMessagesModal({
                           />
                         </>
                       ) : null}
-                      {imagePath ? (
+                      {imagePreviewUrl ? (
                         <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30 bg-white/80 shadow-sm">
                           <img
-                            src={imagePath}
+                            src={imagePreviewUrl}
                             alt=""
                             className="h-full w-full object-cover"
                             referrerPolicy="no-referrer"

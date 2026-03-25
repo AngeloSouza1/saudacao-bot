@@ -248,7 +248,10 @@ async function handleApi(req, res, pathname) {
       await sendCustomMessageToTarget(body?.targetType, body?.targetValue, body?.template, {
         imagePath: body?.imagePath,
         mediaFileName: body?.mediaFileName,
-        bannerTitle: body?.bannerTitle
+        bannerTitle: body?.bannerTitle,
+        backgroundColor: body?.backgroundColor,
+        backgroundImagePath: body?.backgroundImagePath,
+        imageStyle: body?.imageStyle
       }, requester);
       sendJson(res, 200, { ok: true, message: "Mensagem personalizada enviada com sucesso." });
       return true;

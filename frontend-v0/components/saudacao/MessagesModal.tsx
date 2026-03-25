@@ -172,6 +172,13 @@ function renderPreviewTemplate(template: string, previewSample: Record<string, s
   )
 }
 
+function resolvePreviewMediaUrl(value: string) {
+  const normalized = String(value || "").trim()
+  if (!normalized) return ""
+  if (/^(https?:)?\/\//i.test(normalized) || normalized.startsWith("data:")) return normalized
+  return `/api/media-preview?path=${encodeURIComponent(normalized)}`
+}
+
 function normalizeCustomSendError(rawError: string, targetType: "student" | "group", recipient: string) {
   const message = String(rawError || "").trim()
   const normalized = message.toLowerCase()
@@ -439,6 +446,7 @@ export function MessagesModal({
           imagePath: customImagePath,
           mediaFileName: customMediaFileName,
           bannerTitle: customBannerTitle,
+          imageStyle: "banner",
           backgroundColor: customBackgroundColor,
           backgroundImagePath: customBackgroundImagePath,
         }),
@@ -511,8 +519,8 @@ export function MessagesModal({
   )
   const hasBackgroundColor = Boolean(String(currentBackgroundColor || "").trim())
   const colorPickerValue = currentBackgroundColor || "#123d37"
-  const currentImageIsRemote = /^https?:\/\//i.test(String(currentImagePath || "").trim())
-  const currentBackgroundImageIsRemote = /^https?:\/\//i.test(String(currentBackgroundImagePath || "").trim())
+  const currentImagePreviewUrl = resolvePreviewMediaUrl(currentImagePath)
+  const currentBackgroundImagePreviewUrl = resolvePreviewMediaUrl(currentBackgroundImagePath)
   const loggedStudentWhatsappDigits = String(loggedStudentMatch?.whatsapp || "").replace(/\D/g, "")
   const studentsWithWhatsapp = (students || []).filter((student) =>
     Boolean(String(student?.whatsapp || "").trim()) &&
@@ -989,12 +997,12 @@ export function MessagesModal({
                     backgroundColor: currentBackgroundColor || "#123d37",
                   }}
                 >
-                  {currentBackgroundImageIsRemote ? (
+                  {currentBackgroundImagePreviewUrl ? (
                     <>
                       <div
                         className="absolute inset-0"
                         style={{
-                          backgroundImage: `url(${currentBackgroundImagePath})`,
+                          backgroundImage: `url(${currentBackgroundImagePreviewUrl})`,
                           backgroundPosition: "center",
                           backgroundSize: "cover",
                           filter: "blur(10px)",
@@ -1003,7 +1011,7 @@ export function MessagesModal({
                         }}
                       />
                       <img
-                        src={currentBackgroundImagePath}
+                        src={currentBackgroundImagePreviewUrl}
                         alt=""
                         className="absolute inset-0 h-full w-full object-cover"
                         style={{ transform: "scale(1.1)" }}
@@ -1015,9 +1023,9 @@ export function MessagesModal({
                   )}
                   <div className="relative flex items-center gap-4 rounded-2xl px-4 py-4">
                     <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white/80 bg-white/10 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
-                      {currentImageIsRemote ? (
+                      {currentImagePreviewUrl ? (
                         <img
-                          src={currentImagePath}
+                          src={currentImagePreviewUrl}
                           alt="Banner"
                           className="h-full w-full object-cover"
                         />
