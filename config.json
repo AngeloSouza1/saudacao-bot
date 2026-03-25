@@ -4,15 +4,8 @@
   "agendaSemanal": {
     "1": [
       {
-        "data": "2026-03-23",
-        "titulo": "DNS (Domain Name System)",
-        "materia": "Redes e Internet",
-        "professor": "Prof. Kenji",
-        "hora": "20:00"
-      },
-      {
         "data": "2026-03-30",
-        "titulo": "Segurança na Web",
+        "titulo": "Segurança de redes",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
@@ -21,14 +14,14 @@
     "3": [
       {
         "data": "2026-03-25",
-        "titulo": "Segurança de Redes",
+        "titulo": "Arquitetura da Internet",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
       },
       {
         "data": "2026-04-01",
-        "titulo": "Rede de Computadores",
+        "titulo": "Segurança na Web",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
@@ -37,7 +30,7 @@
     "5": [
       {
         "data": "2026-03-27",
-        "titulo": "Arquitetura da Internet",
+        "titulo": "Redes de computadores",
         "materia": "Redes e Internet",
         "professor": "Prof. Kenji",
         "hora": "20:00"
@@ -55,7 +48,6 @@
     "Angelo Souza",
     "Bruna Alves",
     "Clara Helena",
-    "Daniel Lucas",
     "Denis Junior",
     "Enzo Duarte",
     "Felipe Moreira",
@@ -88,23 +80,18 @@
   "alunoDetalhes": [
     {
       "nome": "Angelo Souza",
-      "whatsapp": "12988457047",
+      "whatsapp": "5512988457047",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/491868804_1359586415373484_5192037315334297051_n.jpg?ccb=11-4&oh=01_Q5Aa4AFSSSUvy6fQERgYc9WKqUeqXjLBw4Ra4f1Z58zi0q1yOw&oe=69CACA36&_nc_sid=5e03e0&_nc_cat=102"
     },
     {
       "nome": "Bruna Alves",
-      "whatsapp": "24988090195",
+      "whatsapp": "5524988090195",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/539359756_2274834259596619_1954459465337702408_n.jpg?ccb=11-4&oh=01_Q5Aa4AGjIYJY368YYfYr8P4V16bIInF9AFAtv4gWHGIYY4DRHg&oe=69CBAF5A&_nc_sid=5e03e0&_nc_cat=109"
     },
     {
       "nome": "Clara Helena",
-      "whatsapp": "21998035411",
+      "whatsapp": "5521998035411",
       "imagem": "https://pps.whatsapp.net/v/t61.24694-24/595535461_806470168381460_3224351442227006020_n.jpg?ccb=11-4&oh=01_Q5Aa4AHBFUl6njsq6_5UJ9vZbv8hkOIYeIUl6ssyVAZJpyPM6A&oe=69CBC2B5&_nc_sid=5e03e0&_nc_cat=101"
-    },
-    {
-      "nome": "Daniel Lucas",
-      "whatsapp": "3175126569",
-      "imagem": ""
     },
     {
       "nome": "Denis Junior",
@@ -113,42 +100,42 @@
     },
     {
       "nome": "Enzo Duarte",
-      "whatsapp": "71982438245",
+      "whatsapp": "557182438245",
       "imagem": "https://pps.whatsapp.net/v/t61.24694-24/520473996_4314009272167562_8461109322954940120_n.jpg?ccb=11-4&oh=01_Q5Aa4AHKp9GhHwqaK8qFE1CBpjs21sCQ7SWxQoTCbj4KTJouBg&oe=69CBB50A&_nc_sid=5e03e0&_nc_cat=111"
     },
     {
       "nome": "Felipe Moreira",
-      "whatsapp": "9186038612",
+      "whatsapp": "559186038612",
       "imagem": "https://pps.whatsapp.net/v/t61.24694-24/516869236_1073702541032463_504872162332169583_n.jpg?ccb=11-4&oh=01_Q5Aa4AF3eGdc-RbcOU6FNL_f9GwysgtU3GUEOfWPgDkVUZM_-g&oe=69CBC1F3&_nc_sid=5e03e0&_nc_cat=105"
     },
     {
       "nome": "Jaynni Nascimento",
-      "whatsapp": "8194581047",
+      "whatsapp": "558194581047",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/613936462_1401874964760368_9016383802339044831_n.jpg?ccb=11-4&oh=01_Q5Aa4AGgtErOxH0oXnC5GbBqYZNXsQQ0L6iAukoExDUHMGqr9w&oe=69CB9BD8&_nc_sid=5e03e0&_nc_cat=100"
     },
     {
       "nome": "João Marcos Basilio Sales",
-      "whatsapp": "21983775391",
+      "whatsapp": "5521983775391",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/645629840_927628916876343_1819878288820528249_n.jpg?ccb=11-4&oh=01_Q5Aa4AEb1yHKnkYeQiaoCPydOoLUSHDYLD1Bj52Fr2-zYjQ-rg&oe=69CBC0C7&_nc_sid=5e03e0&_nc_cat=103"
     },
     {
       "nome": "João Vitor Gomes Oliveira Rodrigues Resende",
-      "whatsapp": "3182515757",
+      "whatsapp": "553182515757",
       "imagem": ""
     },
     {
       "nome": "Juan Ferreira",
-      "whatsapp": "27992779943",
+      "whatsapp": "5527992779943",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/533416680_1543499780428036_4750824540441932487_n.jpg?ccb=11-4&oh=01_Q5Aa4AE3ligGNcUvWPghY_drAWENkFIQ7IRB9l8EHG9eumJTuQ&oe=69CBB608&_nc_sid=5e03e0&_nc_cat=107"
     },
     {
       "nome": "Kaio Vieira Nunes",
-      "whatsapp": "889689-2387",
+      "whatsapp": "558896892387",
       "imagem": "https://pps.whatsapp.net/v/t61.24694-24/534418649_1994555627938729_2601632303388099686_n.jpg?ccb=11-4&oh=01_Q5Aa4AGdG2_UKAwYfWx7MRudd-cX3od6QgoTlQqU77MiKNaR7A&oe=69CBBBD9&_nc_sid=5e03e0&_nc_cat=109"
     },
     {
       "nome": "Kauã Henrique",
-      "whatsapp": "+558396096718",
+      "whatsapp": "558396096718",
       "imagem": ""
     },
     {
@@ -158,17 +145,17 @@
     },
     {
       "nome": "Luana Costa",
-      "whatsapp": "21967257356",
+      "whatsapp": "5521967257356",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/620182412_1403519001028875_7301529586722824532_n.jpg?ccb=11-4&oh=01_Q5Aa4AGzWtDt3KRXo1csWlqr6LJh8rzImcI12-mM4ohoEcXr8w&oe=69CBAB82&_nc_sid=5e03e0&_nc_cat=108"
     },
     {
       "nome": "Matheus Leonardo",
-      "whatsapp": "3187139150",
+      "whatsapp": "553187139150",
       "imagem": ""
     },
     {
       "nome": "Matheus Marques",
-      "whatsapp": "12997440538",
+      "whatsapp": "5512997440538",
       "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/586509528_849202884273481_8260390511792983222_n.jpg?ccb=11-4&oh=01_Q5Aa4AHjt6Pl8I6KITRdMaVzRCDGeIkWosRYT8pkBYCZJuT97g&oe=69CBCE74&_nc_sid=5e03e0&_nc_cat=104"
     },
     {
@@ -178,28 +165,28 @@
     },
     {
       "nome": "Rai Colares",
-      "whatsapp": "9187127428",
+      "whatsapp": "559187127428",
       "imagem": ""
     },
     {
       "nome": "Rallenson Silva",
-      "whatsapp": "24999046395",
+      "whatsapp": "5524999046395",
       "imagem": ""
     },
     {
       "nome": "Thalita Nascimento",
-      "whatsapp": "21976708742",
+      "whatsapp": "5521976708742",
       "imagem": "https://pps.whatsapp.net/v/t61.24694-24/651550234_2742706816088200_2453000016009261366_n.jpg?ccb=11-4&oh=01_Q5Aa4AG-blibYUWrTx-w26B-GBzk-zLKycS5O6I2g4nD9GHAIg&oe=69CB9D3F&_nc_sid=5e03e0&_nc_cat=108"
     },
     {
       "nome": "Wanuta Santos",
-      "whatsapp": "9184705204",
+      "whatsapp": "559184705204",
       "imagem": ""
     }
   ],
   "defaultGreetingMessage": "Turma: *{{turmaLinha}}*\nMatéria: *{{materia}}*\nTítulo: *{{titulo}}*\nProfessor: *{{professor}}*\nAluno: *{{alunoNome}}*\nHorário: *{{horario}}*\n\nOlá, *{{alunoNome}}*! Chegou a sua vez de fazer a saudação de hoje. Contamos com você!\n\n*Texto sugerido (ler no início):*\n\n*Modelo simples:*\n*1. Cumprimento*\n_“Bom dia, professor.” ou “Boa tarde, professor.”_\n\n*2. Identificação da turma*\n_“Somos a turma [nome ou curso].”_\n\n*3. Situação de presença*\n_“Hoje estamos com a turma completa.” ou “Hoje tivemos algumas ausências, mas a maioria está presente.”_\n\n*4. Transição para a aula*\n_“A turma está pronta para a aula. Pode começar quando quiser.”_\n\n*Estrutura resumida:*\n_Cumprimento → Turma → Presença → Passar a palavra_\n\n*Exemplo pronto para usar:*\n_“{{exemploPronto}}”_\n*— {{alunoNome}} ({{materia}})*",
   "defaultNoClassMessage": "*📢 Aviso da turma*\n\nTurma: *{{turmaLinha}}*\n\n{{cumprimento}}, pessoal.\n\n*HOJE NÃO HAVERÁ AULA.*\n\nAproveitem este tempo para colocar os estudos em dia, revisar os conteúdos já vistos e reforçar os pontos que ainda geram dúvida.\n\nUma boa revisão hoje pode fazer diferença no entendimento das próximas aulas.\n\n*Sigam firmes nos estudos. Constância e dedicação trazem resultado.*",
-  "customMessageTemplate": "\n*🏁TEMA do ME do Encontro 3:*  SEGURANÇA DA INFORMAÇÃO EM UNIVERSIDADES AMERICANAS.\n\n*Palavras chave:* Como funciona o estudo nos Estados Unidos (opções, instituições, bolsas), Como conseguir estudar nos EUA (5-steps), * Onde estudar Segurança da Informação.\n\n*Data:*  _25/03 de 2026 com Inicio às 14hUTC-3_\n\nContamos com o comprometimento e a dedicação de todos.\nAtenciosamente.\n\n_*A jornada será desafiadora, mas a transformação é real.*_\n",
+  "customMessageTemplate": "*🏁TEMA do ME do Encontro 3:*  SEGURANÇA DA INFORMAÇÃO EM UNIVERSIDADES AMERICANAS.\n\n*Palavras chave:* Como funciona o estudo nos Estados Unidos (opções, instituições, bolsas), Como conseguir estudar nos EUA (5-steps), * Onde estudar Segurança da Informação.\n\n*Data:*  _25/03 de 2026 com Inicio às 14hUTC-3_\n\nContamos com o comprometimento e a dedicação de todos.\nAtenciosamente.\n\n_*A jornada será desafiadora, mas a transformação é real.*_",
   "bannerTitle": "ola",
   "greetingImagePath": "risecode.png",
   "greetingMediaFileName": "Saudacao.png",
@@ -215,8 +202,8 @@
   "customMediaFileName": "personalizada.png",
   "customBannerTitle": "Palestra!!",
   "customBackgroundColor": "#050505",
-  "customBackgroundImagePath": "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "customBackgroundImagePath": "palestra.png",
   "backgroundColor": "",
   "backgroundImagePath": "",
-  "horarioEnvio": "09:00"
+  "horarioEnvio": "13:00"
 }

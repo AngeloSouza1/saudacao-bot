@@ -1,11 +1,10 @@
 {
   "idxAluno": 9,
-  "idxAula": 1,
+  "idxAula": 0,
   "dataInicio": "2026-03-25",
-  "updatedAt": "2026-03-24T16:20:20.627Z",
+  "updatedAt": "2026-03-25T16:00:09.703Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
-    "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Kauã Henrique",
@@ -21,7 +20,6 @@
     "Angelo Souza",
     "Bruna Alves",
     "Clara Helena",
-    "Daniel Lucas",
     "Denis Junior",
     "Enzo Duarte",
     "Felipe Moreira",
@@ -34,14 +32,20 @@
     "confirmadoEm": ""
   },
   "revertidosEfetivados": [],
-  "efetivacoesManuais": [],
+  "efetivacoesManuais": [
+    {
+      "itemKey": "cycle_1774454122252_morjdy|2026-03-25T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
+      "aluno": "João Vitor Gomes Oliveira Rodrigues Resende"
+    }
+  ],
   "ordemVinculadaCiclo": [
     "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Kauã Henrique",
-    "Laís Oliveira",
-    "Luana Costa"
+    "Laís Oliveira"
   ],
-  "efetivadosCiclo": []
+  "efetivadosCiclo": [
+    "João Vitor Gomes Oliveira Rodrigues Resende"
+  ]
 }
