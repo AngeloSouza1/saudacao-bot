@@ -723,12 +723,12 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     })
     .join("");
   const backgroundLayer = hasBackgroundImage
-    ? `
-      <rect x="0" y="0" width="${width}" height="${height}" fill="${escapeXml(backgroundColor)}" opacity="0.06"/>
-    `
+    ? ""
     : `<rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>`;
-  const outerPanelFill = hasBackgroundImage ? "rgba(255,255,255,0.08)" : "url(#panel)";
-  const contentPanelFill = hasBackgroundImage ? "rgba(255,255,255,0.03)" : "rgba(6,18,26,0.18)";
+  const outerPanelFill = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "url(#panel)";
+  const outerPanelStroke = hasBackgroundImage ? "rgba(255,255,255,0.14)" : "rgba(125,255,210,0.22)";
+  const contentRowFill = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(6,18,26,0.18)";
+  const contentRowStroke = hasBackgroundImage ? "rgba(255,255,255,0.00)" : "rgba(255,255,255,0.06)";
 
   const mediaFrameWidth = 148;
   const mediaFrameHeight = 148;
@@ -832,8 +832,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
         </linearGradient>
       </defs>
       ${backgroundLayer}
-      <rect x="18" y="18" width="${width - 36}" height="${height - 36}" rx="18" fill="${outerPanelFill}" stroke="rgba(125,255,210,0.22)" stroke-width="2.5"/>
-      <rect x="236" y="44" width="${width - 292}" height="${height - 88}" rx="20" fill="${contentPanelFill}"/>
+      <rect x="18" y="18" width="${width - 36}" height="${height - 36}" rx="18" fill="${outerPanelFill}" stroke="${outerPanelStroke}" stroke-width="2.5"/>
+      <rect x="34" y="40" width="${width - 68}" height="${height - 80}" rx="20" fill="${contentRowFill}" stroke="${contentRowStroke}" stroke-width="1.5"/>
       <text x="270" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
     </svg>
   `;
@@ -848,8 +848,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     const backgroundBuffer = await sharp(bgInput)
       .rotate()
       .resize({ width, height, fit: "cover", position: "centre" })
-      .modulate({ brightness: 0.66, saturation: 1.0 })
-      .blur(2)
+      .modulate({ brightness: 0.92, saturation: 1.0 })
+      .blur(0.6)
       .jpeg({ quality: 72, mozjpeg: true })
       .toBuffer();
     composites.push({ input: backgroundBuffer, top: 0, left: 0 });
