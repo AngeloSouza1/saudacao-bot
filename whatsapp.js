@@ -848,8 +848,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     const backgroundBuffer = await sharp(bgInput)
       .rotate()
       .resize({ width, height, fit: "cover", position: "centre" })
-      .modulate({ brightness: 0.92, saturation: 1.0 })
-      .blur(0.6)
+      .modulate({ brightness: 0.985, saturation: 1.02 })
+      .blur(0.15)
       .jpeg({ quality: 72, mozjpeg: true })
       .toBuffer();
     composites.push({ input: backgroundBuffer, top: 0, left: 0 });
