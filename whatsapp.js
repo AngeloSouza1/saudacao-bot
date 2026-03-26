@@ -712,7 +712,7 @@ function wrapBannerTitle(rawTitle, maxLineLength = 22, maxLines = 3) {
 
 async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1080);
-  const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 300);
+  const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 885);
   const titleLines = wrapBannerTitle(
     String(bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "🤖 Saudação de hoje").trim() || "🤖 Saudação de hoje"
   );
@@ -720,8 +720,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const backgroundImagePath = String(cardData?.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
   const hasBackgroundImage = Boolean(backgroundImagePath);
   const simpleBackgroundMode = Boolean(cardData?.simpleBackgroundMode);
-  const titleFontSize = titleLines.length > 2 ? 34 : titleLines.length > 1 ? 38 : 44;
-  const titleStartY = titleLines.length > 1 ? 126 : 162;
+  const titleFontSize = titleLines.length > 2 ? 54 : titleLines.length > 1 ? 66 : 76;
+  const titleStartY = titleLines.length > 1 ? 338 : 448;
   const titleLineHeight = titleFontSize + 10;
   const titleTspans = titleLines
     .map((line, index) => {
@@ -737,11 +737,11 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const contentRowFill = hasBackgroundImage ? "none" : "rgba(6,18,26,0.18)";
   const contentRowStroke = hasBackgroundImage ? "none" : "rgba(255,255,255,0.06)";
 
-  const mediaFrameWidth = 148;
-  const mediaFrameHeight = 148;
-  const mediaContentWidth = 136;
-  const mediaContentHeight = 136;
-  const mediaLeft = 58;
+  const mediaFrameWidth = 348;
+  const mediaFrameHeight = 348;
+  const mediaContentWidth = 320;
+  const mediaContentHeight = 320;
+  const mediaLeft = 44;
   const mediaTop = Math.max(0, Math.floor((height - mediaFrameHeight) / 2));
   const mediaRadius = 22;
   const mediaContentLeft = Math.floor((mediaFrameWidth - mediaContentWidth) / 2);
@@ -750,10 +750,10 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const shadowHeight = mediaFrameHeight + 18;
   const shadowLeft = mediaLeft - 9;
   const shadowTop = mediaTop - 6;
-  const contentAreaLeft = 34;
-  const contentAreaTop = 28;
-  const contentAreaWidth = width - 68;
-  const contentAreaHeight = height - 56;
+  const contentAreaLeft = 18;
+  const contentAreaTop = 18;
+  const contentAreaWidth = width - 36;
+  const contentAreaHeight = height - 36;
   const mediaContentBackdropBuffer = Buffer.from(`
     <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -843,8 +843,8 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
         </linearGradient>
       </defs>
       ${backgroundLayer}
-      <rect x="18" y="18" width="${width - 36}" height="${height - 36}" rx="18" fill="${outerPanelFill}" stroke="${outerPanelStroke}" stroke-width="2.5"/>
-      <rect x="${contentAreaLeft}" y="${contentAreaTop}" width="${contentAreaWidth}" height="${contentAreaHeight}" rx="20" fill="${contentRowFill}" stroke="${contentRowStroke}" stroke-width="1.5"/>
+      <rect x="10" y="10" width="${width - 20}" height="${height - 20}" rx="18" fill="${outerPanelFill}" stroke="${outerPanelStroke}" stroke-width="2"/>
+      <rect x="${contentAreaLeft}" y="${contentAreaTop}" width="${contentAreaWidth}" height="${contentAreaHeight}" rx="18" fill="${contentRowFill}" stroke="${contentRowStroke}" stroke-width="1.2"/>
       <text x="270" y="${titleStartY}" fill="#ffffff" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
     </svg>
   `;

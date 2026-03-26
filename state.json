@@ -1,10 +1,11 @@
 {
-  "idxAluno": 9,
+  "idxAluno": 7,
   "idxAula": 0,
-  "dataInicio": "2026-03-25",
-  "updatedAt": "2026-03-25T16:00:09.703Z",
+  "dataInicio": "2026-03-27",
+  "updatedAt": "2026-03-25T23:45:56.103Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
+    "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Kauã Henrique",
@@ -23,7 +24,6 @@
     "Denis Junior",
     "Enzo Duarte",
     "Felipe Moreira",
-    "Jaynni Nascimento",
     "João Marcos Basilio Sales"
   ],
   "confirmacaoEnvio": {
@@ -32,20 +32,12 @@
     "confirmadoEm": ""
   },
   "revertidosEfetivados": [],
-  "efetivacoesManuais": [
-    {
-      "itemKey": "cycle_1774454122252_morjdy|2026-03-25T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
-      "aluno": "João Vitor Gomes Oliveira Rodrigues Resende"
-    }
-  ],
+  "efetivacoesManuais": [],
   "ordemVinculadaCiclo": [
     "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
-    "Kauã Henrique",
-    "Laís Oliveira"
+    "Kauã Henrique"
   ],
-  "efetivadosCiclo": [
-    "João Vitor Gomes Oliveira Rodrigues Resende"
-  ]
+  "efetivadosCiclo": []
 }

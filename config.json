@@ -13,13 +13,6 @@
     ],
     "3": [
       {
-        "data": "2026-03-25",
-        "titulo": "Arquitetura da Internet",
-        "materia": "Redes e Internet",
-        "professor": "Prof. Kenji",
-        "hora": "20:00"
-      },
-      {
         "data": "2026-04-01",
         "titulo": "Segurança na Web",
         "materia": "Redes e Internet",
@@ -51,7 +44,6 @@
     "Denis Junior",
     "Enzo Duarte",
     "Felipe Moreira",
-    "Jaynni Nascimento",
     "João Marcos Basilio Sales",
     "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
@@ -107,11 +99,6 @@
       "nome": "Felipe Moreira",
       "whatsapp": "559186038612",
       "imagem": "https://pps.whatsapp.net/v/t61.24694-24/516869236_1073702541032463_504872162332169583_n.jpg?ccb=11-4&oh=01_Q5Aa4AF3eGdc-RbcOU6FNL_f9GwysgtU3GUEOfWPgDkVUZM_-g&oe=69CBC1F3&_nc_sid=5e03e0&_nc_cat=105"
-    },
-    {
-      "nome": "Jaynni Nascimento",
-      "whatsapp": "558194581047",
-      "imagem": "https://media-gru2-1.cdn.whatsapp.net/v/t61.24694-24/613936462_1401874964760368_9016383802339044831_n.jpg?ccb=11-4&oh=01_Q5Aa4AGgtErOxH0oXnC5GbBqYZNXsQQ0L6iAukoExDUHMGqr9w&oe=69CB9BD8&_nc_sid=5e03e0&_nc_cat=100"
     },
     {
       "nome": "João Marcos Basilio Sales",
@@ -192,17 +179,17 @@
   "greetingMediaFileName": "Saudacao.png",
   "greetingBannerTitle": "Saudação de Hoje",
   "greetingBackgroundColor": "#123d37",
-  "greetingBackgroundImagePath": "fundo.png",
+  "greetingBackgroundImagePath": "https://plus.unsplash.com/premium_photo-1661963113301-4398abb2246c?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   "noClassImagePath": "risecode.png",
   "noClassMediaFileName": "aviso.png",
   "noClassBannerTitle": "Aviso!",
   "noClassBackgroundColor": "#133d37",
-  "noClassBackgroundImagePath": "fundo-aviso.png",
+  "noClassBackgroundImagePath": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   "customImagePath": "risecode.png",
   "customMediaFileName": "personalizada.png",
-  "customBannerTitle": "Palestra!!",
-  "customBackgroundColor": "#050505",
-  "customBackgroundImagePath": "palestra.png",
+  "customBannerTitle": "ola",
+  "customBackgroundColor": "#faebeb",
+  "customBackgroundImagePath": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   "backgroundColor": "",
   "backgroundImagePath": "",
   "horarioEnvio": "13:00"

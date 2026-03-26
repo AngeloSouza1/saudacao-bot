@@ -1,5 +1,5 @@
 {
-  "activeCycleId": "cycle_1774454122252_morjdy",
+  "activeCycleId": "cycle_1774482356094_n3n8ce",
   "cycles": [
     {
       "id": "cycle_1774027212623_3ss328",
@@ -700,19 +700,57 @@
       "id": "cycle_1774454122252_morjdy",
       "name": "Novo ciclo 24/03/2026, 21:49 · início 25/03/2026",
       "ownerUsername": "admin",
-      "status": "active",
+      "status": "completed",
       "reason": "manual",
       "createdAt": "2026-03-25T15:55:22.252Z",
-      "completedAt": null,
+      "completedAt": "2026-03-25T23:45:11.821Z",
       "start": {
-        "idxAluno": 8,
+        "idxAluno": 9,
         "idxAula": 0,
         "dataInicio": "2026-03-25"
       },
       "sentCount": 1,
       "totalAlunos": 5,
-      "updatedAt": "2026-03-25T15:55:22.254Z",
-      "lastMessageAt": "2026-03-25T16:00:09.703Z"
+      "updatedAt": "2026-03-25T17:15:53.858Z",
+      "lastMessageAt": "2026-03-25T16:00:09.703Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774482330157_rlf6fn",
+      "name": "Novo ciclo 25/03/2026, 20:45 · início 27/03/2026",
+      "ownerUsername": "admin",
+      "status": "completed",
+      "reason": "manual",
+      "createdAt": "2026-03-25T23:45:30.178Z",
+      "completedAt": "2026-03-25T23:45:56.049Z",
+      "start": {
+        "idxAluno": 7,
+        "idxAula": 0,
+        "dataInicio": "2026-03-27"
+      },
+      "sentCount": 0,
+      "totalAlunos": 4,
+      "updatedAt": "2026-03-25T23:45:56.000Z",
+      "canceled": true,
+      "cancelReason": "manual"
+    },
+    {
+      "id": "cycle_1774482356094_n3n8ce",
+      "name": "Novo ciclo 25/03/2026, 20:45 · início 27/03/2026",
+      "ownerUsername": "admin",
+      "status": "active",
+      "reason": "manual",
+      "createdAt": "2026-03-25T23:45:56.094Z",
+      "completedAt": null,
+      "start": {
+        "idxAluno": 7,
+        "idxAula": 0,
+        "dataInicio": "2026-03-27"
+      },
+      "sentCount": 0,
+      "totalAlunos": 4,
+      "updatedAt": "2026-03-25T23:45:56.103Z"
     }
   ]
 }
