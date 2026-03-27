@@ -14,6 +14,7 @@ interface ConfigModalProps {
     instituicao?: string
     antecedenciaMin?: number
     horarioEnvio?: string
+    horarioEnvioSemAula?: string
     diasUteisApenas?: boolean
     lockTimeoutMin?: number
     lockConfigured?: boolean
@@ -43,6 +44,7 @@ export function ConfigModal({
   const [turma, setTurma] = useState("RiseCode")
   const [instituicao, setInstituicao] = useState("AlphaTech")
   const [horarioEnvio, setHorarioEnvio] = useState("19:55")
+  const [horarioEnvioSemAula, setHorarioEnvioSemAula] = useState("11:00")
   const [diasUteisApenas, setDiasUteisApenas] = useState("true")
   const [lockPassword, setLockPassword] = useState("")
   const [lockTimeoutMin, setLockTimeoutMin] = useState("1")
@@ -55,6 +57,7 @@ export function ConfigModal({
       setTurma(String(initialConfig?.turma || ""))
       setInstituicao(String(initialConfig?.instituicao || ""))
       setHorarioEnvio(String(initialConfig?.horarioEnvio || "19:55"))
+      setHorarioEnvioSemAula(String(initialConfig?.horarioEnvioSemAula || "11:00"))
       setDiasUteisApenas(String(Boolean(initialConfig?.diasUteisApenas)))
       setLockPassword("")
       setLockTimeoutMin(String(Number(initialConfig?.lockTimeoutMin ?? 15)))
@@ -80,6 +83,9 @@ export function ConfigModal({
     if (!/^\d{2}:\d{2}$/.test(horarioEnvio)) {
       nextErrors.horarioEnvio = "Horário inválido. Use HH:MM."
     }
+    if (!/^\d{2}:\d{2}$/.test(horarioEnvioSemAula)) {
+      nextErrors.horarioEnvioSemAula = "Horário inválido. Use HH:MM."
+    }
     if (!Number.isFinite(lockTimeoutValue) || lockTimeoutValue < 1 || lockTimeoutValue > 240) {
       nextErrors.lockTimeoutMin = "Tempo de bloqueio inválido (1 a 240)."
     }
@@ -97,6 +103,7 @@ export function ConfigModal({
         turma: turma.trim(),
         instituicao: instituicao.trim(),
         horarioEnvio: horarioEnvio.trim(),
+        horarioEnvioSemAula: horarioEnvioSemAula.trim(),
         diasUteisApenas: diasUteisApenas === "true",
         lockTimeoutMin: Number(lockTimeoutMin || 15),
         ...(lockPassword.trim() ? { lockPassword: lockPassword.trim() } : {}),
@@ -145,6 +152,16 @@ export function ConfigModal({
                 placeholder="Ex.: 19:55"
                 hint="Informe a hora exata no formato HH:MM."
                 error={fieldErrors.horarioEnvio}
+                inputClassName="font-mono"
+              />
+              <UnderlineInput
+                label="Horário sem aula"
+                value={horarioEnvioSemAula}
+                onChange={setHorarioEnvioSemAula}
+                type="text"
+                placeholder="Ex.: 11:00"
+                hint="Hora exata para disparar a mensagem quando não houver aula no dia."
+                error={fieldErrors.horarioEnvioSemAula}
                 inputClassName="font-mono"
               />
               <div className="flex flex-col gap-1">

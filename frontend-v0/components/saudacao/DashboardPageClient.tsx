@@ -28,6 +28,7 @@ type DashboardStatusResponse = {
     agendaSemanal?: Record<string, Array<{ data?: string; hora?: string; materia?: string }>>
     antecedenciaMin?: number
     horarioEnvio?: string
+    horarioEnvioSemAula?: string
     diasUteisApenas?: boolean
     defaultGreetingMessage?: string
     defaultNoClassMessage?: string

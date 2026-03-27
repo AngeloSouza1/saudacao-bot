@@ -733,6 +733,24 @@ function getConfiguredDispatchTime(config) {
   };
 }
 
+function getConfiguredNoClassDispatchTime(config) {
+  const explicit = String(config?.horarioEnvioSemAula || "").trim();
+  if (explicit) {
+    const { hours, minutes } = parseHora(explicit);
+    return {
+      hours,
+      minutes,
+      label: `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+    };
+  }
+
+  return {
+    hours: 11,
+    minutes: 0,
+    label: "11:00"
+  };
+}
+
 function getAgendaEntries(config) {
   const entries = [];
 
@@ -2018,12 +2036,14 @@ export function startScheduler() {
     console.log(`⏰ Agendado: dia ${dia} às ${label} (${TZ})`);
   }
 
+  const noClassDispatch = getConfiguredNoClassDispatchTime(config);
+
   for (let dia = 1; dia <= 6; dia += 1) {
     if (!isDiaPermitido(config, dia)) continue;
     if (weekdaysWithClass.has(String(dia))) continue;
 
-    const expression = `0 11 * * ${dia}`;
-    const slotKey = `${dia}|11|0|sem-aula`;
+    const expression = `${noClassDispatch.minutes} ${noClassDispatch.hours} * * ${dia}`;
+    const slotKey = `${dia}|${noClassDispatch.hours}|${noClassDispatch.minutes}|sem-aula`;
     if (scheduledSlots.has(slotKey)) continue;
 
     const job = cron.schedule(expression, async () => {
@@ -2036,7 +2056,7 @@ export function startScheduler() {
 
     scheduledJobs.push(job);
     scheduledSlots.add(slotKey);
-    console.log(`⏰ Agendado aviso sem aula: dia ${dia} às 11:00 (${TZ})`);
+    console.log(`⏰ Agendado aviso sem aula: dia ${dia} às ${noClassDispatch.label} (${TZ})`);
   }
 
   schedulerStarted = true;
@@ -2414,6 +2434,10 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "horarioEnvio")
         ? String(partial.horarioEnvio ?? "").trim()
         : String(current?.horarioEnvio ?? "").trim(),
+    horarioEnvioSemAula:
+      partial && Object.prototype.hasOwnProperty.call(partial, "horarioEnvioSemAula")
+        ? String(partial.horarioEnvioSemAula ?? "").trim()
+        : String(current?.horarioEnvioSemAula ?? "").trim(),
     diasUteisApenas: asBoolean(
       partial?.diasUteisApenas,
       asBoolean(current?.diasUteisApenas, false)
@@ -2545,6 +2569,11 @@ export function updateConfig(partial) {
   if (next.horarioEnvio) {
     const { hours, minutes } = parseHora(next.horarioEnvio);
     next.horarioEnvio = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  }
+
+  if (next.horarioEnvioSemAula) {
+    const { hours, minutes } = parseHora(next.horarioEnvioSemAula);
+    next.horarioEnvioSemAula = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   }
 
   if (partial && Object.prototype.hasOwnProperty.call(partial, "lockPassword")) {
