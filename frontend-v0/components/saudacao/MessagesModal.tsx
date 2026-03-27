@@ -25,16 +25,19 @@ interface MessagesModalProps {
   initialGreetingBannerTitle?: string
   initialGreetingBackgroundColor?: string
   initialGreetingBackgroundImagePath?: string
+  initialGreetingTextColor?: string
   initialNoClassImagePath?: string
   initialNoClassMediaFileName?: string
   initialNoClassBannerTitle?: string
   initialNoClassBackgroundColor?: string
   initialNoClassBackgroundImagePath?: string
+  initialNoClassTextColor?: string
   initialCustomImagePath?: string
   initialCustomMediaFileName?: string
   initialCustomBannerTitle?: string
   initialCustomBackgroundColor?: string
   initialCustomBackgroundImagePath?: string
+  initialCustomTextColor?: string
   onSaved?: () => Promise<void> | void
 }
 
@@ -237,16 +240,19 @@ export function MessagesModal({
   initialGreetingBannerTitle,
   initialGreetingBackgroundColor,
   initialGreetingBackgroundImagePath,
+  initialGreetingTextColor,
   initialNoClassImagePath,
   initialNoClassMediaFileName,
   initialNoClassBannerTitle,
   initialNoClassBackgroundColor,
   initialNoClassBackgroundImagePath,
+  initialNoClassTextColor,
   initialCustomImagePath,
   initialCustomMediaFileName,
   initialCustomBannerTitle,
   initialCustomBackgroundColor,
   initialCustomBackgroundImagePath,
+  initialCustomTextColor,
   onSaved,
 }: MessagesModalProps) {
   const wasOpenRef = useRef(false)
@@ -261,16 +267,19 @@ export function MessagesModal({
   const [greetingBannerTitle, setGreetingBannerTitle] = useState("")
   const [greetingBackgroundColor, setGreetingBackgroundColor] = useState("#123d37")
   const [greetingBackgroundImagePath, setGreetingBackgroundImagePath] = useState("")
+  const [greetingTextColor, setGreetingTextColor] = useState("#ffffff")
   const [noClassImagePath, setNoClassImagePath] = useState("")
   const [noClassMediaFileName, setNoClassMediaFileName] = useState("")
   const [noClassBannerTitle, setNoClassBannerTitle] = useState("")
   const [noClassBackgroundColor, setNoClassBackgroundColor] = useState("#123d37")
   const [noClassBackgroundImagePath, setNoClassBackgroundImagePath] = useState("")
+  const [noClassTextColor, setNoClassTextColor] = useState("#ffffff")
   const [customImagePath, setCustomImagePath] = useState("")
   const [customMediaFileName, setCustomMediaFileName] = useState("")
   const [customBannerTitle, setCustomBannerTitle] = useState("")
   const [customBackgroundColor, setCustomBackgroundColor] = useState("#123d37")
   const [customBackgroundImagePath, setCustomBackgroundImagePath] = useState("")
+  const [customTextColor, setCustomTextColor] = useState("#ffffff")
   const [modelHelpOpen, setModelHelpOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [variablesHelpOpen, setVariablesHelpOpen] = useState(false)
@@ -298,16 +307,19 @@ export function MessagesModal({
     setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
     setGreetingBackgroundColor(String(initialGreetingBackgroundColor || "#123d37").trim() || "#123d37")
     setGreetingBackgroundImagePath(String(initialGreetingBackgroundImagePath || "").trim())
+    setGreetingTextColor(String(initialGreetingTextColor || "#ffffff").trim() || "#ffffff")
     setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
     setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
     setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
     setNoClassBackgroundColor(String(initialNoClassBackgroundColor || "#123d37").trim() || "#123d37")
     setNoClassBackgroundImagePath(String(initialNoClassBackgroundImagePath || "").trim())
+    setNoClassTextColor(String(initialNoClassTextColor || "#ffffff").trim() || "#ffffff")
     setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
     setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
     setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
     setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
     setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
+    setCustomTextColor(String(initialCustomTextColor || "#ffffff").trim() || "#ffffff")
     setModelHelpOpen(false)
     setPreviewOpen(false)
     setVariablesHelpOpen(false)
@@ -347,7 +359,7 @@ export function MessagesModal({
       setVariablesHelpOpen(false)
     }
     wasOpenRef.current = open
-  }, [open, initialEditorType, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName, initialBannerTitle, initialGreetingImagePath, initialGreetingMediaFileName, initialGreetingBannerTitle, initialGreetingBackgroundColor, initialGreetingBackgroundImagePath, initialNoClassImagePath, initialNoClassMediaFileName, initialNoClassBannerTitle, initialNoClassBackgroundColor, initialNoClassBackgroundImagePath, initialCustomImagePath, initialCustomMediaFileName, initialCustomBannerTitle, initialCustomBackgroundColor, initialCustomBackgroundImagePath, students])
+  }, [open, initialEditorType, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName, initialBannerTitle, initialGreetingImagePath, initialGreetingMediaFileName, initialGreetingBannerTitle, initialGreetingBackgroundColor, initialGreetingBackgroundImagePath, initialGreetingTextColor, initialNoClassImagePath, initialNoClassMediaFileName, initialNoClassBannerTitle, initialNoClassBackgroundColor, initialNoClassBackgroundImagePath, initialNoClassTextColor, initialCustomImagePath, initialCustomMediaFileName, initialCustomBannerTitle, initialCustomBackgroundColor, initialCustomBackgroundImagePath, initialCustomTextColor, students])
 
   useEffect(() => {
     if (!open) return
@@ -390,16 +402,19 @@ export function MessagesModal({
         greetingBannerTitle,
         greetingBackgroundColor,
         greetingBackgroundImagePath,
+        greetingTextColor,
         noClassImagePath,
         noClassMediaFileName,
         noClassBannerTitle,
         noClassBackgroundColor,
         noClassBackgroundImagePath,
+        noClassTextColor,
         customImagePath,
         customMediaFileName,
         customBannerTitle,
         customBackgroundColor,
         customBackgroundImagePath,
+        customTextColor,
       }),
     })
     const payload = await res.json()
@@ -449,6 +464,7 @@ export function MessagesModal({
           imageStyle: "banner",
           backgroundColor: customBackgroundColor,
           backgroundImagePath: customBackgroundImagePath,
+          textColor: customTextColor,
         }),
       })
       const payload = await res.json()
@@ -517,6 +533,12 @@ export function MessagesModal({
     noClassBackgroundImagePath,
     customBackgroundImagePath
   )
+  const currentTextColor = mediaByEditorType(
+    editorType,
+    greetingTextColor,
+    noClassTextColor,
+    customTextColor
+  )
   const hasBackgroundColor = Boolean(String(currentBackgroundColor || "").trim())
   const colorPickerValue = currentBackgroundColor || "#123d37"
   const currentImagePreviewUrl = resolvePreviewMediaUrl(currentImagePath)
@@ -560,6 +582,11 @@ export function MessagesModal({
     if (editorType === "default") setGreetingBackgroundImagePath(value)
     else if (editorType === "no-class") setNoClassBackgroundImagePath(value)
     else setCustomBackgroundImagePath(value)
+  }
+  const setCurrentTextColor = (value: string) => {
+    if (editorType === "default") setGreetingTextColor(value)
+    else if (editorType === "no-class") setNoClassTextColor(value)
+    else setCustomTextColor(value)
   }
   const hasMessageContent = Boolean(String(currentMessage || "").trim())
   const canSendCustomMessage =
@@ -695,7 +722,7 @@ export function MessagesModal({
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               Mídia do envio
             </p>
-            <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1.05fr_1.2fr_1fr_1.3fr]">
+            <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr_1.15fr_1fr_1.15fr_1.15fr]">
               <UnderlineInput
                 label="Banner / imagem"
                 value={currentImagePath}
@@ -741,6 +768,23 @@ export function MessagesModal({
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   Define a cor do fundo do banner desta mensagem.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Cor do texto
+                </label>
+                <div className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2 text-left transition-colors hover:border-primary">
+                  <input
+                    type="color"
+                    value={currentTextColor || "#ffffff"}
+                    onChange={(e) => setCurrentTextColor(e.target.value)}
+                    className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                  />
+                  <span className="font-mono text-sm text-foreground">{currentTextColor || "#ffffff"}</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Define a cor do texto exibido no banner desta mensagem.
                 </p>
               </div>
             </div>
@@ -1036,9 +1080,12 @@ export function MessagesModal({
                       )}
                     </div>
                     <div className="min-w-0 flex-1 pt-1">
-                      <p className="line-clamp-3 font-serif text-[34px] font-bold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
-                        {currentBannerTitle || "🤖 Saudação de hoje"}
-                      </p>
+                        <p
+                          className="line-clamp-3 font-serif text-[34px] font-bold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                          style={{ color: currentTextColor || "#ffffff" }}
+                        >
+                          {currentBannerTitle || "🤖 Saudação de hoje"}
+                        </p>
                       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/80">
                         <span>{currentMediaFileName || "nome automático"}</span>
                         <span className="inline-flex items-center gap-1.5">

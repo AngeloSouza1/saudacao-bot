@@ -1134,16 +1134,19 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
         initialGreetingBannerTitle={String(statusData?.config?.greetingBannerTitle || "")}
         initialGreetingBackgroundColor={String(statusData?.config?.greetingBackgroundColor || statusData?.config?.backgroundColor || "")}
         initialGreetingBackgroundImagePath={String(statusData?.config?.greetingBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
+        initialGreetingTextColor={String(statusData?.config?.greetingTextColor || statusData?.config?.textColor || "")}
         initialNoClassImagePath={String(statusData?.config?.noClassImagePath || "")}
         initialNoClassMediaFileName={String(statusData?.config?.noClassMediaFileName || "")}
         initialNoClassBannerTitle={String(statusData?.config?.noClassBannerTitle || "")}
         initialNoClassBackgroundColor={String(statusData?.config?.noClassBackgroundColor || statusData?.config?.backgroundColor || "")}
         initialNoClassBackgroundImagePath={String(statusData?.config?.noClassBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
+        initialNoClassTextColor={String(statusData?.config?.noClassTextColor || statusData?.config?.textColor || "")}
         initialCustomImagePath={String(statusData?.config?.customImagePath || "")}
         initialCustomMediaFileName={String(statusData?.config?.customMediaFileName || "")}
         initialCustomBannerTitle={String(statusData?.config?.customBannerTitle || "")}
         initialCustomBackgroundColor={String(statusData?.config?.customBackgroundColor || statusData?.config?.backgroundColor || "")}
         initialCustomBackgroundImagePath={String(statusData?.config?.customBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
+        initialCustomTextColor={String(statusData?.config?.customTextColor || statusData?.config?.textColor || "")}
         onSaved={refreshStatus}
       />
       <HistoryModal

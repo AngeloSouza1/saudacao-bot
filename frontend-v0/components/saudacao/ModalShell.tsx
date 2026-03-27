@@ -32,12 +32,12 @@ export function ModalShell({
   if (!open) return null
 
   const sizeClasses = {
-    xs: "max-w-[26rem]",
-    sm: "max-w-md",
-    md: "max-w-2xl",
-    lg: "max-w-4xl",
-    xl: "max-w-[94rem]",
-    xxl: "max-w-[98vw]",
+    xs: "max-w-[32rem]",
+    sm: "max-w-2xl",
+    md: "max-w-4xl",
+    lg: "max-w-6xl",
+    xl: "max-w-[96rem]",
+    xxl: "max-w-[99vw]",
   }
 
   return (

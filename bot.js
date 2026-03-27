@@ -246,6 +246,7 @@ export function saveScheduledMessage(payload = {}, options = {}) {
     bannerTitle: String(payload?.bannerTitle || "").trim(),
     backgroundColor: String(payload?.backgroundColor || "").trim(),
     backgroundImagePath: String(payload?.backgroundImagePath || "").trim(),
+    textColor: String(payload?.textColor || "").trim(),
     scheduledDate: dateTime.date,
     scheduledTime: dateTime.time,
     scheduledAt: dateTime.scheduledAt,
@@ -320,6 +321,7 @@ async function processDueScheduledMessages(now = new Date()) {
           bannerTitle: String(item?.bannerTitle || item?.title || "").trim(),
           backgroundColor: String(item?.backgroundColor || "").trim(),
           backgroundImagePath: String(item?.backgroundImagePath || "").trim(),
+          textColor: String(item?.textColor || "").trim(),
           imageStyle: "banner",
         },
         { username: String(item?.createdBy || "").trim().toLowerCase() }
