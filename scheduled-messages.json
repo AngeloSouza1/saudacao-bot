@@ -9,16 +9,16 @@
     "bannerTitle": "PALESTRA HOJE!",
     "backgroundColor": "#123d37",
     "backgroundImagePath": "fundo.png",
-    "scheduledDate": "2026-03-25",
-    "scheduledTime": "19:46",
-    "scheduledAt": "2026-03-25T22:46:00.000Z",
+    "scheduledDate": "2026-03-27",
+    "scheduledTime": "16:38",
+    "scheduledAt": "2026-03-27T19:38:00.000Z",
     "status": "sent",
     "createdBy": "enzo.duarte",
     "createdAt": "2026-03-25T00:52:29.632Z",
-    "updatedAt": "2026-03-25T22:46:30.954Z",
-    "sentAt": "2026-03-25T22:46:30.954Z",
+    "updatedAt": "2026-03-27T19:39:23.093Z",
+    "sentAt": "2026-03-27T19:39:23.093Z",
     "canceledAt": null,
     "error": "",
-    "messageId": "true_120363423174718536@g.us_3EB0B86FA9BADA3642BEBA_167435021877452@lid"
+    "messageId": "true_120363423174718536@g.us_3EB0B220726A17A656132A_167435021877452@lid"
   }
 ]

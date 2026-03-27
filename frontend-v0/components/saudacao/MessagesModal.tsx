@@ -962,7 +962,7 @@ export function MessagesModal({
         size="lg"
       >
         <div className="flex justify-center px-6 py-6">
-          <div className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-border bg-[#e7ded0] shadow-sm">
+          <div className="w-full max-w-[1120px] overflow-hidden rounded-[28px] border border-border bg-[#e7ded0] shadow-sm">
             <div className="flex items-center justify-between bg-[#0b141a] px-4 py-3 text-white">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#202c33] text-sm font-semibold">
@@ -992,7 +992,7 @@ export function MessagesModal({
 
               <div className="ml-auto max-w-[88%] rounded-[18px] rounded-tr-md bg-[#d9fdd3] px-4 py-3 text-[#111b21] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
                 <div
-                  className="relative mb-3 overflow-hidden rounded-2xl border border-emerald-300/50"
+                  className="relative mb-3 min-h-[300px] overflow-hidden rounded-2xl border border-emerald-300/50"
                   style={{
                     backgroundColor: currentBackgroundColor || "#123d37",
                   }}
@@ -1013,16 +1013,16 @@ export function MessagesModal({
                       <img
                         src={currentBackgroundImagePreviewUrl}
                         alt=""
-                        className="absolute inset-0 h-full w-full object-cover"
-                        style={{ transform: "scale(1.1)" }}
-                        referrerPolicy="no-referrer"
-                      />
+                          className="absolute inset-0 h-full w-full object-cover"
+                          style={{ transform: "scale(1.08)" }}
+                          referrerPolicy="no-referrer"
+                        />
                     </>
                   ) : (
                     <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,25,33,0.10),rgba(7,25,33,0.28))]" />
                   )}
-                  <div className="relative flex items-center gap-4 rounded-2xl px-4 py-4">
-                    <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white/80 bg-white/10 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
+                  <div className="relative flex min-h-[300px] items-start gap-5 rounded-2xl px-4 py-4">
+                    <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/55 bg-white/10 shadow-[0_8px_18px_rgba(0,0,0,0.18)]">
                       {currentImagePreviewUrl ? (
                         <img
                           src={currentImagePreviewUrl}
@@ -1035,8 +1035,8 @@ export function MessagesModal({
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-3 font-serif text-[28px] font-bold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
+                    <div className="min-w-0 flex-1 pt-1">
+                      <p className="line-clamp-3 font-serif text-[34px] font-bold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
                         {currentBannerTitle || "🤖 Saudação de hoje"}
                       </p>
                       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/80">

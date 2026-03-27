@@ -1550,6 +1550,7 @@ function resolveMessageMediaConfig(config, kind = "default", overrides = {}) {
   const legacyBannerTitle = String(config.bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "").trim();
   const legacyBackgroundColor = String(config.backgroundColor || process.env.WHATSAPP_BANNER_BG_COLOR || "#123d37").trim();
   const legacyBackgroundImagePath = String(config.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
+  const legacyTextColor = String(config.textColor || process.env.WHATSAPP_BANNER_TEXT_COLOR || "#ffffff").trim();
 
   if (normalizedKind === "no-class") {
     return {
@@ -1558,6 +1559,7 @@ function resolveMessageMediaConfig(config, kind = "default", overrides = {}) {
       bannerTitle: String(overrides.bannerTitle ?? config.noClassBannerTitle ?? legacyBannerTitle).trim(),
       backgroundColor: String(overrides.backgroundColor ?? config.noClassBackgroundColor ?? legacyBackgroundColor).trim(),
       backgroundImagePath: String(overrides.backgroundImagePath ?? config.noClassBackgroundImagePath ?? legacyBackgroundImagePath).trim(),
+      textColor: String(overrides.textColor ?? config.noClassTextColor ?? legacyTextColor).trim(),
     };
   }
 
@@ -1568,6 +1570,7 @@ function resolveMessageMediaConfig(config, kind = "default", overrides = {}) {
       bannerTitle: String(overrides.bannerTitle ?? config.customBannerTitle ?? legacyBannerTitle).trim(),
       backgroundColor: String(overrides.backgroundColor ?? config.customBackgroundColor ?? legacyBackgroundColor).trim(),
       backgroundImagePath: String(overrides.backgroundImagePath ?? config.customBackgroundImagePath ?? legacyBackgroundImagePath).trim(),
+      textColor: String(overrides.textColor ?? config.customTextColor ?? legacyTextColor).trim(),
     };
   }
 
@@ -1577,6 +1580,7 @@ function resolveMessageMediaConfig(config, kind = "default", overrides = {}) {
     bannerTitle: String(overrides.bannerTitle ?? config.greetingBannerTitle ?? legacyBannerTitle).trim(),
     backgroundColor: String(overrides.backgroundColor ?? config.greetingBackgroundColor ?? legacyBackgroundColor).trim(),
     backgroundImagePath: String(overrides.backgroundImagePath ?? config.greetingBackgroundImagePath ?? legacyBackgroundImagePath).trim(),
+    textColor: String(overrides.textColor ?? config.greetingTextColor ?? legacyTextColor).trim(),
   };
 }
 
@@ -1592,6 +1596,7 @@ async function sendBotMessage(text, cardData = null, messageKind = "default", op
   const bannerTitle = mediaConfig.bannerTitle;
   const backgroundColor = mediaConfig.backgroundColor;
   const backgroundImagePath = mediaConfig.backgroundImagePath;
+  const textColor = mediaConfig.textColor;
   const mediaAsDocument = String(
     config.mediaAsDocument ?? process.env.WHATSAPP_MEDIA_AS_DOCUMENT ?? "false"
   ).toLowerCase() === "true";
@@ -1612,6 +1617,7 @@ async function sendBotMessage(text, cardData = null, messageKind = "default", op
     imageStyle,
     backgroundColor,
     backgroundImagePath,
+    textColor,
     cardData,
     mentions: studentMention && isGroupDestination ? [studentMention.mentionId] : []
   }, resolveRequesterContext(options));
@@ -1630,6 +1636,7 @@ async function sendBotMessage(text, cardData = null, messageKind = "default", op
         imageStyle,
         backgroundColor,
         backgroundImagePath,
+        textColor,
         cardData,
         mentions: []
       }, resolveRequesterContext(options));
@@ -1675,6 +1682,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
   const bannerTitle = mediaConfig.bannerTitle;
   const backgroundColor = mediaConfig.backgroundColor;
   const backgroundImagePath = mediaConfig.backgroundImagePath;
+  const textColor = mediaConfig.textColor;
   const mediaAsDocument = String(
     config.mediaAsDocument ?? process.env.WHATSAPP_MEDIA_AS_DOCUMENT ?? "false"
   ).toLowerCase() === "true";
@@ -1714,6 +1722,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
       imageStyle,
       backgroundColor,
       backgroundImagePath,
+      textColor,
       cardData: { turma, instituicao, aluno: "", materia: "", titulo: "", professor: "", horario: "" }
     }, resolveRequesterContext(options));
     saveLastRun({
@@ -1762,6 +1771,7 @@ export async function sendCustomMessageToTarget(targetType, targetValue, templat
     imageStyle,
     backgroundColor,
     backgroundImagePath,
+    textColor,
     cardData: { turma, instituicao, aluno: alunoNome, materia: "", titulo: "", professor: "", horario: "" }
   }, resolveRequesterContext(options));
   saveLastRun({
@@ -2438,6 +2448,10 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "greetingBackgroundImagePath")
         ? String(partial.greetingBackgroundImagePath ?? "").trim()
         : String(current?.greetingBackgroundImagePath ?? ""),
+    greetingTextColor:
+      partial && Object.prototype.hasOwnProperty.call(partial, "greetingTextColor")
+        ? String(partial.greetingTextColor ?? "").trim()
+        : String(current?.greetingTextColor ?? ""),
     noClassImagePath:
       partial && Object.prototype.hasOwnProperty.call(partial, "noClassImagePath")
         ? String(partial.noClassImagePath ?? "").trim()
@@ -2458,6 +2472,10 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "noClassBackgroundImagePath")
         ? String(partial.noClassBackgroundImagePath ?? "").trim()
         : String(current?.noClassBackgroundImagePath ?? ""),
+    noClassTextColor:
+      partial && Object.prototype.hasOwnProperty.call(partial, "noClassTextColor")
+        ? String(partial.noClassTextColor ?? "").trim()
+        : String(current?.noClassTextColor ?? ""),
     customImagePath:
       partial && Object.prototype.hasOwnProperty.call(partial, "customImagePath")
         ? String(partial.customImagePath ?? "").trim()
@@ -2478,6 +2496,10 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "customBackgroundImagePath")
         ? String(partial.customBackgroundImagePath ?? "").trim()
         : String(current?.customBackgroundImagePath ?? ""),
+    customTextColor:
+      partial && Object.prototype.hasOwnProperty.call(partial, "customTextColor")
+        ? String(partial.customTextColor ?? "").trim()
+        : String(current?.customTextColor ?? ""),
     backgroundColor:
       partial && Object.prototype.hasOwnProperty.call(partial, "backgroundColor")
         ? String(partial.backgroundColor ?? "").trim()
@@ -2486,6 +2508,10 @@ export function updateConfig(partial) {
       partial && Object.prototype.hasOwnProperty.call(partial, "backgroundImagePath")
         ? String(partial.backgroundImagePath ?? "").trim()
         : String(current?.backgroundImagePath ?? ""),
+    textColor:
+      partial && Object.prototype.hasOwnProperty.call(partial, "textColor")
+        ? String(partial.textColor ?? "").trim()
+        : String(current?.textColor ?? ""),
     imagePath:
       partial && Object.prototype.hasOwnProperty.call(partial, "imagePath")
         ? String(partial.imagePath ?? "").trim()

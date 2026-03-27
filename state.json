@@ -1,11 +1,10 @@
 {
-  "idxAluno": 7,
+  "idxAluno": 8,
   "idxAula": 0,
   "dataInicio": "2026-03-27",
-  "updatedAt": "2026-03-25T23:45:56.103Z",
+  "updatedAt": "2026-03-27T18:00:08.980Z",
   "reposicaoAlunos": [],
   "ordemProximosAlunos": [
-    "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Kauã Henrique",
@@ -32,12 +31,19 @@
     "confirmadoEm": ""
   },
   "revertidosEfetivados": [],
-  "efetivacoesManuais": [],
+  "efetivacoesManuais": [
+    {
+      "itemKey": "cycle_1774627364077_u8jhw9|2026-03-27T23:00:00.000Z|Redes e Internet|Prof. Kenji|20:00",
+      "aluno": "João Vitor Gomes Oliveira Rodrigues Resende"
+    }
+  ],
   "ordemVinculadaCiclo": [
     "João Vitor Gomes Oliveira Rodrigues Resende",
     "Juan Ferreira",
     "Kaio Vieira Nunes",
     "Kauã Henrique"
   ],
-  "efetivadosCiclo": []
+  "efetivadosCiclo": [
+    "João Vitor Gomes Oliveira Rodrigues Resende"
+  ]
 }

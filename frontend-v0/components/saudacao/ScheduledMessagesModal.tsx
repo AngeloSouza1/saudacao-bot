@@ -439,7 +439,7 @@ export function ScheduledMessagesModal({
         size="lg"
       >
         <div className="flex justify-center px-6 py-6">
-          <div className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-border bg-[#e7ded0] shadow-sm">
+          <div className="w-full max-w-[1120px] overflow-hidden rounded-[28px] border border-border bg-[#e7ded0] shadow-sm">
             <div className="flex items-center justify-between bg-[#0b141a] px-4 py-3 text-white">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#202c33] text-sm font-semibold">
@@ -470,7 +470,7 @@ export function ScheduledMessagesModal({
                 {(imagePath || bannerTitle) ? (
                   <div className="mb-3 overflow-hidden rounded-2xl border border-emerald-300/50 bg-white/70">
                     <div
-                      className="relative flex min-h-[108px] items-center gap-3 px-4 py-4"
+                      className="relative flex min-h-[300px] items-start gap-5 px-4 py-4"
                       style={{ background: backgroundColor || "#123d37" }}
                     >
                       {backgroundImagePreviewUrl ? (
@@ -490,13 +490,13 @@ export function ScheduledMessagesModal({
                             src={backgroundImagePreviewUrl}
                             alt=""
                             className="absolute inset-0 h-full w-full object-cover"
-                            style={{ transform: "scale(1.1)" }}
+                            style={{ transform: "scale(1.08)" }}
                             referrerPolicy="no-referrer"
                           />
                         </>
                       ) : null}
                       {imagePreviewUrl ? (
-                        <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30 bg-white/80 shadow-sm">
+                        <div className="relative h-[72px] w-[72px] overflow-hidden rounded-2xl border-2 border-white/55 bg-white/80 shadow-[0_8px_18px_rgba(0,0,0,0.18)]">
                           <img
                             src={imagePreviewUrl}
                             alt=""
@@ -505,11 +505,11 @@ export function ScheduledMessagesModal({
                           />
                         </div>
                       ) : null}
-                      <div className="relative min-w-0 text-white">
+                      <div className="relative min-w-0 flex-1 pt-1 text-white">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
                           Mensagem programada
                         </p>
-                        <p className="mt-1 text-lg font-semibold leading-tight">
+                        <p className="mt-1 text-[34px] font-semibold leading-tight">
                           {bannerTitle || previewTitle}
                         </p>
                       </div>
