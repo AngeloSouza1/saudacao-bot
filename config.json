@@ -189,12 +189,17 @@
   "customMediaFileName": "personalizada.png",
   "customBannerTitle": "Palestra de Hoje!",
   "customBackgroundColor": "#faebeb",
-  "customBackgroundImagePath": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "customBackgroundImagePath": "fundo1.png",
   "backgroundColor": "",
   "backgroundImagePath": "",
   "horarioEnvio": "15:00",
   "greetingTextColor": "#ffffff",
   "noClassTextColor": "#ffffff",
-  "customTextColor": "#3b0ca6",
-  "textColor": ""
+  "customTextColor": "#f4f2fd",
+  "textColor": "",
+  "horarioEnvioSemAula": "",
+  "greetingTitleBackgroundColor": "#0b141a",
+  "noClassTitleBackgroundColor": "#0b141a",
+  "customTitleBackgroundColor": "#121112",
+  "titleBackgroundColor": ""
 }
