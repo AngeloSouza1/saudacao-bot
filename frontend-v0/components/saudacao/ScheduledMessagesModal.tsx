@@ -260,7 +260,7 @@ export function ScheduledMessagesModal({
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Mídia do envio
               </p>
-              <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr_1.15fr_1fr_1.05fr_1.05fr_1.05fr]">
+              <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1.1fr_1.2fr_1.05fr]">
                 <UnderlineInput
                   label="Banner / imagem"
                   value={imagePath}
@@ -289,6 +289,8 @@ export function ScheduledMessagesModal({
                   placeholder="aviso.png"
                   hint="Opcional. Define o nome do arquivo enviado."
                 />
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Cor de fundo
