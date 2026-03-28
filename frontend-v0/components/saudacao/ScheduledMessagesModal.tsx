@@ -53,6 +53,14 @@ function formatPtBr(iso: string) {
   return date.toLocaleString("pt-BR")
 }
 
+function formatDateDisplay(value: string) {
+  const normalized = String(value || "").trim()
+  const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return normalized || "--"
+  const [, year, month, day] = match
+  return `${day}-${month}-${year}`
+}
+
 function formatStatusLabel(status: string) {
   const normalized = String(status || "").trim().toLowerCase()
   if (normalized === "pending") return "Pendente"
@@ -97,6 +105,7 @@ export function ScheduledMessagesModal({
   const [title, setTitle] = useState("")
   const [groupName, setGroupName] = useState("")
   const [scheduledDate, setScheduledDate] = useState("")
+  const [selectedDates, setSelectedDates] = useState<string[]>([])
   const [scheduledTime, setScheduledTime] = useState("")
   const [template, setTemplate] = useState("")
   const [imagePath, setImagePath] = useState("")
@@ -139,6 +148,7 @@ export function ScheduledMessagesModal({
     setTitle("")
     setGroupName("")
     setScheduledDate("")
+    setSelectedDates([])
     setScheduledTime("")
     setTemplate("")
     setImagePath("")
@@ -150,32 +160,64 @@ export function ScheduledMessagesModal({
     setTitleBackgroundColor("#0b141a")
   }
 
+  function addSelectedDate() {
+    const value = String(scheduledDate || "").trim()
+    if (!value) {
+      setFeedback("Selecione uma data antes de adicionar.")
+      return
+    }
+    setSelectedDates((current) => {
+      if (current.includes(value)) return current
+      return [...current, value].sort()
+    })
+    setScheduledDate("")
+    setFeedback("")
+  }
+
+  function removeSelectedDate(date: string) {
+    setSelectedDates((current) => current.filter((item) => item !== date))
+  }
+
   async function handleSave() {
     setSaving(true)
     try {
-      await fetchJson("/api/scheduled-messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingId || undefined,
-          title,
-          groupName,
-          scheduledDate,
-          scheduledTime,
-          template,
-          imagePath,
-          backgroundImagePath,
-          bannerTitle,
-          mediaFileName,
-          backgroundColor,
-          textColor,
-          titleBackgroundColor,
-        }),
-      })
+      const datesToSave = editingId
+        ? [String(scheduledDate || "").trim()]
+        : Array.from(new Set([...selectedDates, String(scheduledDate || "").trim()].filter(Boolean))).sort()
+
+      if (!datesToSave.length) {
+        throw new Error("Selecione pelo menos uma data para o agendamento.")
+      }
+
+      for (const date of datesToSave) {
+        await fetchJson("/api/scheduled-messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingId || undefined,
+            title,
+            groupName,
+            scheduledDate: date,
+            scheduledTime,
+            template,
+            imagePath,
+            backgroundImagePath,
+            bannerTitle,
+            mediaFileName,
+            backgroundColor,
+            textColor,
+            titleBackgroundColor,
+          }),
+        })
+      }
       resetForm()
       await loadItems()
       if (onSaved) await onSaved()
-      setFeedback("Mensagem programada salva com sucesso.")
+      setFeedback(
+        editingId || datesToSave.length === 1
+          ? "Mensagem programada salva com sucesso."
+          : `${datesToSave.length} mensagens programadas salvas com sucesso.`
+      )
     } catch (error) {
       setFeedback(String((error as Error)?.message || "Falha ao salvar mensagem programada."))
     } finally {
@@ -216,6 +258,7 @@ export function ScheduledMessagesModal({
   const hasPreviewContent = Boolean(String(template || "").trim())
   const previewTitle = String(title || "").trim() || "Mensagem programada"
   const previewGroup = String(groupName || "").trim() || "Grupo de destino"
+  const previewDate = String(scheduledDate || "").trim() || selectedDates[0] || ""
   const imagePreviewUrl = resolvePreviewMediaUrl(imagePath)
   const backgroundImagePreviewUrl = resolvePreviewMediaUrl(backgroundImagePath)
 
@@ -253,9 +296,50 @@ export function ScheduledMessagesModal({
                   ))}
                 </select>
               </div>
-              <UnderlineInput label="Data" type="date" value={scheduledDate} onChange={setScheduledDate} />
+              <div className="flex flex-col gap-2">
+                <UnderlineInput label="Data" type="date" value={scheduledDate} onChange={setScheduledDate} />
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-muted-foreground">
+                    Adicione várias datas para repetir a mesma mensagem.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={addSelectedDate}
+                    disabled={Boolean(editingId)}
+                    className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Adicionar data
+                  </button>
+                </div>
+              </div>
               <UnderlineInput label="Hora" type="time" value={scheduledTime} onChange={setScheduledTime} />
             </div>
+            {!editingId && selectedDates.length ? (
+              <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Datas selecionadas
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedDates.map((date) => (
+                    <span
+                      key={date}
+                      className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-sm text-foreground"
+                    >
+                      {formatDateDisplay(date)}
+                      <button
+                        type="button"
+                        onClick={() => removeSelectedDate(date)}
+                        className="text-muted-foreground transition-colors hover:text-destructive"
+                        aria-label={`Remover data ${date}`}
+                        title="Remover data"
+                      >
+                        <XCircle size={14} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Mídia do envio
@@ -414,7 +498,7 @@ export function ScheduledMessagesModal({
                       <div>
                         <p className="text-[1.05rem] font-semibold leading-6 text-foreground">{String(item.title || "Sem título")}</p>
                         <p className="text-sm leading-6 text-muted-foreground">
-                          {String(item.groupName || "Sem grupo")} · {String(item.scheduledDate || "--")} às {String(item.scheduledTime || "--:--")}
+                          {String(item.groupName || "Sem grupo")} · {formatDateDisplay(String(item.scheduledDate || "--"))} às {String(item.scheduledTime || "--:--")}
                         </p>
                         {item.imagePath ? (
                           <p className="mt-1 text-xs text-muted-foreground">Com mídia configurada</p>
@@ -439,6 +523,7 @@ export function ScheduledMessagesModal({
                           setTitle(String(item.title || ""))
                           setGroupName(String(item.groupName || ""))
                           setScheduledDate(String(item.scheduledDate || ""))
+                          setSelectedDates([])
                           setScheduledTime(String(item.scheduledTime || ""))
                           setTemplate(String(item.template || ""))
                           setImagePath(String(item.imagePath || ""))
@@ -522,7 +607,7 @@ export function ScheduledMessagesModal({
               }}
             >
               <div className="mx-auto w-fit rounded-full bg-white/75 px-3 py-1 text-[11px] font-medium text-slate-600 shadow-sm">
-                {scheduledDate || "Data agendada"}
+                {previewDate ? formatDateDisplay(previewDate) : "Data agendada"}
               </div>
 
               <div className="ml-auto max-w-[88%] rounded-[18px] rounded-tr-md bg-[#d9fdd3] px-4 py-3 text-[#111b21] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
