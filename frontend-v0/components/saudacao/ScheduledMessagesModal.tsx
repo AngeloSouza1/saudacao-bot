@@ -15,6 +15,7 @@ interface ScheduledMessageItem {
   backgroundColor?: string
   backgroundImagePath?: string
   textColor?: string
+  titleBackgroundColor?: string
   scheduledDate?: string
   scheduledTime?: string
   scheduledAt?: string
@@ -68,6 +69,18 @@ function resolvePreviewMediaUrl(value: string) {
   return `/api/media-preview?path=${encodeURIComponent(normalized)}`
 }
 
+function withAlpha(hex: string, alpha: number) {
+  const normalized = String(hex || "").trim().replace("#", "")
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) {
+    return `rgba(7, 25, 33, ${alpha})`
+  }
+  const value = Number.parseInt(normalized, 16)
+  const r = (value >> 16) & 255
+  const g = (value >> 8) & 255
+  const b = value & 255
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 export function ScheduledMessagesModal({
   open,
   onClose,
@@ -92,6 +105,7 @@ export function ScheduledMessagesModal({
   const [mediaFileName, setMediaFileName] = useState("")
   const [backgroundColor, setBackgroundColor] = useState("#123d37")
   const [textColor, setTextColor] = useState("#ffffff")
+  const [titleBackgroundColor, setTitleBackgroundColor] = useState("#0b141a")
   const [previewOpen, setPreviewOpen] = useState(false)
 
   const sortedGroups = useMemo(
@@ -133,6 +147,7 @@ export function ScheduledMessagesModal({
     setMediaFileName("")
     setBackgroundColor("#123d37")
     setTextColor("#ffffff")
+    setTitleBackgroundColor("#0b141a")
   }
 
   async function handleSave() {
@@ -154,6 +169,7 @@ export function ScheduledMessagesModal({
           mediaFileName,
           backgroundColor,
           textColor,
+          titleBackgroundColor,
         }),
       })
       resetForm()
@@ -244,7 +260,7 @@ export function ScheduledMessagesModal({
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Mídia do envio
               </p>
-              <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr_1.15fr_1fr_1.15fr_1.15fr]">
+              <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr_1.15fr_1fr_1.05fr_1.05fr_1.05fr]">
                 <UnderlineInput
                   label="Banner / imagem"
                   value={imagePath}
@@ -305,6 +321,23 @@ export function ScheduledMessagesModal({
                   </div>
                   <p className="text-[11px] text-muted-foreground">
                     Define a cor do texto exibido no banner desta mensagem.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Fundo do título
+                  </label>
+                  <div className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2">
+                    <input
+                      type="color"
+                      value={titleBackgroundColor || "#0b141a"}
+                      onChange={(e) => setTitleBackgroundColor(e.target.value)}
+                      className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                    />
+                    <span className="font-mono text-sm text-foreground">{titleBackgroundColor || "#0b141a"}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Define a faixa atrás do título do banner.
                   </p>
                 </div>
               </div>
@@ -412,6 +445,7 @@ export function ScheduledMessagesModal({
                           setMediaFileName(String(item.mediaFileName || ""))
                           setBackgroundColor(String(item.backgroundColor || "#123d37") || "#123d37")
                           setTextColor(String(item.textColor || "#ffffff") || "#ffffff")
+                          setTitleBackgroundColor(String(item.titleBackgroundColor || "#0b141a") || "#0b141a")
                           setFeedback("")
                         }}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-foreground transition-colors hover:border-primary hover:text-primary"
@@ -528,13 +562,16 @@ export function ScheduledMessagesModal({
                           />
                         </div>
                       ) : null}
-                      <div className="relative flex min-h-[72px] min-w-0 flex-1 items-center text-white">
-                        <div className="min-w-0">
+                      <div className="relative flex min-h-[72px] min-w-0 flex-1 items-center justify-center text-white">
+                        <div
+                          className="mx-auto inline-flex max-w-[78%] flex-col items-center rounded-2xl px-5 py-3 text-center shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+                          style={{ backgroundColor: withAlpha(titleBackgroundColor || "#0b141a", 0.26) }}
+                        >
                           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
                             Mensagem programada
                           </p>
                           <p
-                            className="mt-1 text-[34px] font-semibold leading-tight"
+                            className="mt-1 translate-y-0.5 text-[34px] font-semibold leading-tight"
                             style={{ color: textColor || "#ffffff" }}
                           >
                             {bannerTitle || previewTitle}

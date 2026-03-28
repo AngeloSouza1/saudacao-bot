@@ -43,16 +43,22 @@ type DashboardStatusResponse = {
     greetingBannerTitle?: string
     greetingBackgroundColor?: string
     greetingBackgroundImagePath?: string
+    greetingTextColor?: string
+    greetingTitleBackgroundColor?: string
     noClassImagePath?: string
     noClassMediaFileName?: string
     noClassBannerTitle?: string
     noClassBackgroundColor?: string
     noClassBackgroundImagePath?: string
+    noClassTextColor?: string
+    noClassTitleBackgroundColor?: string
     customImagePath?: string
     customMediaFileName?: string
     customBannerTitle?: string
     customBackgroundColor?: string
     customBackgroundImagePath?: string
+    customTextColor?: string
+    customTitleBackgroundColor?: string
     lockTimeoutMin?: number
     lockConfigured?: boolean
     alunos?: string[]
@@ -1136,18 +1142,21 @@ export default function DashboardPageClient({ panelSession }: DashboardPageClien
         initialGreetingBackgroundColor={String(statusData?.config?.greetingBackgroundColor || statusData?.config?.backgroundColor || "")}
         initialGreetingBackgroundImagePath={String(statusData?.config?.greetingBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
         initialGreetingTextColor={String(statusData?.config?.greetingTextColor || statusData?.config?.textColor || "")}
+        initialGreetingTitleBackgroundColor={String(statusData?.config?.greetingTitleBackgroundColor || "")}
         initialNoClassImagePath={String(statusData?.config?.noClassImagePath || "")}
         initialNoClassMediaFileName={String(statusData?.config?.noClassMediaFileName || "")}
         initialNoClassBannerTitle={String(statusData?.config?.noClassBannerTitle || "")}
         initialNoClassBackgroundColor={String(statusData?.config?.noClassBackgroundColor || statusData?.config?.backgroundColor || "")}
         initialNoClassBackgroundImagePath={String(statusData?.config?.noClassBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
         initialNoClassTextColor={String(statusData?.config?.noClassTextColor || statusData?.config?.textColor || "")}
+        initialNoClassTitleBackgroundColor={String(statusData?.config?.noClassTitleBackgroundColor || "")}
         initialCustomImagePath={String(statusData?.config?.customImagePath || "")}
         initialCustomMediaFileName={String(statusData?.config?.customMediaFileName || "")}
         initialCustomBannerTitle={String(statusData?.config?.customBannerTitle || "")}
         initialCustomBackgroundColor={String(statusData?.config?.customBackgroundColor || statusData?.config?.backgroundColor || "")}
         initialCustomBackgroundImagePath={String(statusData?.config?.customBackgroundImagePath || statusData?.config?.backgroundImagePath || "")}
         initialCustomTextColor={String(statusData?.config?.customTextColor || statusData?.config?.textColor || "")}
+        initialCustomTitleBackgroundColor={String(statusData?.config?.customTitleBackgroundColor || "")}
         onSaved={refreshStatus}
       />
       <HistoryModal

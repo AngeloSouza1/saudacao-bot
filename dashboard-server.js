@@ -252,6 +252,7 @@ async function handleApi(req, res, pathname) {
         backgroundColor: body?.backgroundColor,
         backgroundImagePath: body?.backgroundImagePath,
         textColor: body?.textColor,
+        titleBackgroundColor: body?.titleBackgroundColor,
         imageStyle: body?.imageStyle
       }, requester);
       sendJson(res, 200, { ok: true, message: "Mensagem personalizada enviada com sucesso." });

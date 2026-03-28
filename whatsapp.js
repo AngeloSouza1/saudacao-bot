@@ -710,6 +710,18 @@ function wrapBannerTitle(rawTitle, maxLineLength = 22, maxLines = 3) {
   return lines.slice(0, maxLines);
 }
 
+function withAlphaHex(hex, alpha = 0.42) {
+  const normalized = String(hex || "").trim().replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) {
+    return `rgba(7,25,33,${alpha})`;
+  }
+  const value = Number.parseInt(normalized, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1080);
   const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 940);
@@ -718,6 +730,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   );
   const backgroundColor = String(cardData?.backgroundColor || process.env.WHATSAPP_BANNER_BG_COLOR || "#123d37").trim() || "#123d37";
   const textColor = String(cardData?.textColor || process.env.WHATSAPP_BANNER_TEXT_COLOR || "#ffffff").trim() || "#ffffff";
+  const titleBackgroundColor = String(cardData?.titleBackgroundColor || process.env.WHATSAPP_BANNER_TITLE_BG_COLOR || "#0b141a").trim() || "#0b141a";
   const backgroundImagePath = String(cardData?.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
   const hasBackgroundImage = Boolean(backgroundImagePath);
   const simpleBackgroundMode = Boolean(cardData?.simpleBackgroundMode);
@@ -750,11 +763,16 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const contentAreaHeight = height - 36;
   const titleCenterX = Math.floor(width / 2);
   const titleCenterY = Math.floor(contentAreaTop + contentAreaHeight / 2);
-  const titleBlockHeight = Math.max(1, titleLines.length - 1) * titleLineHeight;
-  const titleStartY = Math.floor(titleCenterY - titleBlockHeight / 2);
+  const titleOpticalOffset = Math.round(titleFontSize * 0.03);
+  const longestLineLength = titleLines.reduce((max, line) => Math.max(max, String(line || "").length), 0);
+  const titleBackgroundWidth = Math.min(contentAreaWidth - 280, Math.max(280, Math.round(longestLineLength * titleFontSize * 0.58 + 96)));
+  const titleBackgroundHeight = Math.round(titleFontSize * 1.55) + Math.max(0, titleLines.length - 1) * titleLineHeight;
+  const titleBackgroundX = Math.round(titleCenterX - titleBackgroundWidth / 2);
+  const titleBackgroundY = Math.round(titleCenterY - titleBackgroundHeight / 2);
+  const titleBackgroundRect = `<rect x="${titleBackgroundX}" y="${titleBackgroundY}" width="${titleBackgroundWidth}" height="${titleBackgroundHeight}" rx="24" fill="${escapeXml(withAlphaHex(titleBackgroundColor, 0.26))}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
   const titleSvg = titleLines
     .map((line, index) => {
-      const y = titleStartY + index * titleLineHeight;
+      const y = titleCenterY + (index - (titleLines.length - 1) / 2) * titleLineHeight + titleOpticalOffset;
       return `<text x="${titleCenterX}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="${escapeXml(textColor)}" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${escapeXml(line)}</text>`;
     })
     .join("");
@@ -849,6 +867,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
       ${backgroundLayer}
       <rect x="10" y="10" width="${width - 20}" height="${height - 20}" rx="18" fill="${outerPanelFill}" stroke="${outerPanelStroke}" stroke-width="2"/>
       <rect x="${contentAreaLeft}" y="${contentAreaTop}" width="${contentAreaWidth}" height="${contentAreaHeight}" rx="18" fill="${contentRowFill}" stroke="${contentRowStroke}" stroke-width="1.2"/>
+      ${titleBackgroundRect}
       ${titleSvg}
     </svg>
   `;
@@ -972,6 +991,7 @@ export async function sendText({
   backgroundColor,
   backgroundImagePath,
   textColor,
+  titleBackgroundColor,
   cardData,
   mentions
 }, options = {}) {
@@ -1000,7 +1020,7 @@ export async function sendText({
       if (style === "banner") {
         media = await buildBannerMediaFromInput(
           mediaInput,
-          { ...(cardData || {}), backgroundColor, backgroundImagePath, textColor },
+          { ...(cardData || {}), backgroundColor, backgroundImagePath, textColor, titleBackgroundColor },
           bannerTitle
         );
         console.log("🖼️ Banner personalizado gerado para envio.");
@@ -1015,7 +1035,7 @@ export async function sendText({
         if (style === "banner") {
           media = await buildBannerMediaFromInput(
             mediaInput,
-            { ...(cardData || {}), backgroundColor, backgroundImagePath, textColor, simpleBackgroundMode: true },
+            { ...(cardData || {}), backgroundColor, backgroundImagePath, textColor, titleBackgroundColor, simpleBackgroundMode: true },
             bannerTitle
           );
           console.log("🖼️ Banner compacto gerado no fallback mantendo imagem de fundo.");
@@ -1029,7 +1049,7 @@ export async function sendText({
           mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
           media = await buildBannerMediaFromInput(
             mediaInput,
-            { ...(cardData || {}), backgroundColor, backgroundImagePath: "", textColor },
+            { ...(cardData || {}), backgroundColor, backgroundImagePath: "", textColor, titleBackgroundColor },
             bannerTitle
           );
           console.log("🖼️ Banner compacto gerado no fallback sem imagem de fundo.");
