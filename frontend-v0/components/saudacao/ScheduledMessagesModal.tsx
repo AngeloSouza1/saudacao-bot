@@ -493,7 +493,7 @@ export function ScheduledMessagesModal({
                 {(imagePath || bannerTitle) ? (
                   <div className="mb-3 overflow-hidden rounded-2xl border border-emerald-300/50 bg-white/70">
                     <div
-                      className="relative flex min-h-[300px] items-start gap-5 px-4 py-4"
+                      className="relative flex min-h-[300px] items-center gap-5 px-4 py-4"
                       style={{ background: backgroundColor || "#123d37" }}
                     >
                       {backgroundImagePreviewUrl ? (
@@ -528,16 +528,18 @@ export function ScheduledMessagesModal({
                           />
                         </div>
                       ) : null}
-                      <div className="relative min-w-0 flex-1 pt-1 text-white">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
-                          Mensagem programada
-                        </p>
-                        <p
-                          className="mt-1 text-[34px] font-semibold leading-tight"
-                          style={{ color: textColor || "#ffffff" }}
-                        >
-                          {bannerTitle || previewTitle}
-                        </p>
+                      <div className="relative flex min-h-[72px] min-w-0 flex-1 items-center text-white">
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                            Mensagem programada
+                          </p>
+                          <p
+                            className="mt-1 text-[34px] font-semibold leading-tight"
+                            style={{ color: textColor || "#ffffff" }}
+                          >
+                            {bannerTitle || previewTitle}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

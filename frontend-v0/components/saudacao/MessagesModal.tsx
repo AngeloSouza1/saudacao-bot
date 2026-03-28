@@ -1068,7 +1068,7 @@ export function MessagesModal({
                   ) : (
                     <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,25,33,0.10),rgba(7,25,33,0.28))]" />
                   )}
-                  <div className="relative flex min-h-[300px] items-start gap-5 rounded-2xl px-4 py-4">
+                  <div className="relative flex min-h-[300px] items-center gap-5 rounded-2xl px-4 py-4">
                     <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/55 bg-white/10 shadow-[0_8px_18px_rgba(0,0,0,0.18)]">
                       {currentImagePreviewUrl ? (
                         <img
@@ -1082,22 +1082,24 @@ export function MessagesModal({
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0 flex-1 pt-1">
+                    <div className="flex min-h-[72px] min-w-0 flex-1 items-center">
+                      <div className="min-w-0">
                         <p
                           className="line-clamp-3 font-serif text-[34px] font-bold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
                           style={{ color: currentTextColor || "#ffffff" }}
                         >
                           {currentBannerTitle || "🤖 Saudação de hoje"}
                         </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/80">
-                        <span>{currentMediaFileName || "nome automático"}</span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <span
-                            className="inline-block h-3.5 w-3.5 rounded-full border border-white/60"
-                            style={{ backgroundColor: currentBackgroundColor }}
-                          />
-                          {currentBackgroundColor}
-                        </span>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/80">
+                          <span>{currentMediaFileName || "nome automático"}</span>
+                          <span className="inline-flex items-center gap-1.5">
+                            <span
+                              className="inline-block h-3.5 w-3.5 rounded-full border border-white/60"
+                              style={{ backgroundColor: currentBackgroundColor }}
+                            />
+                            {currentBackgroundColor}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

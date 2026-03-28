@@ -722,14 +722,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const hasBackgroundImage = Boolean(backgroundImagePath);
   const simpleBackgroundMode = Boolean(cardData?.simpleBackgroundMode);
   const titleFontSize = titleLines.length > 2 ? 54 : titleLines.length > 1 ? 64 : 74;
-  const titleStartY = titleLines.length > 1 ? 208 : 268;
   const titleLineHeight = titleFontSize + 10;
-  const titleTspans = titleLines
-    .map((line, index) => {
-      const dy = index === 0 ? 0 : titleLineHeight;
-      return `<tspan x="${Math.floor(width / 2)}" dy="${dy}">${escapeXml(line)}</tspan>`;
-    })
-    .join("");
   const backgroundLayer = hasBackgroundImage
     ? ""
     : `<rect x="0" y="0" width="${width}" height="${height}" fill="url(#bg)"/>`;
@@ -755,6 +748,16 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const contentAreaTop = 18;
   const contentAreaWidth = width - 36;
   const contentAreaHeight = height - 36;
+  const titleCenterX = Math.floor(width / 2);
+  const titleCenterY = Math.floor(contentAreaTop + contentAreaHeight / 2);
+  const titleBlockHeight = Math.max(1, titleLines.length - 1) * titleLineHeight;
+  const titleStartY = Math.floor(titleCenterY - titleBlockHeight / 2);
+  const titleSvg = titleLines
+    .map((line, index) => {
+      const y = titleStartY + index * titleLineHeight;
+      return `<text x="${titleCenterX}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="${escapeXml(textColor)}" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${escapeXml(line)}</text>`;
+    })
+    .join("");
   const mediaContentBackdropBuffer = Buffer.from(`
     <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -846,7 +849,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
       ${backgroundLayer}
       <rect x="10" y="10" width="${width - 20}" height="${height - 20}" rx="18" fill="${outerPanelFill}" stroke="${outerPanelStroke}" stroke-width="2"/>
       <rect x="${contentAreaLeft}" y="${contentAreaTop}" width="${contentAreaWidth}" height="${contentAreaHeight}" rx="18" fill="${contentRowFill}" stroke="${contentRowStroke}" stroke-width="1.2"/>
-      <text x="${Math.floor(width / 2)}" y="${titleStartY}" text-anchor="middle" fill="${escapeXml(textColor)}" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${titleTspans}</text>
+      ${titleSvg}
     </svg>
   `;
 
