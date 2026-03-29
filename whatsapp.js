@@ -725,15 +725,15 @@ function withAlphaHex(hex, alpha = 0.42) {
 async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const width = Number(process.env.WHATSAPP_BANNER_WIDTH || 1080);
   const height = Number(process.env.WHATSAPP_BANNER_HEIGHT || 940);
-  const titleLines = wrapBannerTitle(
-    String(bannerTitle || process.env.WHATSAPP_BANNER_TITLE || "🤖 Saudação de hoje").trim() || "🤖 Saudação de hoje"
-  );
+  const resolvedBannerTitle = String(bannerTitle ?? process.env.WHATSAPP_BANNER_TITLE ?? "").trim();
+  const titleLines = resolvedBannerTitle ? wrapBannerTitle(resolvedBannerTitle) : [];
   const backgroundColor = String(cardData?.backgroundColor || process.env.WHATSAPP_BANNER_BG_COLOR || "#123d37").trim() || "#123d37";
   const textColor = String(cardData?.textColor || process.env.WHATSAPP_BANNER_TEXT_COLOR || "#ffffff").trim() || "#ffffff";
   const titleBackgroundColor = String(cardData?.titleBackgroundColor || process.env.WHATSAPP_BANNER_TITLE_BG_COLOR || "#0b141a").trim() || "#0b141a";
   const backgroundImagePath = String(cardData?.backgroundImagePath || process.env.WHATSAPP_BANNER_BG_IMAGE || "").trim();
   const hasBackgroundImage = Boolean(backgroundImagePath);
   const simpleBackgroundMode = Boolean(cardData?.simpleBackgroundMode);
+  const hasBannerTitle = titleLines.length > 0;
   const titleFontSize = titleLines.length > 2 ? 54 : titleLines.length > 1 ? 64 : 74;
   const titleLineHeight = titleFontSize + 10;
   const backgroundLayer = hasBackgroundImage
@@ -769,7 +769,9 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const titleBackgroundHeight = Math.round(titleFontSize * 1.55) + Math.max(0, titleLines.length - 1) * titleLineHeight;
   const titleBackgroundX = Math.round(titleCenterX - titleBackgroundWidth / 2);
   const titleBackgroundY = Math.round(titleCenterY - titleBackgroundHeight / 2);
-  const titleBackgroundRect = `<rect x="${titleBackgroundX}" y="${titleBackgroundY}" width="${titleBackgroundWidth}" height="${titleBackgroundHeight}" rx="24" fill="${escapeXml(withAlphaHex(titleBackgroundColor, 0.26))}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
+  const titleBackgroundRect = hasBannerTitle
+    ? `<rect x="${titleBackgroundX}" y="${titleBackgroundY}" width="${titleBackgroundWidth}" height="${titleBackgroundHeight}" rx="24" fill="${escapeXml(withAlphaHex(titleBackgroundColor, 0.26))}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`
+    : "";
   const titleSvg = titleLines
     .map((line, index) => {
       const y = titleCenterY + (index - (titleLines.length - 1) / 2) * titleLineHeight + titleOpticalOffset;

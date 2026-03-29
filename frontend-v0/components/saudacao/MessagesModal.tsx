@@ -313,11 +313,13 @@ export function MessagesModal({
   const [groupsLoading, setGroupsLoading] = useState(false)
   const [groupsLoadError, setGroupsLoadError] = useState("")
   const [feedback, setFeedback] = useState("")
+  const [bannerTitleFieldVisible, setBannerTitleFieldVisible] = useState(false)
 
   const resetEditorState = () => {
     setEditorOpen(false)
     setEditorType("default")
     setFeedback("")
+    setBannerTitleFieldVisible(false)
     setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
     setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
     setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
@@ -387,6 +389,11 @@ export function MessagesModal({
       setModelHelpOpen(false)
       setPreviewOpen(false)
       setVariablesHelpOpen(false)
+      setBannerTitleFieldVisible(
+        Boolean(
+          String(initialGreetingBannerTitle || initialNoClassBannerTitle || initialCustomBannerTitle || initialBannerTitle || "").trim()
+        )
+      )
     }
     wasOpenRef.current = open
   }, [open, initialEditorType, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName, initialBannerTitle, initialGreetingImagePath, initialGreetingMediaFileName, initialGreetingBannerTitle, initialGreetingBackgroundColor, initialGreetingBackgroundImagePath, initialGreetingTextColor, initialGreetingTitleBackgroundColor, initialNoClassImagePath, initialNoClassMediaFileName, initialNoClassBannerTitle, initialNoClassBackgroundColor, initialNoClassBackgroundImagePath, initialNoClassTextColor, initialNoClassTitleBackgroundColor, initialCustomImagePath, initialCustomMediaFileName, initialCustomBannerTitle, initialCustomBackgroundColor, initialCustomBackgroundImagePath, initialCustomTextColor, initialCustomTitleBackgroundColor, students])
@@ -579,6 +586,7 @@ export function MessagesModal({
     noClassTitleBackgroundColor,
     customTitleBackgroundColor
   )
+  const shouldShowBannerTitleField = bannerTitleFieldVisible || Boolean(String(currentBannerTitle || "").trim())
   const hasBackgroundColor = Boolean(String(currentBackgroundColor || "").trim())
   const colorPickerValue = currentBackgroundColor || "#123d37"
   const currentImagePreviewUrl = resolvePreviewMediaUrl(currentImagePath)
@@ -609,6 +617,7 @@ export function MessagesModal({
     else setCustomMediaFileName(value)
   }
   const setCurrentBannerTitle = (value: string) => {
+    setBannerTitleFieldVisible(Boolean(String(value || "").trim()))
     if (editorType === "default") setGreetingBannerTitle(value)
     else if (editorType === "no-class") setNoClassBannerTitle(value)
     else setCustomBannerTitle(value)
@@ -637,7 +646,6 @@ export function MessagesModal({
   const canSendCustomMessage =
     editorType === "custom" &&
     Boolean(String(customImagePath || "").trim()) &&
-    Boolean(String(customBannerTitle || "").trim()) &&
     Boolean(String(customMediaFileName || "").trim()) &&
     Boolean(String(customTargetType || "").trim()) &&
     Boolean(String(customRecipient || "").trim()) &&
@@ -782,13 +790,23 @@ export function MessagesModal({
                 placeholder="https://site/fundo.jpg"
                 hint="Opcional. Usa esta imagem no fundo do banner."
               />
-              <UnderlineInput
-                label="Título do banner"
-                value={currentBannerTitle}
-                onChange={setCurrentBannerTitle}
-                placeholder="Ex.: 🤖 Saudação de hoje"
-                hint="Texto exibido ao lado da imagem no banner gerado."
-              />
+              {shouldShowBannerTitleField ? (
+                <UnderlineInput
+                  label="Título do banner"
+                  value={currentBannerTitle}
+                  onChange={setCurrentBannerTitle}
+                  placeholder="Ex.: 🤖 Saudação de hoje"
+                  hint="Opcional. Se ficar vazio, o banner será enviado sem título."
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setBannerTitleFieldVisible(true)}
+                  className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  Adicionar título ao banner
+                </button>
+              )}
               <UnderlineInput
                 label="Nome do arquivo"
                 value={currentMediaFileName}
@@ -834,23 +852,25 @@ export function MessagesModal({
                     Define a cor do texto exibido no banner desta mensagem.
                   </p>
                 </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Fundo do título
-                </label>
-                <div className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2">
-                  <input
-                    type="color"
-                    value={currentTitleBackgroundColor || "#0b141a"}
-                    onChange={(e) => setCurrentTitleBackgroundColor(e.target.value)}
-                    className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
-                  />
-                  <span className="font-mono text-sm text-foreground">{currentTitleBackgroundColor || "#0b141a"}</span>
+              {Boolean(String(currentBannerTitle || "").trim()) ? (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Fundo do título
+                  </label>
+                  <div className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2">
+                    <input
+                      type="color"
+                      value={currentTitleBackgroundColor || "#0b141a"}
+                      onChange={(e) => setCurrentTitleBackgroundColor(e.target.value)}
+                      className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                    />
+                    <span className="font-mono text-sm text-foreground">{currentTitleBackgroundColor || "#0b141a"}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Define a faixa atrás do título do banner.
+                  </p>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Define a faixa atrás do título do banner.
-                </p>
-              </div>
+              ) : null}
             </div>
           </div>
 
@@ -1145,16 +1165,18 @@ export function MessagesModal({
                     </div>
                     <div className="flex min-h-[72px] min-w-0 flex-1 items-center justify-center">
                       <div
-                        className="mx-auto inline-flex max-w-[78%] flex-col items-center rounded-2xl px-5 py-3 text-center shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
-                        style={{ backgroundColor: withAlpha(currentTitleBackgroundColor || "#0b141a", 0.26) }}
+                        className={`mx-auto inline-flex max-w-[78%] flex-col items-center text-center ${currentBannerTitle ? "rounded-2xl px-5 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.12)]" : ""}`}
+                        style={currentBannerTitle ? { backgroundColor: withAlpha(currentTitleBackgroundColor || "#0b141a", 0.26) } : undefined}
                       >
-                        <p
-                          className="line-clamp-3 translate-y-0.5 font-serif text-[34px] font-bold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-                          style={{ color: currentTextColor || "#ffffff" }}
-                        >
-                          {currentBannerTitle || "🤖 Saudação de hoje"}
-                        </p>
-                        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-white/80">
+                        {currentBannerTitle ? (
+                          <p
+                            className="line-clamp-3 translate-y-0.5 font-serif text-[34px] font-bold leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                            style={{ color: currentTextColor || "#ffffff" }}
+                          >
+                            {currentBannerTitle}
+                          </p>
+                        ) : null}
+                        <div className={`flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-white/80 ${currentBannerTitle ? "mt-2" : ""}`}>
                           <span>{currentMediaFileName || "nome automático"}</span>
                           <span className="inline-flex items-center gap-1.5">
                             <span

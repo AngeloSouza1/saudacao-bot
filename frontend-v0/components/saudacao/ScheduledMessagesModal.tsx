@@ -116,6 +116,7 @@ export function ScheduledMessagesModal({
   const [textColor, setTextColor] = useState("#ffffff")
   const [titleBackgroundColor, setTitleBackgroundColor] = useState("#0b141a")
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [bannerTitleFieldVisible, setBannerTitleFieldVisible] = useState(false)
 
   const sortedGroups = useMemo(
     () =>
@@ -154,6 +155,7 @@ export function ScheduledMessagesModal({
     setImagePath("")
     setBackgroundImagePath("")
     setBannerTitle("")
+    setBannerTitleFieldVisible(false)
     setMediaFileName("")
     setBackgroundColor("#123d37")
     setTextColor("#ffffff")
@@ -359,13 +361,26 @@ export function ScheduledMessagesModal({
                   placeholder="https://site/fundo.jpg"
                   hint="Opcional. Usa esta imagem no fundo do banner."
                 />
-                <UnderlineInput
-                  label="Título do banner"
-                  value={bannerTitle}
-                  onChange={setBannerTitle}
-                  placeholder="Ex.: Aviso importante"
-                  hint="Texto exibido ao lado da imagem no banner."
-                />
+                {bannerTitleFieldVisible || Boolean(String(bannerTitle || "").trim()) ? (
+                  <UnderlineInput
+                    label="Título do banner"
+                    value={bannerTitle}
+                    onChange={(value) => {
+                      setBannerTitle(value)
+                      setBannerTitleFieldVisible(Boolean(String(value || "").trim()))
+                    }}
+                    placeholder="Ex.: Aviso importante"
+                    hint="Opcional. Se ficar vazio, o banner será enviado sem título."
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setBannerTitleFieldVisible(true)}
+                    className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  >
+                    Adicionar título ao banner
+                  </button>
+                )}
                 <UnderlineInput
                   label="Nome do arquivo"
                   value={mediaFileName}
@@ -409,23 +424,25 @@ export function ScheduledMessagesModal({
                     Define a cor do texto exibido no banner desta mensagem.
                   </p>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Fundo do título
-                  </label>
-                  <div className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2">
-                    <input
-                      type="color"
-                      value={titleBackgroundColor || "#0b141a"}
-                      onChange={(e) => setTitleBackgroundColor(e.target.value)}
-                      className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
-                    />
-                    <span className="font-mono text-sm text-foreground">{titleBackgroundColor || "#0b141a"}</span>
+                {Boolean(String(bannerTitle || "").trim()) ? (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Fundo do título
+                    </label>
+                    <div className="flex items-center gap-3 rounded-lg border border-input bg-background px-3 py-2">
+                      <input
+                        type="color"
+                        value={titleBackgroundColor || "#0b141a"}
+                        onChange={(e) => setTitleBackgroundColor(e.target.value)}
+                        className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
+                      />
+                      <span className="font-mono text-sm text-foreground">{titleBackgroundColor || "#0b141a"}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Define a faixa atrás do título do banner.
+                    </p>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Define a faixa atrás do título do banner.
-                  </p>
-                </div>
+                ) : null}
               </div>
             </div>
             <div className="mt-4">
@@ -529,6 +546,7 @@ export function ScheduledMessagesModal({
                           setImagePath(String(item.imagePath || ""))
                           setBackgroundImagePath(String(item.backgroundImagePath || ""))
                           setBannerTitle(String(item.bannerTitle || ""))
+                          setBannerTitleFieldVisible(Boolean(String(item.bannerTitle || "").trim()))
                           setMediaFileName(String(item.mediaFileName || ""))
                           setBackgroundColor(String(item.backgroundColor || "#123d37") || "#123d37")
                           setTextColor(String(item.textColor || "#ffffff") || "#ffffff")
@@ -650,20 +668,22 @@ export function ScheduledMessagesModal({
                         </div>
                       ) : null}
                       <div className="relative flex min-h-[72px] min-w-0 flex-1 items-center justify-center text-white">
-                        <div
-                          className="mx-auto inline-flex max-w-[78%] flex-col items-center rounded-2xl px-5 py-3 text-center shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
-                          style={{ backgroundColor: withAlpha(titleBackgroundColor || "#0b141a", 0.26) }}
-                        >
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
-                            Mensagem programada
-                          </p>
-                          <p
-                            className="mt-1 translate-y-0.5 text-[34px] font-semibold leading-tight"
-                            style={{ color: textColor || "#ffffff" }}
+                        {bannerTitle ? (
+                          <div
+                            className="mx-auto inline-flex max-w-[78%] flex-col items-center rounded-2xl px-5 py-3 text-center shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+                            style={{ backgroundColor: withAlpha(titleBackgroundColor || "#0b141a", 0.26) }}
                           >
-                            {bannerTitle || previewTitle}
-                          </p>
-                        </div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                              Mensagem programada
+                            </p>
+                            <p
+                              className="mt-1 translate-y-0.5 text-[34px] font-semibold leading-tight"
+                              style={{ color: textColor || "#ffffff" }}
+                            >
+                              {bannerTitle}
+                            </p>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   </div>
