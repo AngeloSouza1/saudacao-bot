@@ -49,6 +49,40 @@ interface GroupOption {
   name: string
 }
 
+interface MessagesModalSnapshot {
+  editorType: "default" | "no-class" | "custom"
+  defaultMessage: string
+  noClassMessage: string
+  customMessage: string
+  customTargetType: "student" | "group"
+  customRecipient: string
+  greetingImagePath: string
+  greetingMediaFileName: string
+  greetingBannerTitle: string
+  greetingBackgroundColor: string
+  greetingBackgroundImagePath: string
+  greetingTextColor: string
+  greetingTitleBackgroundColor: string
+  noClassImagePath: string
+  noClassMediaFileName: string
+  noClassBannerTitle: string
+  noClassBackgroundColor: string
+  noClassBackgroundImagePath: string
+  noClassTextColor: string
+  noClassTitleBackgroundColor: string
+  customImagePath: string
+  customMediaFileName: string
+  customBannerTitle: string
+  customBackgroundColor: string
+  customBackgroundImagePath: string
+  customTextColor: string
+  customTitleBackgroundColor: string
+  imageFieldVisible: boolean
+  backgroundImageFieldVisible: boolean
+  bannerTitleFieldVisible: boolean
+  fileNameFieldVisible: boolean
+}
+
 const DEFAULT_MESSAGE_FALLBACK = `Turma: *{{turmaLinha}}*
 Matéria: *{{materia}}*
 Título: *{{titulo}}*
@@ -275,6 +309,7 @@ export function MessagesModal({
 }: MessagesModalProps) {
   const wasOpenRef = useRef(false)
   const editorTextareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const savedSnapshotRef = useRef<MessagesModalSnapshot | null>(null)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editorType, setEditorType] = useState<"default" | "no-class" | "custom">("default")
   const [defaultMessage, setDefaultMessage] = useState(DEFAULT_MESSAGE_FALLBACK)
@@ -318,40 +353,121 @@ export function MessagesModal({
   const [bannerTitleFieldVisible, setBannerTitleFieldVisible] = useState(false)
   const [fileNameFieldVisible, setFileNameFieldVisible] = useState(false)
 
+  const buildSnapshotFromInitial = (nextEditorType = initialEditorType): MessagesModalSnapshot => ({
+    editorType: nextEditorType,
+    defaultMessage: String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK,
+    noClassMessage: String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK,
+    customMessage: String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK,
+    customTargetType: "student",
+    customRecipient: "",
+    greetingImagePath: String(initialGreetingImagePath || initialImagePath || "").trim(),
+    greetingMediaFileName: String(initialGreetingMediaFileName || initialMediaFileName || "").trim(),
+    greetingBannerTitle: String(initialGreetingBannerTitle || initialBannerTitle || "").trim(),
+    greetingBackgroundColor: String(initialGreetingBackgroundColor || "#123d37").trim() || "#123d37",
+    greetingBackgroundImagePath: String(initialGreetingBackgroundImagePath || "").trim(),
+    greetingTextColor: String(initialGreetingTextColor || "#ffffff").trim() || "#ffffff",
+    greetingTitleBackgroundColor: String(initialGreetingTitleBackgroundColor || "#0b141a").trim() || "#0b141a",
+    noClassImagePath: String(initialNoClassImagePath || initialImagePath || "").trim(),
+    noClassMediaFileName: String(initialNoClassMediaFileName || initialMediaFileName || "").trim(),
+    noClassBannerTitle: String(initialNoClassBannerTitle || initialBannerTitle || "").trim(),
+    noClassBackgroundColor: String(initialNoClassBackgroundColor || "#123d37").trim() || "#123d37",
+    noClassBackgroundImagePath: String(initialNoClassBackgroundImagePath || "").trim(),
+    noClassTextColor: String(initialNoClassTextColor || "#ffffff").trim() || "#ffffff",
+    noClassTitleBackgroundColor: String(initialNoClassTitleBackgroundColor || "#0b141a").trim() || "#0b141a",
+    customImagePath: String(initialCustomImagePath || initialImagePath || "").trim(),
+    customMediaFileName: String(initialCustomMediaFileName || initialMediaFileName || "").trim(),
+    customBannerTitle: String(initialCustomBannerTitle || initialBannerTitle || "").trim(),
+    customBackgroundColor: String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37",
+    customBackgroundImagePath: String(initialCustomBackgroundImagePath || "").trim(),
+    customTextColor: String(initialCustomTextColor || "#ffffff").trim() || "#ffffff",
+    customTitleBackgroundColor: String(initialCustomTitleBackgroundColor || "#0b141a").trim() || "#0b141a",
+    imageFieldVisible: Boolean(
+      String(initialGreetingImagePath || initialNoClassImagePath || initialCustomImagePath || initialImagePath || "").trim()
+    ),
+    backgroundImageFieldVisible: Boolean(
+      String(initialGreetingBackgroundImagePath || initialNoClassBackgroundImagePath || initialCustomBackgroundImagePath || "").trim()
+    ),
+    bannerTitleFieldVisible: Boolean(
+      String(initialGreetingBannerTitle || initialNoClassBannerTitle || initialCustomBannerTitle || initialBannerTitle || "").trim()
+    ),
+    fileNameFieldVisible: Boolean(
+      String(initialGreetingMediaFileName || initialNoClassMediaFileName || initialCustomMediaFileName || initialMediaFileName || "").trim()
+    ),
+  })
+
+  const buildSnapshotFromCurrent = (): MessagesModalSnapshot => ({
+    editorType,
+    defaultMessage,
+    noClassMessage,
+    customMessage,
+    customTargetType,
+    customRecipient,
+    greetingImagePath,
+    greetingMediaFileName,
+    greetingBannerTitle,
+    greetingBackgroundColor,
+    greetingBackgroundImagePath,
+    greetingTextColor,
+    greetingTitleBackgroundColor,
+    noClassImagePath,
+    noClassMediaFileName,
+    noClassBannerTitle,
+    noClassBackgroundColor,
+    noClassBackgroundImagePath,
+    noClassTextColor,
+    noClassTitleBackgroundColor,
+    customImagePath,
+    customMediaFileName,
+    customBannerTitle,
+    customBackgroundColor,
+    customBackgroundImagePath,
+    customTextColor,
+    customTitleBackgroundColor,
+    imageFieldVisible,
+    backgroundImageFieldVisible,
+    bannerTitleFieldVisible,
+    fileNameFieldVisible,
+  })
+
+  const applySnapshot = (snapshot: MessagesModalSnapshot) => {
+    setEditorType(snapshot.editorType)
+    setDefaultMessage(snapshot.defaultMessage)
+    setNoClassMessage(snapshot.noClassMessage)
+    setCustomMessage(snapshot.customMessage)
+    setCustomTargetType(snapshot.customTargetType)
+    setCustomRecipient(snapshot.customRecipient)
+    setGreetingImagePath(snapshot.greetingImagePath)
+    setGreetingMediaFileName(snapshot.greetingMediaFileName)
+    setGreetingBannerTitle(snapshot.greetingBannerTitle)
+    setGreetingBackgroundColor(snapshot.greetingBackgroundColor)
+    setGreetingBackgroundImagePath(snapshot.greetingBackgroundImagePath)
+    setGreetingTextColor(snapshot.greetingTextColor)
+    setGreetingTitleBackgroundColor(snapshot.greetingTitleBackgroundColor)
+    setNoClassImagePath(snapshot.noClassImagePath)
+    setNoClassMediaFileName(snapshot.noClassMediaFileName)
+    setNoClassBannerTitle(snapshot.noClassBannerTitle)
+    setNoClassBackgroundColor(snapshot.noClassBackgroundColor)
+    setNoClassBackgroundImagePath(snapshot.noClassBackgroundImagePath)
+    setNoClassTextColor(snapshot.noClassTextColor)
+    setNoClassTitleBackgroundColor(snapshot.noClassTitleBackgroundColor)
+    setCustomImagePath(snapshot.customImagePath)
+    setCustomMediaFileName(snapshot.customMediaFileName)
+    setCustomBannerTitle(snapshot.customBannerTitle)
+    setCustomBackgroundColor(snapshot.customBackgroundColor)
+    setCustomBackgroundImagePath(snapshot.customBackgroundImagePath)
+    setCustomTextColor(snapshot.customTextColor)
+    setCustomTitleBackgroundColor(snapshot.customTitleBackgroundColor)
+    setImageFieldVisible(snapshot.imageFieldVisible)
+    setBackgroundImageFieldVisible(snapshot.backgroundImageFieldVisible)
+    setBannerTitleFieldVisible(snapshot.bannerTitleFieldVisible)
+    setFileNameFieldVisible(snapshot.fileNameFieldVisible)
+  }
+
   const resetEditorState = () => {
+    const snapshot = savedSnapshotRef.current || buildSnapshotFromInitial("default")
     setEditorOpen(false)
-    setEditorType("default")
     setFeedback("")
-    setImageFieldVisible(false)
-    setBackgroundImageFieldVisible(false)
-    setBannerTitleFieldVisible(false)
-    setFileNameFieldVisible(false)
-    setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
-    setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
-    setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
-    setCustomTargetType("student")
-    setCustomRecipient("")
-    setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
-    setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
-    setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
-    setGreetingBackgroundColor(String(initialGreetingBackgroundColor || "#123d37").trim() || "#123d37")
-    setGreetingBackgroundImagePath(String(initialGreetingBackgroundImagePath || "").trim())
-    setGreetingTextColor(String(initialGreetingTextColor || "#ffffff").trim() || "#ffffff")
-    setGreetingTitleBackgroundColor(String(initialGreetingTitleBackgroundColor || "#0b141a").trim() || "#0b141a")
-    setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
-    setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
-    setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
-    setNoClassBackgroundColor(String(initialNoClassBackgroundColor || "#123d37").trim() || "#123d37")
-    setNoClassBackgroundImagePath(String(initialNoClassBackgroundImagePath || "").trim())
-    setNoClassTextColor(String(initialNoClassTextColor || "#ffffff").trim() || "#ffffff")
-    setNoClassTitleBackgroundColor(String(initialNoClassTitleBackgroundColor || "#0b141a").trim() || "#0b141a")
-    setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
-    setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
-    setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
-    setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
-    setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
-    setCustomTextColor(String(initialCustomTextColor || "#ffffff").trim() || "#ffffff")
-    setCustomTitleBackgroundColor(String(initialCustomTitleBackgroundColor || "#0b141a").trim() || "#0b141a")
+    applySnapshot({ ...snapshot, editorType: "default", customTargetType: "student", customRecipient: "" })
     setModelHelpOpen(false)
     setPreviewOpen(false)
     setVariablesHelpOpen(false)
@@ -363,58 +479,14 @@ export function MessagesModal({
 
   useEffect(() => {
     if (open && !wasOpenRef.current) {
+      const snapshot = buildSnapshotFromInitial(initialEditorType)
+      savedSnapshotRef.current = snapshot
       setEditorOpen(initialEditorType === "custom")
-      setEditorType(initialEditorType)
       setFeedback("")
-      setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
-      setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
-      setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
-      setCustomTargetType("student")
-      setCustomRecipient("")
-      setGreetingImagePath(String(initialGreetingImagePath || initialImagePath || "").trim())
-      setGreetingMediaFileName(String(initialGreetingMediaFileName || initialMediaFileName || "").trim())
-      setGreetingBannerTitle(String(initialGreetingBannerTitle || initialBannerTitle || "").trim())
-      setGreetingBackgroundColor(String(initialGreetingBackgroundColor || "#123d37").trim() || "#123d37")
-      setGreetingBackgroundImagePath(String(initialGreetingBackgroundImagePath || "").trim())
-      setGreetingTextColor(String(initialGreetingTextColor || "#ffffff").trim() || "#ffffff")
-      setGreetingTitleBackgroundColor(String(initialGreetingTitleBackgroundColor || "#0b141a").trim() || "#0b141a")
-      setNoClassImagePath(String(initialNoClassImagePath || initialImagePath || "").trim())
-      setNoClassMediaFileName(String(initialNoClassMediaFileName || initialMediaFileName || "").trim())
-      setNoClassBannerTitle(String(initialNoClassBannerTitle || initialBannerTitle || "").trim())
-      setNoClassBackgroundColor(String(initialNoClassBackgroundColor || "#123d37").trim() || "#123d37")
-      setNoClassBackgroundImagePath(String(initialNoClassBackgroundImagePath || "").trim())
-      setNoClassTextColor(String(initialNoClassTextColor || "#ffffff").trim() || "#ffffff")
-      setNoClassTitleBackgroundColor(String(initialNoClassTitleBackgroundColor || "#0b141a").trim() || "#0b141a")
-      setCustomImagePath(String(initialCustomImagePath || initialImagePath || "").trim())
-      setCustomMediaFileName(String(initialCustomMediaFileName || initialMediaFileName || "").trim())
-      setCustomBannerTitle(String(initialCustomBannerTitle || initialBannerTitle || "").trim())
-      setCustomBackgroundColor(String(initialCustomBackgroundColor || "#123d37").trim() || "#123d37")
-      setCustomBackgroundImagePath(String(initialCustomBackgroundImagePath || "").trim())
-      setCustomTextColor(String(initialCustomTextColor || "#ffffff").trim() || "#ffffff")
-      setCustomTitleBackgroundColor(String(initialCustomTitleBackgroundColor || "#0b141a").trim() || "#0b141a")
+      applySnapshot(snapshot)
       setModelHelpOpen(false)
       setPreviewOpen(false)
       setVariablesHelpOpen(false)
-      setImageFieldVisible(
-        Boolean(
-          String(initialGreetingImagePath || initialNoClassImagePath || initialCustomImagePath || initialImagePath || "").trim()
-        )
-      )
-      setBackgroundImageFieldVisible(
-        Boolean(
-          String(initialGreetingBackgroundImagePath || initialNoClassBackgroundImagePath || initialCustomBackgroundImagePath || "").trim()
-        )
-      )
-      setBannerTitleFieldVisible(
-        Boolean(
-          String(initialGreetingBannerTitle || initialNoClassBannerTitle || initialCustomBannerTitle || initialBannerTitle || "").trim()
-        )
-      )
-      setFileNameFieldVisible(
-        Boolean(
-          String(initialGreetingMediaFileName || initialNoClassMediaFileName || initialCustomMediaFileName || initialMediaFileName || "").trim()
-        )
-      )
     }
     wasOpenRef.current = open
   }, [open, initialEditorType, initialDefaultMessage, initialNoClassMessage, initialCustomMessage, initialImagePath, initialMediaFileName, initialBannerTitle, initialGreetingImagePath, initialGreetingMediaFileName, initialGreetingBannerTitle, initialGreetingBackgroundColor, initialGreetingBackgroundImagePath, initialGreetingTextColor, initialGreetingTitleBackgroundColor, initialNoClassImagePath, initialNoClassMediaFileName, initialNoClassBannerTitle, initialNoClassBackgroundColor, initialNoClassBackgroundImagePath, initialNoClassTextColor, initialNoClassTitleBackgroundColor, initialCustomImagePath, initialCustomMediaFileName, initialCustomBannerTitle, initialCustomBackgroundColor, initialCustomBackgroundImagePath, initialCustomTextColor, initialCustomTitleBackgroundColor, students])
@@ -490,6 +562,7 @@ export function MessagesModal({
     setFeedback("")
     try {
       const payload = await persistMessagesConfig()
+      savedSnapshotRef.current = buildSnapshotFromCurrent()
       if (onSaved) await onSaved()
       if (closeAfterSave) {
         closeEditorToMessages()
@@ -511,6 +584,7 @@ export function MessagesModal({
     setFeedback("")
     try {
       await persistMessagesConfig()
+      savedSnapshotRef.current = buildSnapshotFromCurrent()
       if (onSaved) await onSaved()
       const res = await fetch("/api/send-custom-message", {
         method: "POST",
