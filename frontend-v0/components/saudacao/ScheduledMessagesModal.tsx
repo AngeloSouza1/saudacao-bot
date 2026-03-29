@@ -116,7 +116,10 @@ export function ScheduledMessagesModal({
   const [textColor, setTextColor] = useState("#ffffff")
   const [titleBackgroundColor, setTitleBackgroundColor] = useState("#0b141a")
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [imageFieldVisible, setImageFieldVisible] = useState(false)
+  const [backgroundImageFieldVisible, setBackgroundImageFieldVisible] = useState(false)
   const [bannerTitleFieldVisible, setBannerTitleFieldVisible] = useState(false)
+  const [fileNameFieldVisible, setFileNameFieldVisible] = useState(false)
 
   const sortedGroups = useMemo(
     () =>
@@ -153,10 +156,13 @@ export function ScheduledMessagesModal({
     setScheduledTime("")
     setTemplate("")
     setImagePath("")
+    setImageFieldVisible(false)
     setBackgroundImagePath("")
+    setBackgroundImageFieldVisible(false)
     setBannerTitle("")
     setBannerTitleFieldVisible(false)
     setMediaFileName("")
+    setFileNameFieldVisible(false)
     setBackgroundColor("#123d37")
     setTextColor("#ffffff")
     setTitleBackgroundColor("#0b141a")
@@ -347,20 +353,46 @@ export function ScheduledMessagesModal({
                 Mídia do envio
               </p>
               <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1.1fr_1.2fr_1.05fr]">
-                <UnderlineInput
-                  label="Banner / imagem"
-                  value={imagePath}
-                  onChange={setImagePath}
-                  placeholder="https://site/imagem.jpg"
-                  hint="Aceita arquivo local ou link."
-                />
-                <UnderlineInput
-                  label="Imagem de fundo"
-                  value={backgroundImagePath}
-                  onChange={setBackgroundImagePath}
-                  placeholder="https://site/fundo.jpg"
-                  hint="Opcional. Usa esta imagem no fundo do banner."
-                />
+                {imageFieldVisible || Boolean(String(imagePath || "").trim()) ? (
+                  <UnderlineInput
+                    label="Banner / imagem"
+                    value={imagePath}
+                    onChange={(value) => {
+                      setImagePath(value)
+                      setImageFieldVisible(Boolean(String(value || "").trim()))
+                    }}
+                    placeholder="https://site/imagem.jpg"
+                    hint="Opcional. Aceita arquivo local ou link."
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setImageFieldVisible(true)}
+                    className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  >
+                    Adicionar banner ou imagem
+                  </button>
+                )}
+                {backgroundImageFieldVisible || Boolean(String(backgroundImagePath || "").trim()) ? (
+                  <UnderlineInput
+                    label="Imagem de fundo"
+                    value={backgroundImagePath}
+                    onChange={(value) => {
+                      setBackgroundImagePath(value)
+                      setBackgroundImageFieldVisible(Boolean(String(value || "").trim()))
+                    }}
+                    placeholder="https://site/fundo.jpg"
+                    hint="Opcional. Usa esta imagem no fundo do banner."
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setBackgroundImageFieldVisible(true)}
+                    className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  >
+                    Adicionar imagem de fundo
+                  </button>
+                )}
                 {bannerTitleFieldVisible || Boolean(String(bannerTitle || "").trim()) ? (
                   <UnderlineInput
                     label="Título do banner"
@@ -381,13 +413,26 @@ export function ScheduledMessagesModal({
                     Adicionar título ao banner
                   </button>
                 )}
-                <UnderlineInput
-                  label="Nome do arquivo"
-                  value={mediaFileName}
-                  onChange={setMediaFileName}
-                  placeholder="aviso.png"
-                  hint="Opcional. Define o nome do arquivo enviado."
-                />
+                {fileNameFieldVisible || Boolean(String(mediaFileName || "").trim()) ? (
+                  <UnderlineInput
+                    label="Nome do arquivo"
+                    value={mediaFileName}
+                    onChange={(value) => {
+                      setMediaFileName(value)
+                      setFileNameFieldVisible(Boolean(String(value || "").trim()))
+                    }}
+                    placeholder="aviso.png"
+                    hint="Opcional. Define o nome do arquivo enviado."
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setFileNameFieldVisible(true)}
+                    className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  >
+                    Adicionar nome do arquivo
+                  </button>
+                )}
               </div>
               <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="flex flex-col gap-1">
@@ -544,10 +589,13 @@ export function ScheduledMessagesModal({
                           setScheduledTime(String(item.scheduledTime || ""))
                           setTemplate(String(item.template || ""))
                           setImagePath(String(item.imagePath || ""))
+                          setImageFieldVisible(Boolean(String(item.imagePath || "").trim()))
                           setBackgroundImagePath(String(item.backgroundImagePath || ""))
+                          setBackgroundImageFieldVisible(Boolean(String(item.backgroundImagePath || "").trim()))
                           setBannerTitle(String(item.bannerTitle || ""))
                           setBannerTitleFieldVisible(Boolean(String(item.bannerTitle || "").trim()))
                           setMediaFileName(String(item.mediaFileName || ""))
+                          setFileNameFieldVisible(Boolean(String(item.mediaFileName || "").trim()))
                           setBackgroundColor(String(item.backgroundColor || "#123d37") || "#123d37")
                           setTextColor(String(item.textColor || "#ffffff") || "#ffffff")
                           setTitleBackgroundColor(String(item.titleBackgroundColor || "#0b141a") || "#0b141a")

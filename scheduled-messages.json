@@ -37,14 +37,14 @@
     "scheduledDate": "2026-03-28",
     "scheduledTime": "20:31",
     "scheduledAt": "2026-03-28T23:31:00.000Z",
-    "status": "pending",
+    "status": "sent",
     "createdBy": "admin",
     "createdAt": "2026-03-28T21:33:16.107Z",
-    "updatedAt": "2026-03-28T21:33:16.107Z",
-    "sentAt": null,
+    "updatedAt": "2026-03-29T18:03:25.294Z",
+    "sentAt": "2026-03-29T18:03:25.294Z",
     "canceledAt": null,
     "error": "",
-    "messageId": ""
+    "messageId": "true_120363423174718536@g.us_3EB089D60C26F5D30153F2_138469896626257@lid"
   },
   {
     "id": "scheduled_1774733596134_nj686g",
@@ -117,5 +117,29 @@
     "canceledAt": null,
     "error": "",
     "messageId": ""
+  },
+  {
+    "id": "scheduled_1774809648497_1a5tlu",
+    "title": "CHAMADA!",
+    "groupName": "grupo teste",
+    "template": "📚 ACESSO ÀS AULAS 📚\nNoite - 20:00 UTC-3 - Hard Skills 🖥️\nBreakout room > T7 G2.2\n\n🔗Acesso: https://us06web.zoom.us/j/4639861898\n🚨Formulário para justificar a falta: https://forms.gle/h9FY5yA1RTN48BWH6",
+    "imagePath": "",
+    "mediaFileName": "",
+    "bannerTitle": "",
+    "backgroundColor": "#123d37",
+    "backgroundImagePath": "https://i.postimg.cc/QCMDWkcm/123sddfreggfrefrefer.jpg",
+    "textColor": "#ffffff",
+    "titleBackgroundColor": "#000000",
+    "scheduledDate": "2026-03-29",
+    "scheduledTime": "16:21",
+    "scheduledAt": "2026-03-29T19:21:00.000Z",
+    "status": "sent",
+    "createdBy": "enzo.duarte",
+    "createdAt": "2026-03-29T18:40:48.496Z",
+    "updatedAt": "2026-03-29T19:21:08.304Z",
+    "sentAt": "2026-03-29T19:21:08.304Z",
+    "canceledAt": null,
+    "error": "",
+    "messageId": "true_120363423174718536@g.us_3EB042970A7D66ACD4AB81_167435021877452@lid"
   }
 ]

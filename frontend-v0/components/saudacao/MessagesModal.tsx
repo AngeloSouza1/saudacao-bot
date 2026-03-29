@@ -313,13 +313,19 @@ export function MessagesModal({
   const [groupsLoading, setGroupsLoading] = useState(false)
   const [groupsLoadError, setGroupsLoadError] = useState("")
   const [feedback, setFeedback] = useState("")
+  const [imageFieldVisible, setImageFieldVisible] = useState(false)
+  const [backgroundImageFieldVisible, setBackgroundImageFieldVisible] = useState(false)
   const [bannerTitleFieldVisible, setBannerTitleFieldVisible] = useState(false)
+  const [fileNameFieldVisible, setFileNameFieldVisible] = useState(false)
 
   const resetEditorState = () => {
     setEditorOpen(false)
     setEditorType("default")
     setFeedback("")
+    setImageFieldVisible(false)
+    setBackgroundImageFieldVisible(false)
     setBannerTitleFieldVisible(false)
+    setFileNameFieldVisible(false)
     setDefaultMessage(String(initialDefaultMessage || "").trim() || DEFAULT_MESSAGE_FALLBACK)
     setNoClassMessage(String(initialNoClassMessage || "").trim() || DEFAULT_NO_CLASS_MESSAGE_FALLBACK)
     setCustomMessage(String(initialCustomMessage || "").trim() || DEFAULT_CUSTOM_MESSAGE_FALLBACK)
@@ -389,9 +395,24 @@ export function MessagesModal({
       setModelHelpOpen(false)
       setPreviewOpen(false)
       setVariablesHelpOpen(false)
+      setImageFieldVisible(
+        Boolean(
+          String(initialGreetingImagePath || initialNoClassImagePath || initialCustomImagePath || initialImagePath || "").trim()
+        )
+      )
+      setBackgroundImageFieldVisible(
+        Boolean(
+          String(initialGreetingBackgroundImagePath || initialNoClassBackgroundImagePath || initialCustomBackgroundImagePath || "").trim()
+        )
+      )
       setBannerTitleFieldVisible(
         Boolean(
           String(initialGreetingBannerTitle || initialNoClassBannerTitle || initialCustomBannerTitle || initialBannerTitle || "").trim()
+        )
+      )
+      setFileNameFieldVisible(
+        Boolean(
+          String(initialGreetingMediaFileName || initialNoClassMediaFileName || initialCustomMediaFileName || initialMediaFileName || "").trim()
         )
       )
     }
@@ -586,7 +607,10 @@ export function MessagesModal({
     noClassTitleBackgroundColor,
     customTitleBackgroundColor
   )
+  const shouldShowImageField = imageFieldVisible || Boolean(String(currentImagePath || "").trim())
+  const shouldShowBackgroundImageField = backgroundImageFieldVisible || Boolean(String(currentBackgroundImagePath || "").trim())
   const shouldShowBannerTitleField = bannerTitleFieldVisible || Boolean(String(currentBannerTitle || "").trim())
+  const shouldShowFileNameField = fileNameFieldVisible || Boolean(String(currentMediaFileName || "").trim())
   const hasBackgroundColor = Boolean(String(currentBackgroundColor || "").trim())
   const colorPickerValue = currentBackgroundColor || "#123d37"
   const currentImagePreviewUrl = resolvePreviewMediaUrl(currentImagePath)
@@ -607,11 +631,13 @@ export function MessagesModal({
     }
   }, [customTargetType, customRecipient, studentsWithWhatsapp])
   const setCurrentImagePath = (value: string) => {
+    setImageFieldVisible(Boolean(String(value || "").trim()))
     if (editorType === "default") setGreetingImagePath(value)
     else if (editorType === "no-class") setNoClassImagePath(value)
     else setCustomImagePath(value)
   }
   const setCurrentMediaFileName = (value: string) => {
+    setFileNameFieldVisible(Boolean(String(value || "").trim()))
     if (editorType === "default") setGreetingMediaFileName(value)
     else if (editorType === "no-class") setNoClassMediaFileName(value)
     else setCustomMediaFileName(value)
@@ -628,6 +654,7 @@ export function MessagesModal({
     else setCustomBackgroundColor(value)
   }
   const setCurrentBackgroundImagePath = (value: string) => {
+    setBackgroundImageFieldVisible(Boolean(String(value || "").trim()))
     if (editorType === "default") setGreetingBackgroundImagePath(value)
     else if (editorType === "no-class") setNoClassBackgroundImagePath(value)
     else setCustomBackgroundImagePath(value)
@@ -645,7 +672,6 @@ export function MessagesModal({
   const hasMessageContent = Boolean(String(currentMessage || "").trim())
   const canSendCustomMessage =
     editorType === "custom" &&
-    Boolean(String(customImagePath || "").trim()) &&
     Boolean(String(customMediaFileName || "").trim()) &&
     Boolean(String(customTargetType || "").trim()) &&
     Boolean(String(customRecipient || "").trim()) &&
@@ -776,20 +802,40 @@ export function MessagesModal({
               Mídia do envio
             </p>
             <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1.1fr_1.2fr_1.05fr]">
-              <UnderlineInput
-                label="Banner / imagem"
-                value={currentImagePath}
-                onChange={setCurrentImagePath}
-                placeholder="https://site/imagem.jpg"
-                hint="Aceita arquivo local ou link. Se não alterar, o banner atual continua sendo usado."
-              />
-              <UnderlineInput
-                label="Imagem de fundo"
-                value={currentBackgroundImagePath}
-                onChange={setCurrentBackgroundImagePath}
-                placeholder="https://site/fundo.jpg"
-                hint="Opcional. Usa esta imagem no fundo do banner."
-              />
+              {shouldShowImageField ? (
+                <UnderlineInput
+                  label="Banner / imagem"
+                  value={currentImagePath}
+                  onChange={setCurrentImagePath}
+                  placeholder="https://site/imagem.jpg"
+                  hint="Opcional. Aceita arquivo local ou link."
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setImageFieldVisible(true)}
+                  className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  Adicionar banner ou imagem
+                </button>
+              )}
+              {shouldShowBackgroundImageField ? (
+                <UnderlineInput
+                  label="Imagem de fundo"
+                  value={currentBackgroundImagePath}
+                  onChange={setCurrentBackgroundImagePath}
+                  placeholder="https://site/fundo.jpg"
+                  hint="Opcional. Usa esta imagem no fundo do banner."
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setBackgroundImageFieldVisible(true)}
+                  className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  Adicionar imagem de fundo
+                </button>
+              )}
               {shouldShowBannerTitleField ? (
                 <UnderlineInput
                   label="Título do banner"
@@ -807,13 +853,23 @@ export function MessagesModal({
                   Adicionar título ao banner
                 </button>
               )}
-              <UnderlineInput
-                label="Nome do arquivo"
-                value={currentMediaFileName}
-                onChange={setCurrentMediaFileName}
-                placeholder="Ex.: Saudacao-RiseCode.png"
-                hint="Opcional. Define o nome do arquivo quando a mídia for enviada."
-              />
+              {shouldShowFileNameField ? (
+                <UnderlineInput
+                  label="Nome do arquivo"
+                  value={currentMediaFileName}
+                  onChange={setCurrentMediaFileName}
+                  placeholder="Ex.: Saudacao-RiseCode.png"
+                  hint="Opcional. Define o nome do arquivo quando a mídia for enviada."
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setFileNameFieldVisible(true)}
+                  className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  Adicionar nome do arquivo
+                </button>
+              )}
             </div>
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="flex flex-col gap-1">

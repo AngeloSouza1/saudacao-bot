@@ -734,6 +734,7 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
   const hasBackgroundImage = Boolean(backgroundImagePath);
   const simpleBackgroundMode = Boolean(cardData?.simpleBackgroundMode);
   const hasBannerTitle = titleLines.length > 0;
+  const hasMediaImage = Boolean(imageInput);
   const titleFontSize = titleLines.length > 2 ? 54 : titleLines.length > 1 ? 64 : 74;
   const titleLineHeight = titleFontSize + 10;
   const backgroundLayer = hasBackgroundImage
@@ -778,81 +779,87 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
       return `<text x="${titleCenterX}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="${escapeXml(textColor)}" font-size="${titleFontSize}" font-family="Georgia, serif" font-weight="700">${escapeXml(line)}</text>`;
     })
     .join("");
-  const mediaContentBackdropBuffer = Buffer.from(`
-    <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="mediaInner" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
-          <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
-        </linearGradient>
-      </defs>
-      <rect
-        x="${mediaContentLeft}"
-        y="${mediaContentTop}"
-        width="${mediaContentWidth}"
-        height="${mediaContentHeight}"
-        rx="18"
-        fill="url(#mediaInner)"
-        stroke="rgba(255,255,255,0.12)"
-        stroke-width="1.5"
-      />
-    </svg>
-  `);
-  const logoInnerBuffer = await sharp(imageInput)
-    .rotate()
-    .resize({
-      width: mediaContentWidth,
-      height: mediaContentHeight,
-      fit: "cover",
-      position: "centre",
-      background: { r: 0, g: 0, b: 0, alpha: 0 }
-    })
-    .png()
-    .toBuffer();
-  const mediaFrameBuffer = await sharp({
-    create: {
-      width: mediaFrameWidth,
-      height: mediaFrameHeight,
-      channels: 4,
-      background: { r: 14, g: 24, b: 34, alpha: 1 }
-    }
-  })
-    .composite([
-      { input: mediaContentBackdropBuffer, top: 0, left: 0 },
-      {
-        input: logoInnerBuffer,
-        top: mediaContentTop,
-        left: mediaContentLeft
+  let mediaFrameBuffer = null;
+  let mediaShadowBuffer = null;
+  let mediaRingBuffer = null;
+
+  if (hasMediaImage) {
+    const mediaContentBackdropBuffer = Buffer.from(`
+      <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="mediaInner" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
+          </linearGradient>
+        </defs>
+        <rect
+          x="${mediaContentLeft}"
+          y="${mediaContentTop}"
+          width="${mediaContentWidth}"
+          height="${mediaContentHeight}"
+          rx="18"
+          fill="url(#mediaInner)"
+          stroke="rgba(255,255,255,0.12)"
+          stroke-width="1.5"
+        />
+      </svg>
+    `);
+    const logoInnerBuffer = await sharp(imageInput)
+      .rotate()
+      .resize({
+        width: mediaContentWidth,
+        height: mediaContentHeight,
+        fit: "cover",
+        position: "centre",
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      })
+      .png()
+      .toBuffer();
+    mediaFrameBuffer = await sharp({
+      create: {
+        width: mediaFrameWidth,
+        height: mediaFrameHeight,
+        channels: 4,
+        background: { r: 14, g: 24, b: 34, alpha: 1 }
       }
-    ])
-    .png()
-    .toBuffer();
-  const mediaShadowBuffer = await sharp({
-    create: {
-      width: shadowWidth,
-      height: shadowHeight,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 }
-    }
-  })
-    .composite([{
-      input: Buffer.from(`
-        <svg width="${shadowWidth}" height="${shadowHeight}" xmlns="http://www.w3.org/2000/svg">
-          <rect x="9" y="6" width="${mediaFrameWidth}" height="${mediaFrameHeight}" rx="${mediaRadius}" fill="rgba(0,0,0,0.18)"/>
-        </svg>
-      `),
-      top: 0,
-      left: 0
-    }])
-    .blur(10)
-    .png()
-    .toBuffer();
-  const mediaRingBuffer = Buffer.from(`
-    <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="${mediaFrameWidth - 6}" height="${mediaFrameHeight - 6}" rx="${mediaRadius - 3}" fill="none" stroke="rgba(255,255,255,0.56)" stroke-width="2"/>
-      <rect x="10" y="10" width="${mediaFrameWidth - 20}" height="${mediaFrameHeight - 20}" rx="${mediaRadius - 9}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-    </svg>
-  `);
+    })
+      .composite([
+        { input: mediaContentBackdropBuffer, top: 0, left: 0 },
+        {
+          input: logoInnerBuffer,
+          top: mediaContentTop,
+          left: mediaContentLeft
+        }
+      ])
+      .png()
+      .toBuffer();
+    mediaShadowBuffer = await sharp({
+      create: {
+        width: shadowWidth,
+        height: shadowHeight,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      }
+    })
+      .composite([{
+        input: Buffer.from(`
+          <svg width="${shadowWidth}" height="${shadowHeight}" xmlns="http://www.w3.org/2000/svg">
+            <rect x="9" y="6" width="${mediaFrameWidth}" height="${mediaFrameHeight}" rx="${mediaRadius}" fill="rgba(0,0,0,0.18)"/>
+          </svg>
+        `),
+        top: 0,
+        left: 0
+      }])
+      .blur(10)
+      .png()
+      .toBuffer();
+    mediaRingBuffer = Buffer.from(`
+      <svg width="${mediaFrameWidth}" height="${mediaFrameHeight}" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="${mediaFrameWidth - 6}" height="${mediaFrameHeight - 6}" rx="${mediaRadius - 3}" fill="none" stroke="rgba(255,255,255,0.56)" stroke-width="2"/>
+        <rect x="10" y="10" width="${mediaFrameWidth - 20}" height="${mediaFrameHeight - 20}" rx="${mediaRadius - 9}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      </svg>
+    `);
+  }
 
   const svgText = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
@@ -920,9 +927,9 @@ async function buildBannerMediaFromInput(imageInput, cardData, bannerTitle) {
     .composite([
       ...composites,
       { input: Buffer.from(svgText), top: 0, left: 0 },
-      { input: mediaShadowBuffer, top: shadowTop, left: shadowLeft },
-      { input: mediaFrameBuffer, top: mediaTop, left: mediaLeft },
-      { input: mediaRingBuffer, top: mediaTop, left: mediaLeft }
+      ...(mediaShadowBuffer ? [{ input: mediaShadowBuffer, top: shadowTop, left: shadowLeft }] : []),
+      ...(mediaFrameBuffer ? [{ input: mediaFrameBuffer, top: mediaTop, left: mediaLeft }] : []),
+      ...(mediaRingBuffer ? [{ input: mediaRingBuffer, top: mediaTop, left: mediaLeft }] : [])
     ])
     .jpeg({ quality: 70, mozjpeg: true })
     .toBuffer();
@@ -1004,21 +1011,24 @@ export async function sendText({
   const me = client.info?.wid?._serialized || "desconhecido@c.us";
   console.log(`📨 Enviando mensagem: ${fromChatId(me)} -> ${destination.destinationLabel}`);
   const rawImagePath = String(imagePath || "").trim();
+  const rawBackgroundImagePath = String(backgroundImagePath || "").trim();
+  const rawBannerTitle = String(bannerTitle || "").trim();
   const mediaIsRemote = isRemoteMediaUrl(rawImagePath);
   const mediaFullPath = mediaIsRemote ? "" : resolveMediaPath(rawImagePath);
   let message;
+  const style = String(imageStyle || "").toLowerCase();
+  const shouldBuildBanner = style === "banner" && Boolean(rawImagePath || rawBackgroundImagePath || rawBannerTitle);
 
-  if (rawImagePath) {
-    if (!mediaIsRemote && !fs.existsSync(mediaFullPath)) {
+  if (rawImagePath || shouldBuildBanner) {
+    if (rawImagePath && !mediaIsRemote && !fs.existsSync(mediaFullPath)) {
       throw new Error(`Imagem não encontrada: ${mediaFullPath}`);
     }
     let media;
     let mediaInput;
-    const style = String(imageStyle || "").toLowerCase();
     try {
-      mediaInput = mediaIsRemote
-        ? await fetchRemoteMediaBuffer(rawImagePath)
-        : mediaFullPath;
+      mediaInput = rawImagePath
+        ? (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath)
+        : null;
       if (style === "banner") {
         media = await buildBannerMediaFromInput(
           mediaInput,
@@ -1033,7 +1043,7 @@ export async function sendText({
     } catch (error) {
       console.warn("⚠️ Falha ao gerar banner principal; tentando fallback compacto:", error?.message || error);
       try {
-        mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
+        mediaInput = mediaInput || (rawImagePath ? (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath) : null);
         if (style === "banner") {
           media = await buildBannerMediaFromInput(
             mediaInput,
@@ -1048,7 +1058,7 @@ export async function sendText({
       } catch (fallbackError) {
         console.warn("⚠️ Falha no fallback compacto com fundo; tentando sem fundo:", fallbackError?.message || fallbackError);
         try {
-          mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
+          mediaInput = mediaInput || (rawImagePath ? (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath) : null);
           media = await buildBannerMediaFromInput(
             mediaInput,
             { ...(cardData || {}), backgroundColor, backgroundImagePath: "", textColor, titleBackgroundColor },
@@ -1058,10 +1068,16 @@ export async function sendText({
         } catch (bannerWithoutBgError) {
           console.warn("⚠️ Falha no fallback do banner sem fundo; enviando mídia otimizada simples:", bannerWithoutBgError?.message || bannerWithoutBgError);
           try {
+            if (!rawImagePath) {
+              throw bannerWithoutBgError;
+            }
             mediaInput = mediaInput || (mediaIsRemote ? await fetchRemoteMediaBuffer(rawImagePath) : mediaFullPath);
             media = await buildOptimizedMediaFromInput(mediaInput);
           } catch (optimizedError) {
             console.warn("⚠️ Falha ao otimizar fallback; enviando original:", optimizedError?.message || optimizedError);
+            if (!rawImagePath) {
+              throw optimizedError;
+            }
             if (mediaIsRemote) {
               const remoteBuffer = await fetchRemoteMediaBuffer(rawImagePath);
               media = new MessageMedia("image/jpeg", remoteBuffer.toString("base64"), "saudacao-remota.jpg");
