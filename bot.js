@@ -223,9 +223,6 @@ export function saveScheduledMessage(payload = {}, options = {}) {
   const groupName = String(payload?.groupName || "").trim();
   const template = String(payload?.template || "").trim();
 
-  if (title.length < 2) {
-    throw new Error("Informe um título para a mensagem programada.");
-  }
   if (groupName.length < 2) {
     throw new Error("Informe o grupo de destino.");
   }
@@ -319,7 +316,7 @@ async function processDueScheduledMessages(now = new Date()) {
         {
           imagePath: String(item?.imagePath || "").trim(),
           mediaFileName: String(item?.mediaFileName || "").trim(),
-          bannerTitle: String(item?.bannerTitle || item?.title || "").trim(),
+          bannerTitle: String(item?.bannerTitle || "").trim(),
           backgroundColor: String(item?.backgroundColor || "").trim(),
           backgroundImagePath: String(item?.backgroundImagePath || "").trim(),
           textColor: String(item?.textColor || "").trim(),

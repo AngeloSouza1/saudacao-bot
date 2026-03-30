@@ -103,6 +103,7 @@ export function ScheduledMessagesModal({
   const [feedback, setFeedback] = useState("")
   const [editingId, setEditingId] = useState("")
   const [title, setTitle] = useState("")
+  const [titleFieldVisible, setTitleFieldVisible] = useState(false)
   const [groupName, setGroupName] = useState("")
   const [scheduledDate, setScheduledDate] = useState("")
   const [selectedDates, setSelectedDates] = useState<string[]>([])
@@ -116,6 +117,7 @@ export function ScheduledMessagesModal({
   const [textColor, setTextColor] = useState("#ffffff")
   const [titleBackgroundColor, setTitleBackgroundColor] = useState("#0b141a")
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [mediaSectionVisible, setMediaSectionVisible] = useState(false)
   const [imageFieldVisible, setImageFieldVisible] = useState(false)
   const [backgroundImageFieldVisible, setBackgroundImageFieldVisible] = useState(false)
   const [bannerTitleFieldVisible, setBannerTitleFieldVisible] = useState(false)
@@ -150,11 +152,13 @@ export function ScheduledMessagesModal({
   function resetForm() {
     setEditingId("")
     setTitle("")
+    setTitleFieldVisible(false)
     setGroupName("")
     setScheduledDate("")
     setSelectedDates([])
     setScheduledTime("")
     setTemplate("")
+    setMediaSectionVisible(false)
     setImagePath("")
     setImageFieldVisible(false)
     setBackgroundImagePath("")
@@ -264,7 +268,6 @@ export function ScheduledMessagesModal({
   }
 
   const hasPreviewContent = Boolean(String(template || "").trim())
-  const previewTitle = String(title || "").trim() || "Mensagem programada"
   const previewGroup = String(groupName || "").trim() || "Grupo de destino"
   const previewDate = String(scheduledDate || "").trim() || selectedDates[0] || ""
   const imagePreviewUrl = resolvePreviewMediaUrl(imagePath)
@@ -288,7 +291,25 @@ export function ScheduledMessagesModal({
               Novo agendamento
             </p>
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-              <UnderlineInput label="Título" value={title} onChange={setTitle} placeholder="Ex.: Aviso de prova" />
+              {titleFieldVisible || Boolean(String(title || "").trim()) ? (
+                <UnderlineInput
+                  label="Título"
+                  value={title}
+                  onChange={(value) => {
+                    setTitle(value)
+                    setTitleFieldVisible(Boolean(String(value || "").trim()))
+                  }}
+                  placeholder="Ex.: Aviso de prova"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setTitleFieldVisible(true)}
+                  className="flex min-h-[68px] items-center rounded-2xl border border-dashed border-border bg-background px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  Adicionar título
+                </button>
+              )}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Grupo</label>
                 <select
@@ -348,11 +369,31 @@ export function ScheduledMessagesModal({
                 </div>
               </div>
             ) : null}
-            <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Mídia do envio
-              </p>
-              <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1.1fr_1.2fr_1.05fr]">
+            {mediaSectionVisible || Boolean(String(imagePath || backgroundImagePath || bannerTitle || mediaFileName || "").trim()) ? (
+              <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Mídia do envio
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMediaSectionVisible(false)
+                      setImagePath("")
+                      setImageFieldVisible(false)
+                      setBackgroundImagePath("")
+                      setBackgroundImageFieldVisible(false)
+                      setBannerTitle("")
+                      setBannerTitleFieldVisible(false)
+                      setMediaFileName("")
+                      setFileNameFieldVisible(false)
+                    }}
+                    className="text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
+                  >
+                    Ocultar
+                  </button>
+                </div>
+                <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1.1fr_1.2fr_1.05fr]">
                 {imageFieldVisible || Boolean(String(imagePath || "").trim()) ? (
                   <UnderlineInput
                     label="Banner / imagem"
@@ -433,8 +474,8 @@ export function ScheduledMessagesModal({
                     Adicionar nome do arquivo
                   </button>
                 )}
-              </div>
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                </div>
+                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Cor de fundo
@@ -488,8 +529,17 @@ export function ScheduledMessagesModal({
                     </p>
                   </div>
                 ) : null}
+                </div>
               </div>
-            </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setMediaSectionVisible(true)}
+                className="mt-4 flex min-h-[68px] w-full items-center rounded-2xl border border-dashed border-border bg-background/70 px-4 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                Adicionar mídia do envio
+              </button>
+            )}
             <div className="mt-4">
               <div className="flex items-center justify-between gap-3">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mensagem</label>
@@ -583,11 +633,15 @@ export function ScheduledMessagesModal({
                         onClick={() => {
                           setEditingId(String(item.id || ""))
                           setTitle(String(item.title || ""))
+                          setTitleFieldVisible(Boolean(String(item.title || "").trim()))
                           setGroupName(String(item.groupName || ""))
                           setScheduledDate(String(item.scheduledDate || ""))
                           setSelectedDates([])
                           setScheduledTime(String(item.scheduledTime || ""))
                           setTemplate(String(item.template || ""))
+                          setMediaSectionVisible(
+                            Boolean(String(item.imagePath || item.backgroundImagePath || item.bannerTitle || item.mediaFileName || "").trim())
+                          )
                           setImagePath(String(item.imagePath || ""))
                           setImageFieldVisible(Boolean(String(item.imagePath || "").trim()))
                           setBackgroundImagePath(String(item.backgroundImagePath || ""))
@@ -677,7 +731,7 @@ export function ScheduledMessagesModal({
               </div>
 
               <div className="ml-auto max-w-[88%] rounded-[18px] rounded-tr-md bg-[#d9fdd3] px-4 py-3 text-[#111b21] shadow-[0_1px_0_rgba(0,0,0,0.08)]">
-                {(imagePath || bannerTitle) ? (
+                {(imagePath || backgroundImagePath || bannerTitle) ? (
                   <div className="mb-3 overflow-hidden rounded-2xl border border-emerald-300/50 bg-white/70">
                     <div
                       className="relative flex min-h-[300px] items-center gap-5 px-4 py-4"
